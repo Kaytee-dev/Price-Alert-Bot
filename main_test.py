@@ -122,12 +122,12 @@ def chunked(iterable, size):
         yield iterable[i:i + size]
 
 # --- Helper: Message Sender ---
-async def send_message(bot, text: str):
+async def send_message(bot, text: str, parse_mode="Markdown"):
     if USER_CHAT_ID is None:
         logging.warning("⚠️ No user chat ID set. Cannot send message.")
         return
     try:
-        await bot.send_message(chat_id=USER_CHAT_ID, text=text)
+        await bot.send_message(chat_id=USER_CHAT_ID, text=text, parse_mode="Markdown")
     except Exception as e:
         logging.error(f"❌ Failed to send message: {e}")
 

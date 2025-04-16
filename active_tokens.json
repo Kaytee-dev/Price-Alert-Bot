@@ -102,49 +102,5 @@
       "volume_m5": 4508.8,
       "marketCap": 15154214
     }
-  ],
-  "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump": [
-    {
-      "timestamp": "2025-04-16 23:36:03",
-      "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
-      "symbol": "Fur",
-      "priceChange_m5": -7.71,
-      "volume_m5": 10484.22,
-      "marketCap": 1171331
-    },
-    {
-      "timestamp": "2025-04-16 23:34:51",
-      "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
-      "symbol": "Fur",
-      "priceChange_m5": -6.53,
-      "volume_m5": 13724.91,
-      "marketCap": 1169482
-    },
-    {
-      "timestamp": "2025-04-16 23:33:38",
-      "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
-      "symbol": "Fur",
-      "priceChange_m5": -1.61,
-      "volume_m5": 8929.73,
-      "marketCap": 1219854
-    }
-  ],
-  "G8TbRcGSZYVPhVKgKiLGcgwFPipkKcPZUqrGHzs3YR8w": [
-    {
-      "timestamp": "2025-04-16 23:47:16",
-      "address": "G8TbRcGSZYVPhVKgKiLGcgwFPipkKcPZUqrGHzs3YR8w",
-      "symbol": "BOTIFY",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 90
-    },
-    {
-      "timestamp": "2025-04-16 23:42:40",
-      "address": "G8TbRcGSZYVPhVKgKiLGcgwFPipkKcPZUqrGHzs3YR8w",
-      "symbol": "BOTIFY",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 90
-    }
   ]
 }

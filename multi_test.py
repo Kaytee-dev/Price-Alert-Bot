@@ -20,6 +20,10 @@ TRACKED_TOKENS: List[str] = []  # List of Solana token addresses
 TRACKED_TOKENS_FILE = "tracked_tokens_multi.json"
 ADDRESS_TO_SYMBOL: Dict[str, str] = {}
 SYMBOLS_FILE = "symbols_multi.json"
+
+ACTIVE_TOKEN_DATA = {}  # Only for active tokens
+ACTIVE_TOKENS_FILE = "active_tokens.json"
+
 POLL_INTERVAL = 60  # seconds
 BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY"
 
@@ -37,6 +41,10 @@ MONITOR_TASK: Optional[asyncio.Task] = None
 # Multi user feature
 USER_TRACKING_FILE = "user_tracking.json"
 USER_TRACKING = {}
+
+# --- User Active Status ---
+USER_STATUS = {}
+USER_STATUS_FILE = "user_status.json"
 
 logging.basicConfig(level=logging.INFO)
 
@@ -112,6 +120,26 @@ def load_tracked_tokens():
 def save_tracked_tokens():
     save_json(TRACKED_TOKENS_FILE, TRACKED_TOKENS, "tracked tokens")
 
+# --- Load User Status ---
+def load_user_status():
+    global USER_STATUS
+    USER_STATUS = load_json(USER_STATUS_FILE, {}, "user status")
+
+# --- Save User Status ---
+def save_user_status():
+    save_json(USER_STATUS_FILE, USER_STATUS, "user status")
+
+
+# --- Save active token data ---
+def save_active_token_data():
+    save_json(ACTIVE_TOKENS_FILE, ACTIVE_TOKEN_DATA, "active token data")
+
+# --- Load active token data ---
+def load_active_token_data():
+    global ACTIVE_TOKEN_DATA
+    ACTIVE_TOKEN_DATA = load_json(ACTIVE_TOKENS_FILE, {}, "active token data")
+
+
 
 # --- Dexscreener Fetcher ---
 def fetch_prices_for_tokens(addresses: List[str], max_retries: int = 3, retry_delay: int = 2) -> List[dict]:
@@ -161,13 +189,21 @@ async def send_message(bot, text: str, chat_id, parse_mode="Markdown"):
 
 # --- Telegram Bot Commands ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global MONITOR_TASK
+    chat_id = str(update.effective_chat.id)
+
+    USER_STATUS[chat_id] = True
+    save_user_status()
+
+    if not getattr(context.application, "_monitor_started", False):
+        context.application.create_task(background_price_monitor(context.application))
+        context.application._monitor_started = True
+
 
     await context.bot.set_my_commands([
         BotCommand("start", "Start the bot"),
         BotCommand("stop", "Stop the bot"),
         BotCommand("add", "Add a token to track"),
-        BotCommand("alltokens", "List tracked tokens by all user(admin only)"),
+        BotCommand("alltokens", "List tracked tokens by all user (admin only)"),
         BotCommand("remove", "Remove token"),
         BotCommand("list", "List tracked tokens"),
         BotCommand("reset", "Clear all tracked tokens"),
@@ -176,17 +212,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         BotCommand("status", "Show stats of tracked tokens")
     ])
 
-    await update.message.reply_text("🤖 Bot started and monitoring tokens!")
-    if MONITOR_TASK is None or MONITOR_TASK.done():
-        MONITOR_TASK = context.application.create_task(background_price_monitor(context.application))
+    await update.message.reply_text("🤖 Bot started and monitoring your tokens!")
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global MONITOR_TASK
-    if MONITOR_TASK and not MONITOR_TASK.done():
-        MONITOR_TASK.cancel()
-        await update.message.reply_text("🛑 Monitoring task stopped.")
-    else:
-        await update.message.reply_text("ℹ️ No active monitoring task to stop.")
+    chat_id = str(update.effective_chat.id)
+
+    USER_STATUS[chat_id] = False
+    save_user_status()
+
+    await update.message.reply_text("🛑 Monitoring for your tokens has been stopped.")
 
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -218,6 +252,20 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             skipped.append(address)
 
+    # Auto-start the user if they haven't started yet
+    if USER_STATUS.get(chat_id, False) is False:
+        USER_STATUS[chat_id] = True  # Mark as started
+        
+        # Log and notify the admin
+        logging.info(f"🤖 User {chat_id} auto-started monitoring.")
+        await context.bot.send_message(
+            chat_id=ADMIN_CHAT_ID, 
+            text=f"🧹 User {chat_id} auto-started monitoring."
+        )
+
+        # Trigger the /start functionality for the user
+        await start(update, context)  # Directly call the /start function logic
+
     save_user_tracking()
     save_tracked_tokens()
 
@@ -225,7 +273,6 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"✅ Tracking token(s):\n" + "\n".join(added))
     if skipped:
         await update.message.reply_text(f"ℹ️ Already tracked:\n" + "\n".join(skipped))
-
 
 
 async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -280,6 +327,16 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg = f"🧼 Removed {len(tokens_removed)} untracked token(s) from tracking after /remove."
         logging.info(msg)
         await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=msg)
+    
+    # If user no longer tracks any tokens, clean up their entry
+    if not USER_TRACKING.get(chat_id):
+        USER_TRACKING.pop(chat_id, None)
+        USER_STATUS.pop(chat_id, None)
+        save_user_tracking()
+        save_user_status()
+        logging.info(f"🧹 Removed user {chat_id} from tracking (no tokens left).")
+        await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=f"🧹 Removed user {chat_id} from tracking (no tokens left).")
+
 
 async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
@@ -415,8 +472,14 @@ def background_price_monitor(app):
     async def monitor():
         while True:
             save_needed = False
-            if TRACKED_TOKENS:
-                for chunk in chunked(TRACKED_TOKENS, 30):
+
+            active_tokens = set()
+            for chat_id, tokens in USER_TRACKING.items():
+                if USER_STATUS.get(chat_id) and tokens:
+                    active_tokens.update(tokens)
+
+            if active_tokens:
+                for chunk in chunked(sorted(active_tokens), 30):
                     token_data_list = fetch_prices_for_tokens(chunk)
                     for data in token_data_list:
                         base = data.get("baseToken", {})
@@ -430,9 +493,8 @@ def background_price_monitor(app):
                             save_symbols_to_file()
 
                         symbol = ADDRESS_TO_SYMBOL.get(address)
-                        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Format: YYYY-MM-DD HH:MM:SS
+                        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                        # Keep only relevant fields with timestamp
                         cleaned_data = {
                             "timestamp": timestamp,
                             "address": address,
@@ -447,7 +509,10 @@ def background_price_monitor(app):
                         TOKEN_DATA_HISTORY[address].insert(0, cleaned_data)
                         TOKEN_DATA_HISTORY[address] = TOKEN_DATA_HISTORY[address][:3]
 
-                        # Compute hash and compare
+                        ACTIVE_TOKEN_DATA[address] = ACTIVE_TOKEN_DATA.get(address, [])
+                        ACTIVE_TOKEN_DATA[address].insert(0, cleaned_data)
+                        ACTIVE_TOKEN_DATA[address] = ACTIVE_TOKEN_DATA[address][:3]
+
                         snapshot_json = json.dumps(cleaned_data, sort_keys=True)
                         hash_val = hashlib.md5(snapshot_json.encode()).hexdigest()
 
@@ -455,7 +520,6 @@ def background_price_monitor(app):
                             LAST_SAVED_HASHES[address] = hash_val
                             save_needed = True
 
-                        # Threshold-based alert logic
                         history = TOKEN_DATA_HISTORY[address][:3]
                         recent_changes = [
                             entry.get("priceChange_m5")
@@ -463,28 +527,55 @@ def background_price_monitor(app):
                             if isinstance(entry.get("priceChange_m5"), (int, float))
                         ]
 
-
                         change = cleaned_data.get("priceChange_m5")
                         if isinstance(change, (int, float)) and change >= 15 and any(p >= 15 for p in recent_changes[1:]):
                             link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
                             msg = (
                                 f"📢 {link} is spiking!\n"
+                                f"🕓 Timestamps: {timestamp}\n"
                                 f"5m Change: {cleaned_data['priceChange_m5']}%\n"
                                 f"5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"
                                 f"Market Cap: ${cleaned_data['marketCap']:,.0f}"
                             )
 
                             for chat_id, tokens in USER_TRACKING.items():
-                                if address in tokens:
+                                if USER_STATUS.get(chat_id) and address in tokens:
                                     await send_message(app.bot, msg, chat_id=chat_id, parse_mode="Markdown")
-                            
+
+            # Cleanup: remove any tokens no longer tracked by anyone
+            all_tracked_tokens = set(addr for tokens in USER_TRACKING.values() for addr in tokens)
+            for token in list(TOKEN_DATA_HISTORY.keys()):
+                if token not in all_tracked_tokens:
+                    TOKEN_DATA_HISTORY.pop(token, None)
+                    ACTIVE_TOKEN_DATA.pop(token, None)
+                    LAST_SAVED_HASHES.pop(token, None)
+                    ADDRESS_TO_SYMBOL.pop(token, None)
+                    if token in TRACKED_TOKENS:
+                        TRACKED_TOKENS.remove(token)
+
+            # Prune stale tokens from ACTIVE_TOKEN_DATA
+            for token in list(ACTIVE_TOKEN_DATA):
+                if token not in active_tokens:
+                    ACTIVE_TOKEN_DATA.pop(token, None)
 
             if save_needed:
                 await asyncio.to_thread(save_token_history)
+                await asyncio.to_thread(save_active_token_data)
 
             await asyncio.sleep(POLL_INTERVAL)
 
     return monitor()
+
+# --- Rebuild Tracked Tokens ---
+def rebuild_tracked_tokens():
+    global TRACKED_TOKENS
+    all_tokens = set()
+    for tokens in USER_TRACKING.values():
+        all_tokens.update(tokens)
+    TRACKED_TOKENS = sorted(all_tokens)
+    save_tracked_tokens()
+    logging.info(f"🔁 Rebuilt tracked tokens list: {len(TRACKED_TOKENS)} tokens.")
+
 
 
 # --- Bot Runner ---
@@ -493,6 +584,9 @@ def main():
     load_token_history()  # ✅ Restore TOKEN_DATA_HISTORY and LAST_SAVED_HASHES
     load_tracked_tokens()
     load_user_tracking()
+    rebuild_tracked_tokens()
+    load_user_status()
+    load_active_token_data()
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
