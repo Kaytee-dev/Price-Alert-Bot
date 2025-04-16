@@ -7,6 +7,8 @@ from typing import Dict, List
 import time
 import hashlib
 from datetime import datetime
+import os
+import sys
 
 from typing import Optional
 import requests
@@ -20,7 +22,9 @@ ADDRESS_TO_SYMBOL: Dict[str, str] = {}
 SYMBOLS_FILE = "symbols_multi.json"
 POLL_INTERVAL = 330  # seconds
 BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY"
+
 USER_CHAT_ID: int | None = None
+ADMIN_CHAT_ID = -4750674293
 BASE_URL = "https://gmgn.ai/sol/token/"
 
 # Cache for recent token data
@@ -35,6 +39,15 @@ USER_TRACKING_FILE = "user_tracking.json"
 USER_TRACKING = {}
 
 logging.basicConfig(level=logging.INFO)
+
+# --- Admin-only decorator ---
+def restricted_to_admin(func):
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if update.effective_chat.id != ADMIN_CHAT_ID:
+            await update.message.reply_text("❌ You are not authorized to use this command.")
+            return
+        return await func(update, context)
+    return wrapper
 
 # --- Generic JSON Utilities ---
 def load_json(file_path: str, fallback, log_label: str = ""):
@@ -134,20 +147,20 @@ def chunked(iterable, size):
         yield iterable[i:i + size]
 
 # --- Helper: Message Sender ---
-async def send_message(bot, text: str):
-    if USER_CHAT_ID is None:
-        logging.warning("⚠️ No user chat ID set. Cannot send message.")
-        return
+async def send_message(bot, text: str, chat_id, parse_mode="Markdown"):
     try:
-        await bot.send_message(chat_id=USER_CHAT_ID, text=text)
+        await bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
     except Exception as e:
-        logging.error(f"❌ Failed to send message: {e}")
+        logging.error(f"❌ Failed to send message to {chat_id}: {e}")
+        if ADMIN_CHAT_ID:
+            try:
+                await bot.send_message(chat_id=ADMIN_CHAT_ID, text=f"❌ Failed to send message to {chat_id}: {e}")
+            except Exception as inner:
+                logging.error(f"❌ Also failed to notify admin: {inner}")
 
 # --- Telegram Bot Commands ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global USER_CHAT_ID
     global MONITOR_TASK
-    USER_CHAT_ID = update.effective_chat.id
 
     await context.bot.set_my_commands([
         BotCommand("start", "Start the bot"),
@@ -156,7 +169,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         BotCommand("remove", "Remove token"),
         BotCommand("list", "List tracked tokens"),
         BotCommand("reset", "Clear all tracked tokens"),
-        BotCommand("help", "Show help message")
+        BotCommand("help", "Show help message"),
+        BotCommand("restart", "Restart the bot (admin only)")
     ])
 
     await update.message.reply_text("🤖 Bot started and monitoring tokens!")
@@ -251,7 +265,6 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Address(es) not found in your tracking list:\n" + "\n".join(not_found))
 
 
-
 async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
 
@@ -310,6 +323,12 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "\n\nEach user can track their own set of tokens independently."
     )
     await update.message.reply_text(msg, parse_mode="Markdown")
+
+@restricted_to_admin
+async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("♻️ Restarting bot...")
+    await context.application.shutdown()
+    os.execl(sys.executable, sys.executable, *sys.argv)
 
 # --- Price Monitor Background Task ---
 def background_price_monitor(app):
@@ -391,6 +410,7 @@ def main():
     load_symbols_from_file()
     load_token_history()  # ✅ Restore TOKEN_DATA_HISTORY and LAST_SAVED_HASHES
     load_tracked_tokens()
+    load_user_tracking()
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
@@ -401,6 +421,7 @@ def main():
     app.add_handler(CommandHandler("list", list_tokens))
     app.add_handler(CommandHandler("reset", reset))
     app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("restart", restart))
 
     app.run_polling()
 
