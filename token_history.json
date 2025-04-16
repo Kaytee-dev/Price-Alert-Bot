@@ -1,0 +1,98 @@
+{
+  "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump": [
+    {
+      "timestamp": "2025-04-16 08:39:09",
+      "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
+      "symbol": "Fur",
+      "priceChange_m5": -4.82,
+      "volume_m5": 59009.67,
+      "marketCap": 4171507
+    },
+    {
+      "timestamp": "2025-04-16 08:31:06",
+      "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
+      "symbol": "Fur",
+      "priceChange_m5": -2.56,
+      "volume_m5": 35967.56,
+      "marketCap": 4216339
+    },
+    {
+      "timestamp": "2025-04-16 08:28:03",
+      "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
+      "symbol": "Fur",
+      "priceChange_m5": -1.5,
+      "volume_m5": 39822.48,
+      "marketCap": 4219872
+    }
+  ],
+  "SuPAUtNqF3SAxH5EhP7ep5JNi2qDw7WGX1tQh33bnmP": [
+    {
+      "timestamp": "2025-04-16 08:39:09",
+      "address": "SuPAUtNqF3SAxH5EhP7ep5JNi2qDw7WGX1tQh33bnmP",
+      "symbol": "BALLS",
+      "priceChange_m5": -2.85,
+      "volume_m5": 77.91,
+      "marketCap": 4172
+    },
+    {
+      "timestamp": "2025-04-16 08:31:06",
+      "address": "SuPAUtNqF3SAxH5EhP7ep5JNi2qDw7WGX1tQh33bnmP",
+      "symbol": "BALLS",
+      "priceChange_m5": 14.52,
+      "volume_m5": 603,
+      "marketCap": 4201
+    },
+    {
+      "timestamp": "2025-04-16 08:28:03",
+      "address": "SuPAUtNqF3SAxH5EhP7ep5JNi2qDw7WGX1tQh33bnmP",
+      "symbol": "BALLS",
+      "priceChange_m5": -34.07,
+      "volume_m5": 1380.48,
+      "marketCap": 3747
+    }
+  ],
+  "6r9J7rxrVoGW4oFVi5BnEBrtKgUTNP6964zNg3Cgpump": [
+    {
+      "timestamp": "2025-04-16 08:39:09",
+      "address": "6r9J7rxrVoGW4oFVi5BnEBrtKgUTNP6964zNg3Cgpump",
+      "symbol": "Agify",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 51680.51
+    },
+    {
+      "timestamp": "2025-04-16 08:31:06",
+      "address": "6r9J7rxrVoGW4oFVi5BnEBrtKgUTNP6964zNg3Cgpump",
+      "symbol": "Agify",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 51680.51
+    },
+    {
+      "timestamp": "2025-04-16 08:28:03",
+      "address": "6r9J7rxrVoGW4oFVi5BnEBrtKgUTNP6964zNg3Cgpump",
+      "symbol": "Agify",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 51680.51
+    }
+  ],
+  "ADisQxfa6uVZ8xP1ZEGPJCyb8HaxWtrXcZR1gLdaPump": [
+    {
+      "timestamp": "2025-04-16 08:39:09",
+      "address": "ADisQxfa6uVZ8xP1ZEGPJCyb8HaxWtrXcZR1gLdaPump",
+      "symbol": "Tiktok",
+      "priceChange_m5": 4.47,
+      "volume_m5": 221751.64,
+      "marketCap": 9957315
+    },
+    {
+      "timestamp": "2025-04-16 08:31:06",
+      "address": "ADisQxfa6uVZ8xP1ZEGPJCyb8HaxWtrXcZR1gLdaPump",
+      "symbol": "Tiktok",
+      "priceChange_m5": 35.12,
+      "volume_m5": 245608.44,
+      "marketCap": 12662275
+    }
+  ]
+}
