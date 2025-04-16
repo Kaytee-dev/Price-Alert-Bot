@@ -15,9 +15,9 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 # --- Globals ---
 TRACKED_TOKENS: List[str] = []  # List of Solana token addresses
-TRACKED_TOKENS_FILE = "tracked_tokens.json"
+TRACKED_TOKENS_FILE = "tracked_tokens_multi.json"
 ADDRESS_TO_SYMBOL: Dict[str, str] = {}
-SYMBOLS_FILE = "symbols.json"
+SYMBOLS_FILE = "symbols_multi.json"
 POLL_INTERVAL = 330  # seconds
 BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY"
 USER_CHAT_ID: int | None = None
@@ -25,10 +25,14 @@ BASE_URL = "https://gmgn.ai/sol/token/"
 
 # Cache for recent token data
 TOKEN_DATA_HISTORY: Dict[str, List[dict]] = {}
-TOKEN_HISTORY_FILE = "token_history.json"
+TOKEN_HISTORY_FILE = "token_history_multi.json"
 LAST_SAVED_HASHES: Dict[str, str] = {}
 
 MONITOR_TASK: Optional[asyncio.Task] = None
+
+# Multi user feature
+USER_TRACKING_FILE = "user_tracking.json"
+USER_TRACKING = {}
 
 logging.basicConfig(level=logging.INFO)
 
@@ -50,6 +54,14 @@ def save_json(file_path: str, data, log_label: str = ""):
         logging.info(f"💾 Saved {log_label or file_path}.")
     except Exception as e:
         logging.error(f"❌ Failed to save {log_label or file_path}: {e}")
+
+# --- Load/Save User Tracking ---
+def load_user_tracking():
+    global USER_TRACKING
+    USER_TRACKING = load_json(USER_TRACKING_FILE, {}, "user tracking")
+
+def save_user_tracking():
+    save_json(USER_TRACKING_FILE, USER_TRACKING, "user tracking")
 
 # --- Symbol Persistence ---
 def load_symbols_from_file():
@@ -143,7 +155,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         BotCommand("add", "Add a token to track"),
         BotCommand("remove", "Remove token"),
         BotCommand("list", "List tracked tokens"),
-        BotCommand("reset", "Clear all tracked tokens")
+        BotCommand("reset", "Clear all tracked tokens"),
+        BotCommand("help", "Show help message")
     ])
 
     await update.message.reply_text("🤖 Bot started and monitoring tokens!")
@@ -160,6 +173,8 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+
     if not context.args:
         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
         return
@@ -171,16 +186,22 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
         return
 
+    if chat_id not in USER_TRACKING:
+        USER_TRACKING[chat_id] = []
+
     added = []
     skipped = []
 
     for address in addresses:
-        if address not in TRACKED_TOKENS:
-            TRACKED_TOKENS.append(address)
+        if address not in USER_TRACKING[chat_id]:
+            USER_TRACKING[chat_id].append(address)
             added.append(address)
+            if address not in TRACKED_TOKENS:
+                TRACKED_TOKENS.append(address)
         else:
             skipped.append(address)
 
+    save_user_tracking()
     save_tracked_tokens()
 
     if added:
@@ -189,7 +210,10 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"ℹ️ Already tracked:\n" + "\n".join(skipped))
 
 
+
 async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+
     if not context.args:
         await update.message.reply_text("Usage: /remove <token_address1>, <token_address2>, ...")
         return
@@ -201,37 +225,47 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Usage: /remove <token_address1>, <token_address2>, ...")
         return
 
+    if chat_id not in USER_TRACKING:
+        await update.message.reply_text("ℹ️ You're not tracking any tokens.")
+        return
+
     removed = []
     not_found = []
 
     for address in addresses:
-        if address in TRACKED_TOKENS:
-            TRACKED_TOKENS.remove(address)
+        if address in USER_TRACKING[chat_id]:
+            USER_TRACKING[chat_id].remove(address)
             removed.append(address)
         else:
             not_found.append(address)
 
+    # Clean up global tracked list
+    TRACKED_TOKENS[:] = [addr for addr in TRACKED_TOKENS if any(addr in tokens for tokens in USER_TRACKING.values())]
+
+    save_user_tracking()
     save_tracked_tokens()
 
     if removed:
         await update.message.reply_text(f"🗑️ Removed token(s):\n" + "\n".join(removed))
     if not_found:
-        await update.message.reply_text(f"❌ Address(es) not found:\n" + "\n".join(not_found))
+        await update.message.reply_text(f"❌ Address(es) not found in your tracking list:\n" + "\n".join(not_found))
 
 
 
 async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not TRACKED_TOKENS:
-        await update.message.reply_text("📭 No tokens being tracked.")
+    chat_id = str(update.effective_chat.id)
+
+    user_tokens = USER_TRACKING.get(chat_id, [])
+    if not user_tokens:
+        await update.message.reply_text("📭 You're not tracking any tokens.")
         return
 
-    msg = "📊 Tracked Tokens:\n"
+    msg = "📊 Your Tracked Tokens:\n"
 
-    for addr in TRACKED_TOKENS:
+    for addr in user_tokens:
         symbol = ADDRESS_TO_SYMBOL.get(addr, addr[:6] + "...")
         link = f"[{symbol}]({BASE_URL}{addr})"
 
-        # Get latest market cap from cached data
         history = TOKEN_DATA_HISTORY.get(addr, [])
         market_cap = history[0].get("marketCap") if history else None
         mc_text = f" - Market Cap: ${market_cap:,.0f}" if market_cap else ""
@@ -240,17 +274,42 @@ async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(msg, parse_mode="Markdown")
 
-async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    TRACKED_TOKENS.clear()
-    ADDRESS_TO_SYMBOL.clear()
-    TOKEN_DATA_HISTORY.clear()
-    LAST_SAVED_HASHES.clear()
 
+async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+
+    user_tokens = USER_TRACKING.pop(chat_id, [])
+
+    # Remove untracked tokens from global list
+    TRACKED_TOKENS[:] = [addr for addr in TRACKED_TOKENS if any(addr in tokens for tokens in USER_TRACKING.values())]
+
+    for addr in user_tokens:
+        if addr not in TRACKED_TOKENS:
+            ADDRESS_TO_SYMBOL.pop(addr, None)
+            TOKEN_DATA_HISTORY.pop(addr, None)
+            LAST_SAVED_HASHES.pop(addr, None)
+
+    save_user_tracking()
     save_tracked_tokens()
     save_symbols_to_file()
     save_token_history()
-    await update.message.reply_text("🔄 All tracked data (tokens, symbols, history) has been cleared.")
 
+    await update.message.reply_text("🔄 Your tracked tokens, symbols, and history have been cleared.")
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = (
+        "🤖 *Price Alert Bot Help*\n\n"
+        "Use the following commands to manage your token alerts:\n"
+        "\n/start - Start the bot and monitoring"
+        "\n/stop - Stop the bot monitoring"
+        "\n/add <token1>, <token2>, ... - Track token(s)"
+        "\n/remove <token1>, <token2>, ... - Stop tracking token(s)"
+        "\n/list - Show your tracked tokens"
+        "\n/reset - Clear all your tracking data"
+        "\n/help - Show this help message"
+        "\n\nEach user can track their own set of tokens independently."
+    )
+    await update.message.reply_text(msg, parse_mode="Markdown")
 
 # --- Price Monitor Background Task ---
 def background_price_monitor(app):
@@ -313,7 +372,11 @@ def background_price_monitor(app):
                                 f"5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"
                                 f"Market Cap: ${cleaned_data['marketCap']:,.0f}"
                             )
-                            await send_message(app.bot, msg, parse_mode="Markdown")
+
+                            for chat_id, tokens in USER_TRACKING.items():
+                                if address in tokens:
+                                    await send_message(app.bot, msg, chat_id=chat_id, parse_mode="Markdown")
+                            
 
             if save_needed:
                 await asyncio.to_thread(save_token_history)
@@ -337,6 +400,7 @@ def main():
     app.add_handler(CommandHandler("remove", remove))
     app.add_handler(CommandHandler("list", list_tokens))
     app.add_handler(CommandHandler("reset", reset))
+    app.add_handler(CommandHandler("help", help_command))
 
     app.run_polling()
 

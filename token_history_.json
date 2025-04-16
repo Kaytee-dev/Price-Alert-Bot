@@ -1,0 +1,22 @@
+{
+  "CboyfttvXQE8PrBhAyXD39XGwSAGX5tPbtcNM9HTpump": [
+    {
+      "timestamp": "2025-04-16 09:52:07",
+      "address": "CboyfttvXQE8PrBhAyXD39XGwSAGX5tPbtcNM9HTpump",
+      "symbol": "Amazon",
+      "priceChange_m5": -2,
+      "volume_m5": 961.1,
+      "marketCap": 229056
+    }
+  ],
+  "51X4B3CH1zsQiD8tq74PkdDs5b29rrNFyNC37SM1pump": [
+    {
+      "timestamp": "2025-04-16 09:52:07",
+      "address": "51X4B3CH1zsQiD8tq74PkdDs5b29rrNFyNC37SM1pump",
+      "symbol": "JOVIAL",
+      "priceChange_m5": 0.99,
+      "volume_m5": 23396.03,
+      "marketCap": 1341119
+    }
+  ]
+}
