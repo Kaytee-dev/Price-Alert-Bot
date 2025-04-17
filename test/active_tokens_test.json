@@ -1,74 +1,68 @@
 {
-  "4j2vuiUX6F5zbEBe7KcPE3i3MAMh5w6i6vkqN6Z5BhxN": [
-    {
-      "timestamp": "2025-04-17 16:55:12",
-      "address": "4j2vuiUX6F5zbEBe7KcPE3i3MAMh5w6i6vkqN6Z5BhxN",
-      "symbol": "Disney++",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 483541
-    },
-    {
-      "timestamp": "2025-04-17 16:52:07",
-      "address": "4j2vuiUX6F5zbEBe7KcPE3i3MAMh5w6i6vkqN6Z5BhxN",
-      "symbol": "Disney++",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 483541
-    }
-  ],
   "A6qGvKh2jaScogjhNLvpRAgyauUjQtEchHFAgb2LoKrK": [
     {
-      "timestamp": "2025-04-17 16:55:12",
+      "timestamp": "2025-04-18 00:08:29",
       "address": "A6qGvKh2jaScogjhNLvpRAgyauUjQtEchHFAgb2LoKrK",
       "symbol": "Fur",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 18
+      "marketCap": 13
     },
     {
-      "timestamp": "2025-04-17 16:52:07",
+      "timestamp": "2025-04-17 23:44:32",
       "address": "A6qGvKh2jaScogjhNLvpRAgyauUjQtEchHFAgb2LoKrK",
       "symbol": "Fur",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 18
-    }
-  ],
-  "CW8Fc7iyCxfmYYNNmMj8ijNgebiE3kVCii16bgzhY2Br": [
-    {
-      "timestamp": "2025-04-17 16:55:12",
-      "address": "CW8Fc7iyCxfmYYNNmMj8ijNgebiE3kVCii16bgzhY2Br",
-      "symbol": "PicASSo",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 89504
+      "marketCap": 13
     },
     {
-      "timestamp": "2025-04-17 16:52:07",
-      "address": "CW8Fc7iyCxfmYYNNmMj8ijNgebiE3kVCii16bgzhY2Br",
-      "symbol": "PicASSo",
+      "timestamp": "2025-04-17 23:41:08",
+      "address": "A6qGvKh2jaScogjhNLvpRAgyauUjQtEchHFAgb2LoKrK",
+      "symbol": "Fur",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 89504
+      "marketCap": 13
     }
   ],
-  "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump": [
+  "2v19eyqZPEHXCHFTto97LmVJWLMD2gjnUbXfZpwZpump": [
     {
-      "timestamp": "2025-04-17 16:55:12",
-      "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
-      "symbol": "Fur",
-      "priceChange_m5": 3,
-      "volume_m5": 3619.08,
-      "marketCap": 694087
-    },
+      "timestamp": "2025-04-18 00:08:29",
+      "address": "2v19eyqZPEHXCHFTto97LmVJWLMD2gjnUbXfZpwZpump",
+      "symbol": "KITO",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 3491
+    }
+  ],
+  "5Tnpv8cUUHoD6i3gRZXRUTQhQ3n5mTQ2ud6skog7pump": [
     {
-      "timestamp": "2025-04-17 16:52:07",
-      "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
-      "symbol": "Fur",
-      "priceChange_m5": -3.16,
-      "volume_m5": 6565.7,
-      "marketCap": 669863
+      "timestamp": "2025-04-18 00:08:29",
+      "address": "5Tnpv8cUUHoD6i3gRZXRUTQhQ3n5mTQ2ud6skog7pump",
+      "symbol": "LEGO",
+      "priceChange_m5": 0.07,
+      "volume_m5": 19.28,
+      "marketCap": 35855
+    }
+  ],
+  "9EdYm43yM3DjLHfry7KnjnTihuabZHEdkoQehjoQpump": [
+    {
+      "timestamp": "2025-04-18 00:08:29",
+      "address": "9EdYm43yM3DjLHfry7KnjnTihuabZHEdkoQehjoQpump",
+      "symbol": "Minecraft",
+      "priceChange_m5": -0.45,
+      "volume_m5": 22.05,
+      "marketCap": 17280
+    }
+  ],
+  "PAWSxhjTyNJELywYiYTxCN857utnYmWXu7Q59Vgn6ZQ": [
+    {
+      "timestamp": "2025-04-18 00:08:29",
+      "address": "PAWSxhjTyNJELywYiYTxCN857utnYmWXu7Q59Vgn6ZQ",
+      "symbol": "PAWS",
+      "priceChange_m5": 0.36,
+      "volume_m5": 3712.62,
+      "marketCap": 11630627
     }
   ]
 }

@@ -642,33 +642,21 @@ async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if query.data == "confirm_restart":
         await query.edit_message_text("♻️ Restarting bot...")
 
+        # Safe restart logic
         async def safe_restart():
             try:
-                if not getattr(context.application, "_monitor_started", False):
-                    logging.info("ℹ️ Monitor was never started — skipping restart logic.")
-                    await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text="ℹ️ Restart aborted — monitor loop was never started.")
-                    return
-
-                active_users = [user_id for user_id, status in USER_STATUS.items() if status]
-                save_json("active_restart_users.json", active_users, "active restart users")
-                save_json("restart_flag.json", {"from_restart": True}, "restart flag")
-
                 for user_id in USER_STATUS:
                     USER_STATUS[user_id] = False
                 save_user_status()
 
                 if hasattr(context.application, "_monitor_task"):
                     task = context.application._monitor_task
-                    if task and not task.done():
+                    if not task.done():
                         task.cancel()
                         try:
                             await task
                         except asyncio.CancelledError:
                             pass
-                    else:
-                        logging.info("ℹ️ Monitor task exists but already completed.")
-                else:
-                    logging.warning("⚠️ Monitor task reference missing despite start flag — possible inconsistency.")
 
                 await context.application.stop()
                 await asyncio.sleep(1)
@@ -745,29 +733,6 @@ def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # Restore active users if bot restarted via /restart
-    restart_flag = load_json("restart_flag.json", {}, "restart flag")
-    if restart_flag.get("from_restart"):
-        active_users = load_json("active_restart_users.json", [], "active restart users")
-        for user_id in active_users:
-            USER_STATUS[user_id] = True
-        save_user_status()
-
-        # Auto-start monitor loop if needed
-        if any(USER_STATUS.values()):
-            monitor_task = app.create_task(background_price_monitor(app))
-            app._monitor_task = monitor_task
-            app._monitor_started = True
-            logging.info("🔄 Monitor loop auto-started after restart recovery.")
-
-        # Cleanup after restoring
-        try:
-            os.remove("active_restart_users.json")
-            os.remove("restart_flag.json")
-            logging.info("🧹 Cleaned up restart state files.")
-        except Exception as e:
-            logging.warning(f"⚠️ Failed to clean restart state files: {e}")
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
     app.add_handler(CommandHandler("add", add))
@@ -782,8 +747,6 @@ def main():
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
 
     app.run_polling()
-
-
 
 if __name__ == "__main__":
     main()
