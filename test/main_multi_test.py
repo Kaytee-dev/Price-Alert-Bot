@@ -734,6 +734,13 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # --- Bot Runner ---
+async def on_startup(app):
+    if any(USER_STATUS.values()):
+        monitor_task = app.create_task(background_price_monitor(app))
+        app._monitor_task = monitor_task
+        app._monitor_started = True
+        logging.info("🔄 Monitor loop auto-started after restart recovery.")
+
 def main():
     load_symbols_from_file()
     load_token_history()  # ✅ Restore TOKEN_DATA_HISTORY and LAST_SAVED_HASHES
@@ -743,8 +750,6 @@ def main():
     load_user_status()
     load_active_token_data()
 
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-
     # Restore active users if bot restarted via /restart
     restart_flag = load_json("restart_flag.json", {}, "restart flag")
     if restart_flag.get("from_restart"):
@@ -753,13 +758,6 @@ def main():
             USER_STATUS[user_id] = True
         save_user_status()
 
-        # Auto-start monitor loop if needed
-        if any(USER_STATUS.values()):
-            monitor_task = app.create_task(background_price_monitor(app))
-            app._monitor_task = monitor_task
-            app._monitor_started = True
-            logging.info("🔄 Monitor loop auto-started after restart recovery.")
-
         # Cleanup after restoring
         try:
             os.remove("active_restart_users.json")
@@ -767,6 +765,13 @@ def main():
             logging.info("🧹 Cleaned up restart state files.")
         except Exception as e:
             logging.warning(f"⚠️ Failed to clean restart state files: {e}")
+
+    app = (
+        ApplicationBuilder()
+        .token(BOT_TOKEN)
+        .post_init(on_startup)
+        .build()
+    )
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
@@ -782,7 +787,6 @@ def main():
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
 
     app.run_polling()
-
 
 
 if __name__ == "__main__":
