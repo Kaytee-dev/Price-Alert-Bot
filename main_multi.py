@@ -25,7 +25,7 @@ SYMBOLS_FILE = "symbols_multi.json"
 ACTIVE_TOKEN_DATA = {}  # Only for active tokens
 ACTIVE_TOKENS_FILE = "active_tokens.json"
 
-POLL_INTERVAL = 60  # seconds
+POLL_INTERVAL = 330  # seconds
 BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY"
 
 USER_CHAT_ID: int | None = None
