@@ -24,7 +24,7 @@ SYMBOLS_FILE = "symbols_multi.json"
 ACTIVE_TOKEN_DATA = {}  # Only for active tokens
 ACTIVE_TOKENS_FILE = "active_tokens.json"
 
-POLL_INTERVAL = 60  # seconds
+POLL_INTERVAL = 330  # seconds
 BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY"
 
 USER_CHAT_ID: int | None = None
@@ -195,12 +195,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     USER_STATUS[chat_id] = True
     save_user_status()
 
-    # Start global monitor loop if not already running (admin OR first-time user)
+     # Start global monitor loop if not already running (admin OR first-time user)
     if not getattr(context.application, "_monitor_started", False):
-        context.application.create_task(background_price_monitor(context.application))
+        # Create the task and store the reference
+        monitor_task = context.application.create_task(background_price_monitor(context.application))
+        context.application._monitor_task = monitor_task  # Store reference to the task
         context.application._monitor_started = True
         logging.info(f"🟢 Monitor loop started by {'admin' if is_admin else 'user'} {chat_id}")
-
+    
     await context.bot.set_my_commands([
         BotCommand("start", "Start the bot"),
         BotCommand("stop", "Stop the bot"),
@@ -220,40 +222,60 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("🔍 You’re not tracking any tokens yet. Use /add <address> to begin.")
 
 
-
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
     is_admin = chat_id == str(ADMIN_CHAT_ID)
-
     if is_admin:
         await update.message.reply_text("🔌 Admin override: Shutting down bot completely...")
-
+        
         # Mark all users as inactive
         for user_id in USER_STATUS:
             USER_STATUS[user_id] = False
+        
         save_user_status()
-
-        await asyncio.sleep(2)
         await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text="✅ All users flagged as stopped. Shutting down...")
-
+        
         async def safe_shutdown():
-            await asyncio.sleep(1.5)
             try:
-                await context.application.shutdown()
+                # Cancel your custom monitoring task first
+                if hasattr(context.application, "_monitor_task"):
+                    monitor_task = context.application._monitor_task
+                    if not monitor_task.done():
+                        monitor_task.cancel()
+                        try:
+                            await monitor_task
+                        except asyncio.CancelledError:
+                            logging.info("Monitor task cancelled successfully")
+                
+                # Use stop() instead of shutdown()
+                await context.application.stop()
+                
+                # After stopping the application, cancel any remaining tasks
+                for task in asyncio.all_tasks():
+                    if task is not asyncio.current_task():
+                        task.cancel()
+                
+                # Wait a moment for tasks to clean up
+                await asyncio.sleep(1)
+                
+                logging.info("Application stopped successfully")
             except Exception as e:
                 logging.error(f"Shutdown error: {e}")
             finally:
-                os._exit(0)  # Hard exit
-
+                # Force exit as a last resort after a short delay
+                await asyncio.sleep(1)
+                os._exit(0)
+        
+        # Create the shutdown task but don't await it
         asyncio.create_task(safe_shutdown())
         return
-
+    
     # Regular user shutdown
     USER_STATUS[chat_id] = False
     save_user_status()
-
     await update.message.reply_text(
-        f"🛑 Monitoring paused.\nYou’re still tracking {len(USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
+        f"🛑 Monitoring paused.\nYou're still tracking {len(USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
+    
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
@@ -473,21 +495,45 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @restricted_to_admin
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("♻️ Restarting bot...")
+    await asyncio.sleep(1)  # Let message flush before shutdown
 
-    await asyncio.sleep(1)  # Let the message send
+    async def safe_restart():
+        try:
+            # Mark all users as inactive
+            for user_id in USER_STATUS:
+                USER_STATUS[user_id] = False
+            save_user_status()
 
-    try:
-        await context.application.stop()
-        print("✅ Application stopped.")
-    except Exception as e:
-        logging.error(f"Error while stopping app: {e}")
+            # Notify admin
+            await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text="✅ All users flagged as inactive. Restarting...")
 
-    try:
-        print("♻️ Executing restart...")
-        os.execl(sys.executable, sys.executable, *sys.argv)
-    except Exception as e:
-        logging.error(f"❌ Restart failed. Forcing exit: {e}")
-        os._exit(0)  # 🔥 Fallback hard-exit
+            # Cancel monitoring task if exists
+            if hasattr(context.application, "_monitor_task"):
+                monitor_task = context.application._monitor_task
+                if not monitor_task.done():
+                    monitor_task.cancel()
+                    try:
+                        await monitor_task
+                    except asyncio.CancelledError:
+                        logging.info("Monitor task cancelled successfully")
+
+            # Stop application cleanly
+            await context.application.stop()
+
+            # Cancel any remaining async tasks
+            for task in asyncio.all_tasks():
+                if task is not asyncio.current_task():
+                    task.cancel()
+
+            await asyncio.sleep(1)  # Allow cleanup
+
+            logging.info("Application stopped successfully, restarting now...")
+        except Exception as e:
+            logging.error(f"Restart error: {e}")
+        finally:
+            os.execl(sys.executable, sys.executable, *sys.argv)  # Relaunch bot
+
+    asyncio.create_task(safe_restart())
 
 
 
