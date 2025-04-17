@@ -12,8 +12,9 @@ import sys
 
 from typing import Optional
 import requests
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update, BotCommand
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
 
 # --- Globals ---
 TRACKED_TOKENS: List[str] = []  # List of Solana token addresses
@@ -195,12 +196,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     USER_STATUS[chat_id] = True
     save_user_status()
 
-    # Start global monitor loop if not already running (admin OR first-time user)
+     # Start global monitor loop if not already running (admin OR first-time user)
     if not getattr(context.application, "_monitor_started", False):
-        context.application.create_task(background_price_monitor(context.application))
+        # Create the task and store the reference
+        monitor_task = context.application.create_task(background_price_monitor(context.application))
+        context.application._monitor_task = monitor_task  # Store reference to the task
         context.application._monitor_started = True
         logging.info(f"🟢 Monitor loop started by {'admin' if is_admin else 'user'} {chat_id}")
-
+    
     await context.bot.set_my_commands([
         BotCommand("start", "Start the bot"),
         BotCommand("stop", "Stop the bot"),
@@ -220,40 +223,31 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("🔍 You’re not tracking any tokens yet. Use /add <address> to begin.")
 
 
-
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handles stop command, with confirmation only for admin."""
     chat_id = str(update.effective_chat.id)
     is_admin = chat_id == str(ADMIN_CHAT_ID)
 
     if is_admin:
-        await update.message.reply_text("🔌 Admin override: Shutting down bot completely...")
+        # Send confirmation prompt before stopping for admin
+        keyboard = [
+            [InlineKeyboardButton("✅ Confirm Shutdown", callback_data="confirm_stop")],
+            [InlineKeyboardButton("❌ Cancel", callback_data="cancel_stop")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
 
-        # Mark all users as inactive
-        for user_id in USER_STATUS:
-            USER_STATUS[user_id] = False
-        save_user_status()
+        await update.message.reply_text(
+            "⚠️ Are you sure you want to shut down the bot?",
+            reply_markup=reply_markup
+        )
+        return  # Don't proceed further until admin confirms
 
-        await asyncio.sleep(2)
-        await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text="✅ All users flagged as stopped. Shutting down...")
-
-        async def safe_shutdown():
-            await asyncio.sleep(1.5)
-            try:
-                await context.application.shutdown()
-            except Exception as e:
-                logging.error(f"Shutdown error: {e}")
-            finally:
-                os._exit(0)  # Hard exit
-
-        asyncio.create_task(safe_shutdown())
-        return
-
-    # Regular user shutdown
+    # Regular user shutdown (no confirmation needed)
     USER_STATUS[chat_id] = False
     save_user_status()
-
     await update.message.reply_text(
-        f"🛑 Monitoring paused.\nYou’re still tracking {len(USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
+        f"🛑 Monitoring paused.\nYou're still tracking {len(USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
+    
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
@@ -472,23 +466,13 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @restricted_to_admin
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("♻️ Restarting bot...")
+    keyboard = [
+        [InlineKeyboardButton("✅ Yes, Restart", callback_data="confirm_restart")],
+        [InlineKeyboardButton("❌ Cancel", callback_data="cancel_restart")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await asyncio.sleep(1)  # Let the message send
-
-    try:
-        await context.application.stop()
-        print("✅ Application stopped.")
-    except Exception as e:
-        logging.error(f"Error while stopping app: {e}")
-
-    try:
-        print("♻️ Executing restart...")
-        os.execl(sys.executable, sys.executable, *sys.argv)
-    except Exception as e:
-        logging.error(f"❌ Restart failed. Forcing exit: {e}")
-        os._exit(0)  # 🔥 Fallback hard-exit
-
+    await update.message.reply_text("⚠️ Are you sure you want to restart the bot?", reply_markup=reply_markup)
 
 
 @restricted_to_admin
@@ -651,6 +635,90 @@ def rebuild_tracked_tokens():
     save_tracked_tokens()
     logging.info(f"🔁 Rebuilt tracked tokens list: {len(TRACKED_TOKENS)} tokens.")
 
+async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "confirm_restart":
+        await query.edit_message_text("♻️ Restarting bot...")
+
+        # Safe restart logic
+        async def safe_restart():
+            try:
+                for user_id in USER_STATUS:
+                    USER_STATUS[user_id] = False
+                save_user_status()
+
+                if hasattr(context.application, "_monitor_task"):
+                    task = context.application._monitor_task
+                    if not task.done():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+
+                await context.application.stop()
+                await asyncio.sleep(1)
+
+                logging.info("🔁 Restarting...")
+            except Exception as e:
+                logging.error(f"Restart error: {e}")
+            finally:
+                os.execl(sys.executable, sys.executable, *sys.argv)
+
+        asyncio.create_task(safe_restart())
+
+    elif query.data == "cancel_restart":
+        await query.edit_message_text("❌ Restart cancelled.")
+
+
+async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    print(f"Received callback query: {query.data}")  # Debugging line
+    await query.answer()
+
+    if query.data == "confirm_stop":
+        await query.edit_message_text("🔌 Shutting down bot...")
+
+        async def safe_shutdown():
+            try:
+                for user_id in USER_STATUS:
+                    USER_STATUS[user_id] = False
+                save_user_status()
+
+                if hasattr(context.application, "_monitor_task"):
+                    task = context.application._monitor_task
+                    if not task.done():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+
+                await context.application.stop()
+
+                # Cancel all remaining asyncio tasks before exiting
+                tasks = asyncio.all_tasks()
+                for task in tasks:
+                    if task is not asyncio.current_task():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+
+                await asyncio.sleep(1)
+                logging.info("🔌 Bot stopped cleanly.")
+            except Exception as e:
+                logging.error(f"Shutdown error: {e}")
+            finally:
+                os._exit(0)
+                
+        asyncio.create_task(safe_shutdown())
+
+    elif query.data == "cancel_stop":
+        await query.edit_message_text("❌ Shutdown cancelled.")
 
 
 # --- Bot Runner ---
@@ -675,6 +743,10 @@ def main():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("restart", restart))
     app.add_handler(CommandHandler("status", status))
+    #app.add_handler(CallbackQueryHandler(callback_restart))
+    #app.add_handler(CallbackQueryHandler(callback_stop))
+    app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
+    app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
 
     app.run_polling()
 

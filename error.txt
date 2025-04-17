@@ -1,0 +1,24 @@
+INFO:httpx:HTTP Request: POST https://api.telegram.org/bot7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY/editMessageText "HTTP/1.1 200 OK"
+INFO:root:💾 Saved user status.
+INFO:root:🛑 Monitor task cancelled cleanly.
+INFO:telegram.ext.Application:Application is stopping. This might take a moment.
+INFO:apscheduler.scheduler:Scheduler has been shut down
+INFO:telegram.ext.Application:Application.stop() complete
+INFO:root:🔌 Bot stopped cleanly.
+INFO:httpx:HTTP Request: POST https://api.telegram.org/bot7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY/getUpdates "HTTP/1.1 200 OK"
+ERROR:asyncio:Task exception was never retrieved
+future: <Task finished name='Task-12' coro=<callback_stop.<locals>.safe_shutdown() done, defined at C:\Users\adeba\OneDrive\Desktop\TRADING\TRADING BOOKS\Price Alert Bot\main_multi.py:684> exception=SystemExit(0)>
+Traceback (most recent call last):
+  File "C:\Users\adeba\AppData\Local\Programs\Python\Python312\Lib\site-packages\telegram\ext\_application.py", line 1030, in __run
+    loop.run_forever()
+  File "C:\Users\adeba\AppData\Local\Programs\Python\Python312\Lib\asyncio\windows_events.py", line 322, in run_forever
+    super().run_forever()
+  File "C:\Users\adeba\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 641, in run_forever
+    self._run_once()
+  File "C:\Users\adeba\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 1986, in _run_once
+    handle._run()
+  File "C:\Users\adeba\AppData\Local\Programs\Python\Python312\Lib\asyncio\events.py", line 88, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\adeba\OneDrive\Desktop\TRADING\TRADING BOOKS\Price Alert Bot\main_multi.py", line 705, in safe_shutdown
+    sys.exit(0)
+SystemExit: 0

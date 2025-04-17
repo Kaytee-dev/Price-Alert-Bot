@@ -131,80 +131,106 @@
   ],
   "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump": [
     {
-      "timestamp": "2025-04-17 12:19:30",
+      "timestamp": "2025-04-17 16:55:12",
       "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
       "symbol": "Fur",
-      "priceChange_m5": 1.86,
-      "volume_m5": 2891.89,
-      "marketCap": 1057400
+      "priceChange_m5": 3,
+      "volume_m5": 3619.08,
+      "marketCap": 694087
     },
     {
-      "timestamp": "2025-04-17 12:18:07",
+      "timestamp": "2025-04-17 16:52:07",
       "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
       "symbol": "Fur",
-      "priceChange_m5": 3.23,
-      "volume_m5": 3384.41,
-      "marketCap": 1057607
+      "priceChange_m5": -3.16,
+      "volume_m5": 6565.7,
+      "marketCap": 669863
     },
     {
-      "timestamp": "2025-04-17 12:16:54",
+      "timestamp": "2025-04-17 15:25:37",
       "address": "Eqpvgps4py3nDkgvRnVGv7JsSwBF3oa3i1Zvaszqpump",
       "symbol": "Fur",
-      "priceChange_m5": 2.69,
-      "volume_m5": 3047.62,
-      "marketCap": 1055198
+      "priceChange_m5": 1.11,
+      "volume_m5": 5017.99,
+      "marketCap": 732673
     }
   ],
   "CW8Fc7iyCxfmYYNNmMj8ijNgebiE3kVCii16bgzhY2Br": [
     {
-      "timestamp": "2025-04-17 12:19:30",
+      "timestamp": "2025-04-17 16:55:12",
       "address": "CW8Fc7iyCxfmYYNNmMj8ijNgebiE3kVCii16bgzhY2Br",
       "symbol": "PicASSo",
-      "priceChange_m5": -52.62,
-      "volume_m5": 419964.03,
-      "marketCap": 410565
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 89504
     },
     {
-      "timestamp": "2025-04-17 12:18:07",
+      "timestamp": "2025-04-17 16:52:07",
       "address": "CW8Fc7iyCxfmYYNNmMj8ijNgebiE3kVCii16bgzhY2Br",
       "symbol": "PicASSo",
-      "priceChange_m5": -39.7,
-      "volume_m5": 380293.79,
-      "marketCap": 488756
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 89504
     },
     {
-      "timestamp": "2025-04-17 12:16:54",
+      "timestamp": "2025-04-17 15:25:37",
       "address": "CW8Fc7iyCxfmYYNNmMj8ijNgebiE3kVCii16bgzhY2Br",
       "symbol": "PicASSo",
-      "priceChange_m5": -1.93,
-      "volume_m5": 347258.78,
-      "marketCap": 572196
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 89504
     }
   ],
   "A6qGvKh2jaScogjhNLvpRAgyauUjQtEchHFAgb2LoKrK": [
     {
-      "timestamp": "2025-04-17 12:23:57",
+      "timestamp": "2025-04-17 16:55:12",
       "address": "A6qGvKh2jaScogjhNLvpRAgyauUjQtEchHFAgb2LoKrK",
       "symbol": "Fur",
-      "priceChange_m5": -99.02,
-      "volume_m5": 14559.46,
-      "marketCap": 132922
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 18
     },
     {
-      "timestamp": "2025-04-17 12:19:28",
+      "timestamp": "2025-04-17 16:52:07",
       "address": "A6qGvKh2jaScogjhNLvpRAgyauUjQtEchHFAgb2LoKrK",
       "symbol": "Fur",
-      "priceChange_m5": 26.93,
-      "volume_m5": 3475.41,
-      "marketCap": 87483433
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 18
     },
     {
-      "timestamp": "2025-04-17 12:18:07",
+      "timestamp": "2025-04-17 15:25:37",
       "address": "A6qGvKh2jaScogjhNLvpRAgyauUjQtEchHFAgb2LoKrK",
       "symbol": "Fur",
-      "priceChange_m5": 56751,
-      "volume_m5": 23666.25,
-      "marketCap": 81237079
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 20
+    }
+  ],
+  "4j2vuiUX6F5zbEBe7KcPE3i3MAMh5w6i6vkqN6Z5BhxN": [
+    {
+      "timestamp": "2025-04-17 16:55:12",
+      "address": "4j2vuiUX6F5zbEBe7KcPE3i3MAMh5w6i6vkqN6Z5BhxN",
+      "symbol": "Disney++",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 483541
+    },
+    {
+      "timestamp": "2025-04-17 16:52:07",
+      "address": "4j2vuiUX6F5zbEBe7KcPE3i3MAMh5w6i6vkqN6Z5BhxN",
+      "symbol": "Disney++",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 483541
+    },
+    {
+      "timestamp": "2025-04-17 15:25:37",
+      "address": "4j2vuiUX6F5zbEBe7KcPE3i3MAMh5w6i6vkqN6Z5BhxN",
+      "symbol": "Disney++",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 483541
     }
   ]
 }
