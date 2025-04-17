@@ -205,8 +205,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.info(f"🟢 Monitor loop started by {'admin' if is_admin else 'user'} {chat_id}")
     
     await context.bot.set_my_commands([
-        BotCommand("start", "Start the bot"),
-        BotCommand("stop", "Stop the bot"),
+        BotCommand("start", "Start tracking tokens"),
+        BotCommand("stop", "Stop tracking tokens"),
         BotCommand("add", "Add a token to track"),
         BotCommand("alltokens", "List tracked tokens by all user (admin only)"),
         BotCommand("remove", "Remove token"),
@@ -714,7 +714,7 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logging.error(f"Shutdown error: {e}")
             finally:
                 os._exit(0)
-                
+
         asyncio.create_task(safe_shutdown())
 
     elif query.data == "cancel_stop":
@@ -743,8 +743,6 @@ def main():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("restart", restart))
     app.add_handler(CommandHandler("status", status))
-    #app.add_handler(CallbackQueryHandler(callback_restart))
-    #app.add_handler(CallbackQueryHandler(callback_stop))
     app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
 
