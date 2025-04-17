@@ -190,14 +190,16 @@ async def send_message(bot, text: str, chat_id, parse_mode="Markdown"):
 # --- Telegram Bot Commands ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
+    is_admin = chat_id == str(ADMIN_CHAT_ID)
 
     USER_STATUS[chat_id] = True
     save_user_status()
 
+    # Start global monitor loop if not already running (admin OR first-time user)
     if not getattr(context.application, "_monitor_started", False):
         context.application.create_task(background_price_monitor(context.application))
         context.application._monitor_started = True
-
+        logging.info(f"🟢 Monitor loop started by {'admin' if is_admin else 'user'} {chat_id}")
 
     await context.bot.set_my_commands([
         BotCommand("start", "Start the bot"),
@@ -214,13 +216,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🤖 Bot started and monitoring your tokens!")
 
+    if not USER_TRACKING.get(chat_id):
+        await update.message.reply_text("🔍 You’re not tracking any tokens yet. Use /add <address> to begin.")
+
+
+
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
+    is_admin = chat_id == str(ADMIN_CHAT_ID)
+
+    if is_admin:
+        await update.message.reply_text("🔌 Admin override: Shutting down bot completely...")
+        await context.application.shutdown()
+        sys.exit(0)
 
     USER_STATUS[chat_id] = False
     save_user_status()
 
-    await update.message.reply_text("🛑 Monitoring for your tokens has been stopped.")
+    await update.message.reply_text(
+        f"🛑 Monitoring paused.\nYou’re still tracking {len(USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
 
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -441,6 +455,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @restricted_to_admin
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("♻️ Restarting bot...")
+    await asyncio.sleep(1)  # Let message flush before shutdown
     await context.application.shutdown()
     os.execl(sys.executable, sys.executable, *sys.argv)
 
@@ -470,99 +485,118 @@ async def alltokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # --- Price Monitor Background Task ---
 def background_price_monitor(app):
     async def monitor():
-        while True:
-            save_needed = False
+        try:
+            while True:
+                save_needed = False
 
-            active_tokens = set()
-            for chat_id, tokens in USER_TRACKING.items():
-                if USER_STATUS.get(chat_id) and tokens:
-                    active_tokens.update(tokens)
+                active_tokens = set()
+                for chat_id, tokens in USER_TRACKING.items():
+                    if USER_STATUS.get(chat_id) and tokens:
+                        active_tokens.update(tokens)
 
-            if active_tokens:
-                for chunk in chunked(sorted(active_tokens), 30):
-                    token_data_list = fetch_prices_for_tokens(chunk)
-                    for data in token_data_list:
-                        base = data.get("baseToken", {})
-                        address = base.get("address")
-                        if not address:
-                            continue
+                if active_tokens:
+                    for chunk in chunked(sorted(active_tokens), 30):
+                        token_data_list = fetch_prices_for_tokens(chunk)
+                        for data in token_data_list:
+                            base = data.get("baseToken", {})
+                            address = base.get("address")
+                            if not address:
+                                continue
 
-                        if address not in ADDRESS_TO_SYMBOL:
-                            symbol = base.get("symbol", address[:6])
-                            ADDRESS_TO_SYMBOL[address] = symbol
-                            save_symbols_to_file()
+                            if address not in ADDRESS_TO_SYMBOL:
+                                symbol = base.get("symbol", address[:6])
+                                ADDRESS_TO_SYMBOL[address] = symbol
+                                save_symbols_to_file()
 
-                        symbol = ADDRESS_TO_SYMBOL.get(address)
-                        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                            symbol = ADDRESS_TO_SYMBOL.get(address)
+                            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                        cleaned_data = {
-                            "timestamp": timestamp,
-                            "address": address,
-                            "symbol": symbol,
-                            "priceChange_m5": data.get("priceChange", {}).get("m5"),
-                            "volume_m5": data.get("volume", {}).get("m5"),
-                            "marketCap": data.get("marketCap")
-                        }
+                            cleaned_data = {
+                                "timestamp": timestamp,
+                                "address": address,
+                                "symbol": symbol,
+                                "priceChange_m5": data.get("priceChange", {}).get("m5"),
+                                "volume_m5": data.get("volume", {}).get("m5"),
+                                "marketCap": data.get("marketCap")
+                            }
 
-                        if address not in TOKEN_DATA_HISTORY:
-                            TOKEN_DATA_HISTORY[address] = []
-                        TOKEN_DATA_HISTORY[address].insert(0, cleaned_data)
-                        TOKEN_DATA_HISTORY[address] = TOKEN_DATA_HISTORY[address][:3]
+                            if address not in TOKEN_DATA_HISTORY:
+                                TOKEN_DATA_HISTORY[address] = []
+                            TOKEN_DATA_HISTORY[address].insert(0, cleaned_data)
+                            TOKEN_DATA_HISTORY[address] = TOKEN_DATA_HISTORY[address][:3]
 
-                        ACTIVE_TOKEN_DATA[address] = ACTIVE_TOKEN_DATA.get(address, [])
-                        ACTIVE_TOKEN_DATA[address].insert(0, cleaned_data)
-                        ACTIVE_TOKEN_DATA[address] = ACTIVE_TOKEN_DATA[address][:3]
+                            ACTIVE_TOKEN_DATA[address] = ACTIVE_TOKEN_DATA.get(address, [])
+                            ACTIVE_TOKEN_DATA[address].insert(0, cleaned_data)
+                            ACTIVE_TOKEN_DATA[address] = ACTIVE_TOKEN_DATA[address][:3]
 
-                        snapshot_json = json.dumps(cleaned_data, sort_keys=True)
-                        hash_val = hashlib.md5(snapshot_json.encode()).hexdigest()
+                            snapshot_json = json.dumps(cleaned_data, sort_keys=True)
+                            hash_val = hashlib.md5(snapshot_json.encode()).hexdigest()
 
-                        if LAST_SAVED_HASHES.get(address) != hash_val:
-                            LAST_SAVED_HASHES[address] = hash_val
-                            save_needed = True
+                            if LAST_SAVED_HASHES.get(address) != hash_val:
+                                LAST_SAVED_HASHES[address] = hash_val
+                                save_needed = True
 
-                        history = TOKEN_DATA_HISTORY[address][:3]
-                        recent_changes = [
-                            entry.get("priceChange_m5")
-                            for entry in history
-                            if isinstance(entry.get("priceChange_m5"), (int, float))
-                        ]
+                            history = TOKEN_DATA_HISTORY[address][:3]
+                            recent_changes = [
+                                entry.get("priceChange_m5")
+                                for entry in history
+                                if isinstance(entry.get("priceChange_m5"), (int, float))
+                            ]
 
-                        change = cleaned_data.get("priceChange_m5")
-                        if isinstance(change, (int, float)) and change >= 15 and any(p >= 15 for p in recent_changes[1:]):
-                            link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
-                            msg = (
-                                f"📢 {link} is spiking!\n"
-                                f"🕓 Timestamps: {timestamp}\n"
-                                f"5m Change: {cleaned_data['priceChange_m5']}%\n"
-                                f"5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"
-                                f"Market Cap: ${cleaned_data['marketCap']:,.0f}"
-                            )
+                            change = cleaned_data.get("priceChange_m5")
+                            if isinstance(change, (int, float)) and change >= 15 and any(p >= 15 for p in recent_changes[1:]):
+                                link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
+                                msg = (
+                                    f"📢 {link} is spiking!\n"
+                                    f"🕓 Timestamps: {timestamp}\n"
+                                    f"5m Change: {cleaned_data['priceChange_m5']}%\n"
+                                    f"5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"
+                                    f"Market Cap: ${cleaned_data['marketCap']:,.0f}"
+                                )
 
-                            for chat_id, tokens in USER_TRACKING.items():
-                                if USER_STATUS.get(chat_id) and address in tokens:
-                                    await send_message(app.bot, msg, chat_id=chat_id, parse_mode="Markdown")
+                                notified_users = set()
 
-            # Cleanup: remove any tokens no longer tracked by anyone
-            all_tracked_tokens = set(addr for tokens in USER_TRACKING.values() for addr in tokens)
-            for token in list(TOKEN_DATA_HISTORY.keys()):
-                if token not in all_tracked_tokens:
-                    TOKEN_DATA_HISTORY.pop(token, None)
-                    ACTIVE_TOKEN_DATA.pop(token, None)
-                    LAST_SAVED_HASHES.pop(token, None)
-                    ADDRESS_TO_SYMBOL.pop(token, None)
-                    if token in TRACKED_TOKENS:
-                        TRACKED_TOKENS.remove(token)
+                                # Notify all relevant users
+                                for chat_id, tokens in USER_TRACKING.items():
+                                    if USER_STATUS.get(chat_id) and address in tokens:
+                                        await send_message(app.bot, msg, chat_id=chat_id, parse_mode="Markdown")
+                                        notified_users.add(chat_id)
 
-            # Prune stale tokens from ACTIVE_TOKEN_DATA
-            for token in list(ACTIVE_TOKEN_DATA):
-                if token not in active_tokens:
-                    ACTIVE_TOKEN_DATA.pop(token, None)
+                                for user_id in notified_users:
+                                    try:
+                                        chat = await app.bot.get_chat(user_id)
+                                        user_name = f"@{chat.username}" if chat.username else chat.full_name
+                                    except Exception:
+                                        user_name = f"User {user_id}"
 
-            if save_needed:
-                await asyncio.to_thread(save_token_history)
-                await asyncio.to_thread(save_active_token_data)
+                                # Notify admin for visibility
+                                admin_msg = f"🔔 [User Alert from {user_name}]\n" + msg
+                                await send_message(app.bot, admin_msg, chat_id=ADMIN_CHAT_ID, parse_mode="Markdown")
 
-            await asyncio.sleep(POLL_INTERVAL)
+
+                # Cleanup: remove any tokens no longer tracked by anyone
+                all_tracked_tokens = set(addr for tokens in USER_TRACKING.values() for addr in tokens)
+                for token in list(TOKEN_DATA_HISTORY.keys()):
+                    if token not in all_tracked_tokens:
+                        TOKEN_DATA_HISTORY.pop(token, None)
+                        ACTIVE_TOKEN_DATA.pop(token, None)
+                        LAST_SAVED_HASHES.pop(token, None)
+                        ADDRESS_TO_SYMBOL.pop(token, None)
+                        if token in TRACKED_TOKENS:
+                            TRACKED_TOKENS.remove(token)
+
+                # Prune stale tokens from ACTIVE_TOKEN_DATA
+                for token in list(ACTIVE_TOKEN_DATA):
+                    if token not in active_tokens:
+                        ACTIVE_TOKEN_DATA.pop(token, None)
+
+                if save_needed:
+                    await asyncio.to_thread(save_token_history)
+                    await asyncio.to_thread(save_active_token_data)
+
+                await asyncio.sleep(POLL_INTERVAL)
+        except asyncio.CancelledError:
+            logging.info("🛑 Monitor task cancelled cleanly.")
 
     return monitor()
 

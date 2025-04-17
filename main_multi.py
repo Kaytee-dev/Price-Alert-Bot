@@ -190,14 +190,16 @@ async def send_message(bot, text: str, chat_id, parse_mode="Markdown"):
 # --- Telegram Bot Commands ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
+    is_admin = chat_id == str(ADMIN_CHAT_ID)
 
     USER_STATUS[chat_id] = True
     save_user_status()
 
+    # Start global monitor loop if not already running (admin OR first-time user)
     if not getattr(context.application, "_monitor_started", False):
         context.application.create_task(background_price_monitor(context.application))
         context.application._monitor_started = True
-
+        logging.info(f"🟢 Monitor loop started by {'admin' if is_admin else 'user'} {chat_id}")
 
     await context.bot.set_my_commands([
         BotCommand("start", "Start the bot"),
@@ -214,14 +216,44 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("🤖 Bot started and monitoring your tokens!")
 
+    if not USER_TRACKING.get(chat_id):
+        await update.message.reply_text("🔍 You’re not tracking any tokens yet. Use /add <address> to begin.")
+
+
+
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
+    is_admin = chat_id == str(ADMIN_CHAT_ID)
 
+    if is_admin:
+        await update.message.reply_text("🔌 Admin override: Shutting down bot completely...")
+
+        # Mark all users as inactive
+        for user_id in USER_STATUS:
+            USER_STATUS[user_id] = False
+        save_user_status()
+
+        await asyncio.sleep(2)
+        await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text="✅ All users flagged as stopped. Shutting down...")
+
+        async def safe_shutdown():
+            await asyncio.sleep(1.5)
+            try:
+                await context.application.shutdown()
+            except Exception as e:
+                logging.error(f"Shutdown error: {e}")
+            finally:
+                os._exit(0)  # Hard exit
+
+        asyncio.create_task(safe_shutdown())
+        return
+
+    # Regular user shutdown
     USER_STATUS[chat_id] = False
     save_user_status()
 
-    await update.message.reply_text("🛑 Monitoring for your tokens has been stopped.")
-
+    await update.message.reply_text(
+        f"🛑 Monitoring paused.\nYou’re still tracking {len(USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
@@ -441,6 +473,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 @restricted_to_admin
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("♻️ Restarting bot...")
+    await asyncio.sleep(1)  # Let message flush before shutdown
     await context.application.shutdown()
     os.execl(sys.executable, sys.executable, *sys.argv)
 
@@ -514,7 +547,16 @@ def background_price_monitor(app):
                             ACTIVE_TOKEN_DATA[address].insert(0, cleaned_data)
                             ACTIVE_TOKEN_DATA[address] = ACTIVE_TOKEN_DATA[address][:3]
 
-                            snapshot_json = json.dumps(cleaned_data, sort_keys=True)
+                            hash_base = {
+                                "address": cleaned_data["address"],
+                                "symbol": cleaned_data["symbol"],
+                                "priceChange_m5": cleaned_data["priceChange_m5"],
+                                "volume_m5": cleaned_data["volume_m5"],
+                                "marketCap": cleaned_data["marketCap"]
+                                }
+                            
+                            snapshot_json = json.dumps(hash_base, sort_keys=True)
+
                             hash_val = hashlib.md5(snapshot_json.encode()).hexdigest()
 
                             if LAST_SAVED_HASHES.get(address) != hash_val:
@@ -539,9 +581,25 @@ def background_price_monitor(app):
                                     f"Market Cap: ${cleaned_data['marketCap']:,.0f}"
                                 )
 
+                                notified_users = set()
+
+                                # Notify all relevant users
                                 for chat_id, tokens in USER_TRACKING.items():
                                     if USER_STATUS.get(chat_id) and address in tokens:
                                         await send_message(app.bot, msg, chat_id=chat_id, parse_mode="Markdown")
+                                        notified_users.add(chat_id)
+
+                                for user_id in notified_users:
+                                    try:
+                                        chat = await app.bot.get_chat(user_id)
+                                        user_name = f"@{chat.username}" if chat.username else chat.full_name
+                                    except Exception:
+                                        user_name = f"User {user_id}"
+
+                                # Notify admin for visibility
+                                admin_msg = f"🔔 [User Alert from {user_name}]\n" + msg
+                                await send_message(app.bot, admin_msg, chat_id=ADMIN_CHAT_ID, parse_mode="Markdown")
+
 
                 # Cleanup: remove any tokens no longer tracked by anyone
                 all_tracked_tokens = set(addr for tokens in USER_TRACKING.values() for addr in tokens)
