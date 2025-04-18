@@ -15,6 +15,9 @@ import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update, BotCommand
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
+from admin import addadmin, removeadmin, listadmins, handle_removeadmin_callback, load_admins
+from utils import load_json, save_json
+
 
 # --- Globals ---
 TRACKED_TOKENS: List[str] = []  # List of Solana token addresses
@@ -58,25 +61,6 @@ def restricted_to_admin(func):
         return await func(update, context)
     return wrapper
 
-
-# --- Generic JSON Utilities ---
-def load_json(file_path: str, fallback, log_label: str = ""):
-    try:
-        with open(file_path, "r") as f:
-            data = json.load(f)
-            logging.info(f"📂 Loaded {log_label or file_path}.")
-            return data
-    except (FileNotFoundError, json.JSONDecodeError):
-        logging.info(f"📂 No valid {log_label or file_path} found. Starting fresh.")
-        return fallback.copy() if isinstance(fallback, dict) else list(fallback)
-
-def save_json(file_path: str, data, log_label: str = ""):
-    try:
-        with open(file_path, "w") as f:
-            json.dump(data, f, indent=2)
-        logging.info(f"💾 Saved {log_label or file_path}.")
-    except Exception as e:
-        logging.error(f"❌ Failed to save {log_label or file_path}: {e}")
 
 # --- Load/Save User Tracking ---
 def load_user_tracking():
@@ -214,7 +198,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         BotCommand("reset", "Clear all tracked tokens"),
         BotCommand("help", "Show help message"),
         BotCommand("restart", "Restart the bot (admin only)"),
-        BotCommand("status", "Show stats of tracked tokens")
+        BotCommand("status", "Show stats of tracked tokens"),
+       BotCommand("addadmin", "Add a new admin (admin only)"),
+        BotCommand("removeadmin", "Remove an admin (admin only)"),
+        BotCommand("listadmins", "List all admins (admin only)")
+
     ])
 
     await update.message.reply_text("🤖 Bot started and monitoring your tokens!")
@@ -749,6 +737,7 @@ def main():
     rebuild_tracked_tokens()
     load_user_status()
     load_active_token_data()
+    load_admins()
 
     # Restore active users if bot restarted via /restart
     restart_flag = load_json("restart_flag.json", {}, "restart flag")
@@ -783,8 +772,13 @@ def main():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("restart", restart))
     app.add_handler(CommandHandler("status", status))
+    app.add_handler(CommandHandler("addadmin", addadmin))
+    app.add_handler(CommandHandler("removeadmin", removeadmin))
+    app.add_handler(CommandHandler("listadmins", listadmins))
     app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
+    app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
+
 
     app.run_polling()
 
