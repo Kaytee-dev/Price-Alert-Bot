@@ -3,8 +3,8 @@ from typing import Callable
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 from utils import load_json, save_json
+from config import ADMINS_FILE
 
-ADMINS_FILE = "admins.json"
 ADMINS = set()
 
 # --- Super Admin ID ---
