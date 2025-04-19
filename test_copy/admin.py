@@ -3,12 +3,14 @@ from typing import Callable
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 from utils import load_json, save_json
-from config import ADMINS_FILE
+from config import ADMINS_FILE, SUPER_ADMIN_ID
+
+import storage.tiers as tiers
 
 ADMINS = set()
 
 # --- Super Admin ID ---
-SUPER_ADMIN_ID = -4710110042  # Replace this with your actual ID
+#SUPER_ADMIN_ID = -4710110042  # Replace this with your actual ID
 
 # --- Load/Save Admins ---
 def load_admins():
@@ -60,10 +62,14 @@ async def addadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if user_id in ADMINS:
+        tiers.promote_to_premium(user_id)
         await update.message.reply_text(f"ℹ️ User {user_id} is already an admin.")
     else:
         ADMINS.add(user_id)
         save_admins()
+
+        tiers.promote_to_premium(user_id)
+
         await update.message.reply_text(f"✅ Added user {user_id} as admin.")
 
 @restricted_to_super_admin

@@ -7,9 +7,6 @@ def load_json(file_path: str, fallback, log_label: str = ""):
     try:
         with open(file_path, "r") as f:
             data = json.load(f)
-            # preview = str(data)
-            # print(f"[DEBUG] Data Start: {preview[:150]}")
-            # print(f"[DEBUG] Data End: {preview[-150:]}\n")
             logging.info(f"📂 Loaded {log_label or file_path}.")
             return data
     except (FileNotFoundError, json.JSONDecodeError):
@@ -18,11 +15,6 @@ def load_json(file_path: str, fallback, log_label: str = ""):
 
 def save_json(file_path: str, data, log_label: str = ""):
     try:
-        # print(f"[DEBUG] Saving: {log_label or file_path}")
-        # print(f"[DEBUG] To file: {file_path}")
-        # print(f"[DEBUG] Data Type: {type(data)} | Length: {len(data) if hasattr(data, '__len__') else 'N/A'}")
-        # print(f"[DEBUG] Data Preview: {json.dumps(data, indent=2)[:300]}...\n")
-
         with open(file_path, "w") as f:
             json.dump(data, f, indent=2)
         logging.info(f"💾 Saved {log_label or file_path}.")

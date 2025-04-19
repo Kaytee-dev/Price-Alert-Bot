@@ -20,6 +20,8 @@ from commands import (
 
 import storage.tokens
 import storage.users
+from storage.tiers import load_user_tiers
+import storage.tiers as tiers
 
 from storage.tokens import load_tracked_tokens, save_tracked_tokens, load_active_token_data
 from storage.symbols import load_symbols_from_file
@@ -158,13 +160,15 @@ def main():
     load_tracked_tokens()
     load_token_history()
     load_active_token_data()
-    
+    load_user_tiers()
+
+    # 🔒 Enforce token limits based on user tiers
+    for user_id_str in list(storage.users.USER_TRACKING.keys()):
+        tiers.enforce_token_limit(int(user_id_str))
     
     print("[MAIN DEBUG] USER_TRACKING length:", len(storage.users.USER_TRACKING))  # ✅ This now reflects correct value
 
     
-    
-
 
     # Restore active users if bot restarted via /restart
     restart_flag = load_json(RESTART_FLAG_FILE, {}, "restart flag")

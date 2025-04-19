@@ -3,13 +3,14 @@ import logging
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
 from telegram.ext import ContextTypes
 
-from admin import restricted_to_admin, SUPER_ADMIN_ID, ADMINS
-from config import BASE_URL 
+from admin import restricted_to_admin, ADMINS
+from config import BASE_URL, SUPER_ADMIN_ID
 
 import storage.users as users
 import storage.tokens as tokens
 import storage.symbols as symbols
 import storage.history as history
+import storage.tiers as tiers
 
 from monitor import background_price_monitor
 from utils import send_message
@@ -23,7 +24,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users.USER_STATUS[chat_id] = True
     users.save_user_status()
 
-    logging.info("📡 Moving to Monitor loop...")
 
      # Start global monitor loop if not already running (admin OR first-time user)
     if not getattr(context.application, "_monitor_started", False):
@@ -93,27 +93,36 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
         return
 
+    # Checking if user exists first
+    if chat_id not in users.USER_TRACKING:
+        users.USER_TRACKING[chat_id] = []
+
+    # Getting user tokens and current tier to calculate limit before adding new ones
+
+    current_tokens = users.USER_TRACKING[chat_id]
+    tier_limit = tiers.get_user_limit(chat_id)
+    already_tracking = len(current_tokens)
+    available_slots = tier_limit - already_tracking
+
     addresses_raw = " ".join(context.args)
     addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
 
     if not addresses:
         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
         return
+    
+    tokens_to_add = [addr for addr in addresses if addr not in current_tokens]
+    tokens_allowed = tokens_to_add[:available_slots]
+    tokens_dropped = tokens_to_add[available_slots:]
 
-    if chat_id not in users.USER_TRACKING:
-        users.USER_TRACKING[chat_id] = []
 
-    added = []
-    skipped = []
-
-    for address in addresses:
-        if address not in users.USER_TRACKING[chat_id]:
-            users.USER_TRACKING[chat_id].append(address)
-            added.append(address)
-            if address not in tokens.TRACKED_TOKENS:
-                tokens.TRACKED_TOKENS.append(address)
-        else:
-            skipped.append(address)
+    for address in tokens_allowed:
+        users.USER_TRACKING[chat_id].append(address)
+        if address not in tokens.TRACKED_TOKENS:
+            tokens.TRACKED_TOKENS.append(address)
+    
+    users.save_user_tracking()
+    tokens.save_tracked_tokens()
 
     # Auto-start the user if they haven't started yet
     if users.USER_STATUS.get(chat_id, False) is False:
@@ -131,14 +140,14 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Trigger the /start functionality for the user
         await start(update, context)  # Directly call the /start function logic
 
-    users.save_user_tracking()
-    tokens.save_tracked_tokens()
 
-    if added:
-        await update.message.reply_text(f"✅ Tracking token(s):\n" + "\n".join(added))
-    if skipped:
-        await update.message.reply_text(f"ℹ️ Already tracked:\n" + "\n".join(skipped))
-
+    if tokens_allowed:
+        await update.message.reply_text(f"✅ Tracking token(s):\n" + "\n".join(tokens_allowed))
+    if tokens_dropped:
+        await update.message.reply_text(
+            f"🚫 Limit Reached! You can only track {tier_limit} tokens.\n"
+            f"The following were not added:\n" + "\n".join(tokens_dropped)
+        )
 
 async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)

@@ -4,8 +4,8 @@ import hashlib
 import logging
 from datetime import datetime
 
-from config import BASE_URL, POLL_INTERVAL
-from admin import SUPER_ADMIN_ID, ADMINS
+from config import BASE_URL, POLL_INTERVAL, SUPER_ADMIN_ID
+from admin import ADMINS
 
 import storage.users as users
 import storage.tokens as tokens
@@ -18,8 +18,6 @@ from utils import chunked, send_message
 
 def background_price_monitor(app):
     async def monitor():
-        logging.info("📡 Monitor loop started successfully...")
-
         try:
             while True:
                 save_needed = False
@@ -28,26 +26,17 @@ def background_price_monitor(app):
                 for chat_id, tokens_list in users.USER_TRACKING.items():
                     if users.USER_STATUS.get(chat_id) and tokens_list:
                         active_tokens.update(tokens_list)
-                        print(len(active_tokens))
-                        logging.info("📡 Tokens added to active tokens set")
-
-                
-                logging.debug(f"[MONITOR] Active tokens: {len(active_tokens)} — {list(active_tokens)[:5]}")
 
 
                 if active_tokens:
                     for chunk in chunked(sorted(active_tokens), 30):
                         token_data_list = fetch_prices_for_tokens(chunk)
-                        logging.info("📡 Fetch price function was called")
 
                         if not token_data_list:
                             logging.warning("⚠️ No token data returned from API — skipping chunk.")
                             continue  # Skip processing
                         
                         for data in token_data_list:
-                            preview = json.dumps(data)[:50]
-                            logging.info(f"📡 Fetched data: {preview}")
-
                             base = data.get("baseToken", {})
                             address = base.get("address")
                             if not address:
