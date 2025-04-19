@@ -11,14 +11,14 @@ BASE_URL = "https://dexscreener.com/solana/"
 # 📍 JSON file paths
 DATA_DIR = "storage/data/"
 
-TRACKED_TOKENS_FILE = f"{DATA_DIR}tracked_tokens_multi_test.json"
-SYMBOLS_FILE = f"{DATA_DIR}symbols_multi_test.json"
+TRACKED_TOKENS_FILE = f"{DATA_DIR}tracked_tokens.json"
+SYMBOLS_FILE = f"{DATA_DIR}symbols.json"
 
-USER_TRACKING_FILE = f"{DATA_DIR}user_tracking_test.json"
-USER_STATUS_FILE = f"{DATA_DIR}user_status_test.json"
+USER_TRACKING_FILE = f"{DATA_DIR}user_tracking.json"
+USER_STATUS_FILE = f"{DATA_DIR}user_status.json"
 
-TOKEN_HISTORY_FILE = f"{DATA_DIR}token_history_multi_test.json"
-ACTIVE_TOKENS_FILE = f"{DATA_DIR}active_tokens_test.json"
+TOKEN_HISTORY_FILE = f"{DATA_DIR}token_history.json"
+ACTIVE_TOKENS_FILE = f"{DATA_DIR}active_tokens.json"
 
 ADMINS_FILE = f"{DATA_DIR}admins.json"
 
