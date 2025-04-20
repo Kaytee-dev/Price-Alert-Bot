@@ -99,6 +99,10 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Getting user tokens and current tier to calculate limit before adding new ones
 
+
+    # Get tier and enforce super admin status
+    tiers.enforce_token_limit(int(chat_id))
+    
     current_tokens = users.USER_TRACKING[chat_id]
     tier_limit = tiers.get_user_limit(chat_id)
     already_tracking = len(current_tokens)

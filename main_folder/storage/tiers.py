@@ -16,6 +16,7 @@ TIER_LIMITS = {
     "free": FREE_LIMIT,
     "standard": STANDARD_LIMIT,
     "premium": PREMIUM_LIMIT,
+    "super_admin": SUPER_ADMIN_LIMIT,
 }
 
 USER_TIERS = {}  # {user_id: tier_name}
@@ -79,16 +80,21 @@ def promote_to_premium(user_id: int):
 def enforce_token_limit(user_id: int):
     user_id_str = str(user_id)
 
-    # Step 1: Get tier directly from loaded USER_TIERS
+    # Step 1: Super Admin Check
+    if user_id == SUPER_ADMIN_ID:
+        USER_TIERS[user_id_str] = "super_admin"
+        save_user_tiers()
+
+    # Step 2: Get tier directly from loaded USER_TIERS
     tier = USER_TIERS.get(user_id_str, "free")
-    
-    # Step 2: Get the token limit for that tier
+
+    # Step 3: Get the token limit for that tier
     allowed_limit = TIER_LIMITS.get(tier, FREE_LIMIT)
 
-    # Step 3: Get currently tracked tokens
+    # Step 4: Get currently tracked tokens
     current_tokens = users.USER_TRACKING.get(user_id_str, [])
 
-    # Step 4: Enforce limit
+    # Step 5: Enforce limit
     if len(current_tokens) > allowed_limit:
         users.USER_TRACKING[user_id_str] = current_tokens[:allowed_limit]
         users.save_user_tracking()
