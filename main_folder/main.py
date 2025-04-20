@@ -95,7 +95,6 @@ async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    print(f"Received callback query: {query.data}")  # Debugging line
     await query.answer()
 
     if query.data == "confirm_stop":
@@ -103,10 +102,18 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         async def safe_shutdown():
             try:
+
+                 # ✅ Save current active users
+                active_users = [user_id for user_id, status in storage.users.USER_STATUS.items() if status]
+                save_json(ACTIVE_RESTART_USERS_FILE, active_users, "active restart users")
+                save_json(RESTART_FLAG_FILE, {"from_restart": True}, "restart flag")
+
+                # ✅ Reset all statuses
                 for user_id in storage.users.USER_STATUS:
                     storage.users.USER_STATUS[user_id] = False
                 save_user_status()
 
+                # ✅ Cancel monitor loop
                 if hasattr(context.application, "_monitor_task"):
                     task = context.application._monitor_task
                     if not task.done():
@@ -118,7 +125,7 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 await context.application.stop()
 
-                # Cancel all remaining asyncio tasks before exiting
+                # ✅ Cancel all running tasks
                 tasks = asyncio.all_tasks()
                 for task in tasks:
                     if task is not asyncio.current_task():

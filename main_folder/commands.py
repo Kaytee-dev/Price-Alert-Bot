@@ -97,8 +97,8 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if chat_id not in users.USER_TRACKING:
         users.USER_TRACKING[chat_id] = []
 
-    # Getting user tokens and current tier to calculate limit before adding new ones
-
+    # Getting user tokens and current tier to calculate limit 
+    # before adding new ones
 
     # Get tier and enforce super admin status
     tiers.enforce_token_limit(int(chat_id))
@@ -115,6 +115,7 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
         return
     
+    already_present = [addr for addr in addresses if addr in current_tokens]
     tokens_to_add = [addr for addr in addresses if addr not in current_tokens]
     tokens_allowed = tokens_to_add[:available_slots]
     tokens_dropped = tokens_to_add[available_slots:]
@@ -147,6 +148,10 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if tokens_allowed:
         await update.message.reply_text(f"✅ Tracking token(s):\n" + "\n".join(tokens_allowed))
+    
+    if already_present:
+        await update.message.reply_text(f"ℹ️ Already tracking:\n" + "\n".join(already_present))
+
     if tokens_dropped:
         await update.message.reply_text(
             f"🚫 Limit Reached! You can only track {tier_limit} tokens.\n"
