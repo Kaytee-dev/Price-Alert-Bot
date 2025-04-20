@@ -1,163 +1,7 @@
 {
-  "BR9ETiu7eT7Ci64Dodp4a1RGoqU5SSfNwVPmGtzVZZq8": [
-    {
-      "timestamp": "2025-04-20 18:51:25",
-      "address": "BR9ETiu7eT7Ci64Dodp4a1RGoqU5SSfNwVPmGtzVZZq8",
-      "symbol": "SFURY",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 195276
-    },
-    {
-      "timestamp": "2025-04-20 18:50:41",
-      "address": "BR9ETiu7eT7Ci64Dodp4a1RGoqU5SSfNwVPmGtzVZZq8",
-      "symbol": "SFURY",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 195276
-    },
-    {
-      "timestamp": "2025-04-20 18:44:58",
-      "address": "BR9ETiu7eT7Ci64Dodp4a1RGoqU5SSfNwVPmGtzVZZq8",
-      "symbol": "SFURY",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 195276
-    }
-  ],
-  "J6hJGWSMErx1rW2nzWL6rxDbnLvk7kTkj1PaythmPUMP": [
-    {
-      "timestamp": "2025-04-20 17:57:10",
-      "address": "J6hJGWSMErx1rW2nzWL6rxDbnLvk7kTkj1PaythmPUMP",
-      "symbol": "ELXAI",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 483
-    },
-    {
-      "timestamp": "2025-04-20 17:51:32",
-      "address": "J6hJGWSMErx1rW2nzWL6rxDbnLvk7kTkj1PaythmPUMP",
-      "symbol": "ELXAI",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 483
-    },
-    {
-      "timestamp": "2025-04-20 17:45:47",
-      "address": "J6hJGWSMErx1rW2nzWL6rxDbnLvk7kTkj1PaythmPUMP",
-      "symbol": "ELXAI",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 483
-    }
-  ],
-  "2hysg8Uuc5rJm5LjhpmW5RoktL5S8goGehagPg2Mpump": [
-    {
-      "timestamp": "2025-04-20 18:08:18",
-      "address": "2hysg8Uuc5rJm5LjhpmW5RoktL5S8goGehagPg2Mpump",
-      "symbol": "Baby Dog",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 2457
-    },
-    {
-      "timestamp": "2025-04-20 18:02:44",
-      "address": "2hysg8Uuc5rJm5LjhpmW5RoktL5S8goGehagPg2Mpump",
-      "symbol": "Baby Dog",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 2457
-    },
-    {
-      "timestamp": "2025-04-20 17:57:10",
-      "address": "2hysg8Uuc5rJm5LjhpmW5RoktL5S8goGehagPg2Mpump",
-      "symbol": "Baby Dog",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 2457
-    }
-  ],
-  "3witAZAi4xnjHGTo6BmexKohaRDjF2yZGtT2W6cdpump": [
-    {
-      "timestamp": "2025-04-20 18:08:18",
-      "address": "3witAZAi4xnjHGTo6BmexKohaRDjF2yZGtT2W6cdpump",
-      "symbol": "Dognald",
-      "priceChange_m5": -0.07,
-      "volume_m5": 3.22,
-      "marketCap": 5462
-    },
-    {
-      "timestamp": "2025-04-20 18:02:44",
-      "address": "3witAZAi4xnjHGTo6BmexKohaRDjF2yZGtT2W6cdpump",
-      "symbol": "Dognald",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 5466
-    },
-    {
-      "timestamp": "2025-04-20 17:57:10",
-      "address": "3witAZAi4xnjHGTo6BmexKohaRDjF2yZGtT2W6cdpump",
-      "symbol": "Dognald",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 5466
-    }
-  ],
-  "5eafqp6ic7WpxUsKJLhnLxthUcEYatjhXPNLBRZCpump": [
-    {
-      "timestamp": "2025-04-20 18:08:18",
-      "address": "5eafqp6ic7WpxUsKJLhnLxthUcEYatjhXPNLBRZCpump",
-      "symbol": "PIU",
-      "priceChange_m5": -0.07,
-      "volume_m5": 6.82,
-      "marketCap": 22312
-    },
-    {
-      "timestamp": "2025-04-20 18:02:44",
-      "address": "5eafqp6ic7WpxUsKJLhnLxthUcEYatjhXPNLBRZCpump",
-      "symbol": "PIU",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 22328
-    },
-    {
-      "timestamp": "2025-04-20 17:57:10",
-      "address": "5eafqp6ic7WpxUsKJLhnLxthUcEYatjhXPNLBRZCpump",
-      "symbol": "PIU",
-      "priceChange_m5": 0.64,
-      "volume_m5": 16.43,
-      "marketCap": 22328
-    }
-  ],
-  "4b83cYeo4BYfP9NfFUQQWRQYfomJjjChfsV64m5MqifY": [
-    {
-      "timestamp": "2025-04-19 23:56:40",
-      "address": "4b83cYeo4BYfP9NfFUQQWRQYfomJjjChfsV64m5MqifY",
-      "symbol": "ALGOAI",
-      "priceChange_m5": -0.15,
-      "volume_m5": 50.86,
-      "marketCap": 302299
-    },
-    {
-      "timestamp": "2025-04-19 23:54:52",
-      "address": "4b83cYeo4BYfP9NfFUQQWRQYfomJjjChfsV64m5MqifY",
-      "symbol": "ALGOAI",
-      "priceChange_m5": -0.28,
-      "volume_m5": 50.85,
-      "marketCap": 302189
-    },
-    {
-      "timestamp": "2025-04-19 23:53:49",
-      "address": "4b83cYeo4BYfP9NfFUQQWRQYfomJjjChfsV64m5MqifY",
-      "symbol": "ALGOAI",
-      "priceChange_m5": 0.04,
-      "volume_m5": 1.39,
-      "marketCap": 303010
-    }
-  ],
   "9dipUPALacHLmYwN9ZnCfXcK45FWqExjAe1u6v21pump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "9dipUPALacHLmYwN9ZnCfXcK45FWqExjAe1u6v21pump",
       "symbol": "TOPSECRET",
       "priceChange_m5": null,
@@ -165,7 +9,7 @@
       "marketCap": 4701
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "9dipUPALacHLmYwN9ZnCfXcK45FWqExjAe1u6v21pump",
       "symbol": "TOPSECRET",
       "priceChange_m5": null,
@@ -173,7 +17,7 @@
       "marketCap": 4701
     },
     {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:05:51",
       "address": "9dipUPALacHLmYwN9ZnCfXcK45FWqExjAe1u6v21pump",
       "symbol": "TOPSECRET",
       "priceChange_m5": null,
@@ -183,33 +27,33 @@
   ],
   "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
+      "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
+      "symbol": "UncleSam",
+      "priceChange_m5": -0.6,
+      "volume_m5": 8.17,
+      "marketCap": 32084
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
       "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
       "symbol": "UncleSam",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 32226
+      "marketCap": 32279
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
-      "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
-      "symbol": "UncleSam",
-      "priceChange_m5": 1.11,
-      "volume_m5": 180.25,
-      "marketCap": 33438
-    },
-    {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:05:51",
       "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
       "symbol": "UncleSam",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 33072
+      "marketCap": 32279
     }
   ],
   "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
       "symbol": "BFC",
       "priceChange_m5": null,
@@ -217,7 +61,7 @@
       "marketCap": 6701
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
       "symbol": "BFC",
       "priceChange_m5": null,
@@ -225,7 +69,7 @@
       "marketCap": 6701
     },
     {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:05:51",
       "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
       "symbol": "BFC",
       "priceChange_m5": null,
@@ -235,59 +79,59 @@
   ],
   "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
-      "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
-      "symbol": "buzhidao",
-      "priceChange_m5": 7.39,
-      "volume_m5": 184.23,
-      "marketCap": 18945
-    },
-    {
-      "timestamp": "2025-04-20 18:08:18",
-      "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
-      "symbol": "buzhidao",
-      "priceChange_m5": -1.7,
-      "volume_m5": 49.64,
-      "marketCap": 15769
-    },
-    {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
       "symbol": "buzhidao",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 16125
+      "marketCap": 15083
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
+      "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
+      "symbol": "buzhidao",
+      "priceChange_m5": -11.31,
+      "volume_m5": 609.29,
+      "marketCap": 15083
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
+      "symbol": "buzhidao",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 17007
     }
   ],
   "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
+      "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
+      "symbol": "Loopy",
+      "priceChange_m5": 1,
+      "volume_m5": 40.99,
+      "marketCap": 66164
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
       "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
       "symbol": "Loopy",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 63420
+      "marketCap": 65508
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
-      "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
-      "symbol": "Loopy",
-      "priceChange_m5": 0.77,
-      "volume_m5": 34.22,
-      "marketCap": 63055
-    },
-    {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:05:51",
       "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
       "symbol": "Loopy",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 62570
+      "marketCap": 65508
     }
   ],
   "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
       "symbol": "TUPID",
       "priceChange_m5": null,
@@ -295,7 +139,7 @@
       "marketCap": 6944
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
       "symbol": "TUPID",
       "priceChange_m5": null,
@@ -303,7 +147,7 @@
       "marketCap": 6944
     },
     {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:05:51",
       "address": "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
       "symbol": "TUPID",
       "priceChange_m5": null,
@@ -313,33 +157,33 @@
   ],
   "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
       "symbol": "$69M",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 9921
+      "marketCap": 9978
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
       "symbol": "$69M",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 9921
+      "marketCap": 9978
     },
     {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:05:51",
       "address": "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
       "symbol": "$69M",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 9921
+      "marketCap": 9978
     }
   ],
   "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
       "symbol": "SCIENCE",
       "priceChange_m5": null,
@@ -347,7 +191,7 @@
       "marketCap": 3005
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
       "symbol": "SCIENCE",
       "priceChange_m5": null,
@@ -355,7 +199,7 @@
       "marketCap": 3005
     },
     {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:05:51",
       "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
       "symbol": "SCIENCE",
       "priceChange_m5": null,
@@ -417,95 +261,119 @@
   ],
   "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
       "symbol": "Figure",
-      "priceChange_m5": 1.99,
-      "volume_m5": 1031.44,
-      "marketCap": 1384327
+      "priceChange_m5": 3.8,
+      "volume_m5": 3720.22,
+      "marketCap": 1475885
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
       "symbol": "Figure",
-      "priceChange_m5": 0.35,
-      "volume_m5": 818.11,
-      "marketCap": 1337618
+      "priceChange_m5": 5.03,
+      "volume_m5": 7133.83,
+      "marketCap": 1425106
     },
     {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:05:51",
       "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
       "symbol": "Figure",
-      "priceChange_m5": -0.18,
-      "volume_m5": 403.21,
-      "marketCap": 1332965
+      "priceChange_m5": 0.3,
+      "volume_m5": 490.7,
+      "marketCap": 1354493
     }
   ],
   "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
-      "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
-      "symbol": "point",
-      "priceChange_m5": 0.15,
-      "volume_m5": 0.21,
-      "marketCap": 22245
-    },
-    {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
       "symbol": "point",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 22351
+      "marketCap": 21751
     },
     {
-      "timestamp": "2025-04-20 18:02:44",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
       "symbol": "point",
-      "priceChange_m5": 0.06,
-      "volume_m5": 10.85,
-      "marketCap": 22351
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 21751
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
+      "symbol": "point",
+      "priceChange_m5": 1.22,
+      "volume_m5": 99,
+      "marketCap": 21751
     }
   ],
   "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
       "symbol": "Wo",
-      "priceChange_m5": 0.71,
-      "volume_m5": 31.34,
-      "marketCap": 125507
+      "priceChange_m5": 0.26,
+      "volume_m5": 116.28,
+      "marketCap": 113429
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
       "symbol": "Wo",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 125602
+      "priceChange_m5": 1,
+      "volume_m5": 182.89,
+      "marketCap": 113206
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
+      "symbol": "Wo",
+      "priceChange_m5": 4.25,
+      "volume_m5": 636.46,
+      "marketCap": 112083
     }
   ],
   "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
       "symbol": "FSM",
-      "priceChange_m5": -0.73,
-      "volume_m5": 0.04,
-      "marketCap": 14161
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 25307
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
       "symbol": "FSM",
-      "priceChange_m5": -4.85,
-      "volume_m5": 4.29,
-      "marketCap": 12688
+      "priceChange_m5": -0.27,
+      "volume_m5": 20.55,
+      "marketCap": 25307
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
+      "symbol": "FSM",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 25375
     }
   ],
   "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
+      "address": "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
+      "symbol": "LLC",
+      "priceChange_m5": -1.1,
+      "volume_m5": 23.26,
+      "marketCap": 5883
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
       "address": "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
       "symbol": "LLC",
       "priceChange_m5": null,
@@ -513,7 +381,7 @@
       "marketCap": 5949
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:05:51",
       "address": "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
       "symbol": "LLC",
       "priceChange_m5": null,
@@ -523,83 +391,153 @@
   ],
   "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
       "symbol": "LHC",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 11456
+      "marketCap": 11465
     },
     {
-      "timestamp": "2025-04-20 18:08:18",
+      "timestamp": "2025-04-20 22:11:29",
       "address": "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
       "symbol": "LHC",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 11456
-    }
-  ],
-  "4j3T4oHZ7SAcQabXZMHeVfgdDzyPwQTugjhEcCKcN1xd": [
-    {
-      "timestamp": "2025-04-20 18:51:24",
-      "address": "4j3T4oHZ7SAcQabXZMHeVfgdDzyPwQTugjhEcCKcN1xd",
-      "symbol": "IUG",
-      "priceChange_m5": 114,
-      "volume_m5": 8433.33,
-      "marketCap": 85500
+      "marketCap": 11465
     },
     {
-      "timestamp": "2025-04-20 18:50:41",
-      "address": "4j3T4oHZ7SAcQabXZMHeVfgdDzyPwQTugjhEcCKcN1xd",
-      "symbol": "IUG",
-      "priceChange_m5": 168,
-      "volume_m5": 5973.04,
-      "marketCap": 95186
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
+      "symbol": "LHC",
+      "priceChange_m5": 0.35,
+      "volume_m5": 6.85,
+      "marketCap": 11465
     }
   ],
   "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump": [
     {
-      "timestamp": "2025-04-20 18:51:24",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
       "symbol": "ReFi",
-      "priceChange_m5": 0.04,
-      "volume_m5": 7.03,
-      "marketCap": 324655
+      "priceChange_m5": 6.8,
+      "volume_m5": 3315.72,
+      "marketCap": 390813
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
+      "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
+      "symbol": "ReFi",
+      "priceChange_m5": -3.29,
+      "volume_m5": 1027.51,
+      "marketCap": 366056
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
+      "symbol": "ReFi",
+      "priceChange_m5": -0.9,
+      "volume_m5": 3400.89,
+      "marketCap": 360880
     }
   ],
   "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
       "symbol": "Grimace",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 18953
+      "marketCap": 16975
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
+      "address": "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
+      "symbol": "Grimace",
+      "priceChange_m5": 5.92,
+      "volume_m5": 253.46,
+      "marketCap": 16975
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
+      "symbol": "Grimace",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 16027
     }
   ],
   "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
       "symbol": "LeBarbie",
-      "priceChange_m5": 1.05,
-      "volume_m5": 155.49,
-      "marketCap": 89332
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 82973
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
+      "address": "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
+      "symbol": "LeBarbie",
+      "priceChange_m5": -0.37,
+      "volume_m5": 2.07,
+      "marketCap": 82973
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
+      "symbol": "LeBarbie",
+      "priceChange_m5": 0.35,
+      "volume_m5": 61.18,
+      "marketCap": 83285
     }
   ],
   "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
       "symbol": "XIJINGPOOH",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 18090
+      "marketCap": 16195
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
+      "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
+      "symbol": "XIJINGPOOH",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 16195
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
+      "symbol": "XIJINGPOOH",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 16195
     }
   ],
   "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
+      "address": "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
+      "symbol": "CP",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 5793
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
+      "address": "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
+      "symbol": "CP",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 5793
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
       "address": "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
       "symbol": "CP",
       "priceChange_m5": null,
@@ -609,22 +547,54 @@
   ],
   "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
       "symbol": "WW3",
-      "priceChange_m5": -0.64,
-      "volume_m5": 35.71,
-      "marketCap": 59607
+      "priceChange_m5": 0.56,
+      "volume_m5": 17.2,
+      "marketCap": 75237
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
+      "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
+      "symbol": "WW3",
+      "priceChange_m5": 0.41,
+      "volume_m5": 47.23,
+      "marketCap": 70718
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
+      "symbol": "WW3",
+      "priceChange_m5": -3.01,
+      "volume_m5": 245.51,
+      "marketCap": 70428
     }
   ],
   "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump": [
     {
-      "timestamp": "2025-04-20 18:51:25",
+      "timestamp": "2025-04-20 22:17:05",
       "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
       "symbol": "House",
-      "priceChange_m5": 5.41,
-      "volume_m5": 29598.87,
-      "marketCap": 9398269
+      "priceChange_m5": 5.24,
+      "volume_m5": 14204.81,
+      "marketCap": 7947908
+    },
+    {
+      "timestamp": "2025-04-20 22:11:29",
+      "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
+      "symbol": "House",
+      "priceChange_m5": 1.33,
+      "volume_m5": 2763.48,
+      "marketCap": 7552443
+    },
+    {
+      "timestamp": "2025-04-20 22:05:51",
+      "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
+      "symbol": "House",
+      "priceChange_m5": 3.72,
+      "volume_m5": 8400.86,
+      "marketCap": 7631286
     }
   ]
 }
