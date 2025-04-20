@@ -9,7 +9,7 @@ import storage.users as users
 
 FREE_LIMIT = 3
 STANDARD_LIMIT = 10
-PREMIUM_LIMIT = 5
+PREMIUM_LIMIT = 20
 SUPER_ADMIN_LIMIT = 999
 
 TIER_LIMITS = {
