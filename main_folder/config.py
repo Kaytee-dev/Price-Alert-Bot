@@ -3,7 +3,7 @@
 # --- Global Bot Configuration ---
 POLL_INTERVAL = 330  # seconds
 BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY"
-SUPER_ADMIN_ID = -4710110042
+SUPER_ADMIN_ID = -4750674293
 
 # 🔗 Base URL for token links
 BASE_URL = "https://dexscreener.com/solana/"
