@@ -2,7 +2,9 @@
 
 import logging
 from config import TIERS_FILE, SUPER_ADMIN_ID
-from utils import load_json, save_json
+from utils import load_json, save_json, send_message
+from typing import Optional
+from telegram import Bot
 
 import storage.users as users
 
@@ -29,10 +31,12 @@ def save_user_tiers():
     save_json(TIERS_FILE, USER_TIERS, "user tiers")
 
 def get_user_tier(user_id: int) -> str:
-    if user_id not in USER_TIERS:
-        USER_TIERS[user_id] = "free"
+    user_id_str = str(user_id)
+    if user_id_str not in USER_TIERS:
+        USER_TIERS[user_id_str] = "free"
         save_user_tiers()
-    return USER_TIERS[user_id]
+    return USER_TIERS[user_id_str]
+
 
 def get_user_limit(user_id: int) -> int:
     if user_id == SUPER_ADMIN_ID:
@@ -43,12 +47,29 @@ def get_user_limit(user_id: int) -> int:
     tier = get_user_tier(user_id)
     return TIER_LIMITS.get(tier, FREE_LIMIT)
 
-def set_user_tier(user_id: int, tier: str):
+def set_user_tier_core(user_id: int, tier: str) -> bool:
     if tier not in TIER_LIMITS:
         raise ValueError("Invalid tier name")
-    USER_TIERS[str(user_id)] = tier
+    user_id_str = str(user_id)
+    USER_TIERS[user_id_str] = tier
     save_user_tiers()
     logging.info(f"🎯 Updated user {user_id} to tier '{tier}'")
+    trimmed = enforce_token_limit_core(user_id)
+    return trimmed
+
+async def set_user_tier(user_id: int, tier: str, bot: Optional[Bot] = None):
+    trimmed = set_user_tier_core(user_id, tier)
+
+    if bot:
+        limit = get_user_limit(user_id)
+        send_message_text = f"🎯 Your tier has been updated to *{tier.capitalize()}*. You can now track up to {limit} token(s)."
+        if trimmed:
+            send_message_text += f"\n🚫 Your tracked tokens were trimmed to match the new tier limit."
+        await send_message(
+            bot,
+            send_message_text,
+            chat_id=user_id
+        )
 
 def is_within_limit(user_id: int, token_count: int) -> bool:
     return token_count <= get_user_limit(user_id)
@@ -59,43 +80,35 @@ def delete_user_tier(user_id: int):
         del USER_TIERS[user_id_str]
         save_user_tiers()
 
-# Promote user to premium tier
-def promote_to_premium(user_id: int):
-    delete_user_tier(user_id)
-    USER_TIERS[str(user_id)] = "premium"
-    save_user_tiers()
-    enforce_token_limit(user_id)
-
-# def enforce_token_limit(user_id: int):
-#     user_id_str = str(user_id)
-#     tier_limit = get_user_limit(user_id)
-#     tracked = users.USER_TRACKING.get(user_id_str, [])
-
-#     if len(tracked) > tier_limit:
-#         users.USER_TRACKING[user_id_str] = tracked[:tier_limit]
-#         users.save_user_tracking()
-#         logging.info(f"⚠️ User {user_id_str} tracking trimmed to {tier_limit} tokens.")
+async def promote_to_premium(user_id: int, bot: Optional[Bot] = None):
+    await set_user_tier(user_id, "premium", bot=bot)
 
 
-def enforce_token_limit(user_id: int):
+def enforce_token_limit_core(user_id: int) -> bool:
     user_id_str = str(user_id)
 
-    # Step 1: Super Admin Check
     if user_id == SUPER_ADMIN_ID:
         USER_TIERS[user_id_str] = "super_admin"
         save_user_tiers()
 
-    # Step 2: Get tier directly from loaded USER_TIERS
     tier = USER_TIERS.get(user_id_str, "free")
-
-    # Step 3: Get the token limit for that tier
     allowed_limit = TIER_LIMITS.get(tier, FREE_LIMIT)
-
-    # Step 4: Get currently tracked tokens
     current_tokens = users.USER_TRACKING.get(user_id_str, [])
 
-    # Step 5: Enforce limit
     if len(current_tokens) > allowed_limit:
         users.USER_TRACKING[user_id_str] = current_tokens[:allowed_limit]
         users.save_user_tracking()
         logging.info(f"🚫 Enforced token limit for user {user_id_str}. Trimmed to {allowed_limit} tokens.")
+        return True
+    return False
+
+async def enforce_token_limit(user_id: int, bot: Optional[Bot] = None):
+    trimmed = enforce_token_limit_core(user_id)
+    if trimmed and bot:
+        tier = USER_TIERS.get(str(user_id), "free")
+        allowed_limit = TIER_LIMITS.get(tier, FREE_LIMIT)
+        await send_message(
+            bot,
+            f"🚫 Your tracked tokens exceeded your tier limit ({tier}). We trimmed it to the first {allowed_limit} token(s).",
+            chat_id=user_id
+        )

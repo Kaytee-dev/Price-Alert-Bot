@@ -171,7 +171,7 @@ def main():
 
     # 🔒 Enforce token limits based on user tiers
     for user_id_str in list(storage.users.USER_TRACKING.keys()):
-        tiers.enforce_token_limit(int(user_id_str))
+        tiers.enforce_token_limit_core(int(user_id_str))
     
     print("[MAIN DEBUG] USER_TRACKING length:", len(storage.users.USER_TRACKING))  # ✅ This now reflects correct value
 

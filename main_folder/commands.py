@@ -101,7 +101,7 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # before adding new ones
 
     # Get tier and enforce super admin status
-    tiers.enforce_token_limit(int(chat_id))
+    await tiers.enforce_token_limit(int(chat_id), bot=context.bot)
     
     current_tokens = users.USER_TRACKING[chat_id]
     tier_limit = tiers.get_user_limit(chat_id)
@@ -200,7 +200,6 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users.save_user_tracking()
     tokens.save_tracked_tokens()
     symbols.save_symbols_to_file()
-    #history.save_token_history()
 
     if removed:
         await update.message.reply_text(f"🗑️ Removed token(s):\n" + "\n".join(removed))
@@ -257,6 +256,13 @@ async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
 
+    # Step 1: Deactivate user if they were active
+    if users.USER_STATUS.get(chat_id):
+        users.USER_STATUS[chat_id] = False
+        users.save_user_status()
+        logging.info(f"🔴 Deactivated monitoring for user {chat_id}")
+
+
     tokens_removed = []
 
     user_tokens = users.USER_TRACKING.get(chat_id, [])
@@ -286,7 +292,6 @@ async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     users.save_user_tracking()
     tokens.save_tracked_tokens()
     symbols.save_symbols_to_file()
-    #history.save_token_history()
 
     if tokens_removed:
         msg = f"🧼 Removed {len(tokens_removed)} untracked token(s) from tracking after /reset."
@@ -334,8 +339,16 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if timestamps:
         last_update = max(timestamps)
 
+    is_active = users.USER_STATUS.get(chat_id, False)
+    monitor_state = "✅ Monitoring: Active" if is_active else "🔴 Monitoring: Inactive"
+
+    user_tier = tiers.get_user_tier(int(chat_id))
+    user_limit = tiers.get_user_limit(int(chat_id))
+
     msg = (
         f"📊 *Bot Status*\n\n"
+        f"{monitor_state}\n"
+        f"🎯 Tier: {user_tier.capitalize()} ({user_limit} token limit)\n"
         f"👤 You are tracking {len(user_tokens)} token(s).\n"
         f"🌐 Total unique tokens tracked: {len(all_tokens)}\n"
         f"💥 Active spikes (≥15%): {spike_count}\n"
