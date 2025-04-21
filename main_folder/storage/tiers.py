@@ -18,7 +18,7 @@ TIER_LIMITS = {
     "free": FREE_LIMIT,
     "standard": STANDARD_LIMIT,
     "premium": PREMIUM_LIMIT,
-    "super_admin": SUPER_ADMIN_LIMIT,
+    "super admin": SUPER_ADMIN_LIMIT,
 }
 
 USER_TIERS = {}  # {user_id: tier_name}
@@ -88,7 +88,7 @@ def enforce_token_limit_core(user_id: int) -> bool:
     user_id_str = str(user_id)
 
     if user_id == SUPER_ADMIN_ID:
-        USER_TIERS[user_id_str] = "super_admin"
+        USER_TIERS[user_id_str] = "super admin"
         save_user_tiers()
 
     tier = USER_TIERS.get(user_id_str, "free")
