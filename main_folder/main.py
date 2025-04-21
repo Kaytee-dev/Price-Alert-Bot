@@ -5,13 +5,13 @@ import logging
 import os
 import sys
 
-from telegram import Update
+from telegram import Update, BotCommand, BotCommandScopeDefault
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes,
 )
 
 from config import (
-    BOT_TOKEN, RESTART_FLAG_FILE, ACTIVE_RESTART_USERS_FILE, DATA_DIR
+    BOT_TOKEN, RESTART_FLAG_FILE, ACTIVE_RESTART_USERS_FILE, SUPER_ADMIN_ID
 )
 
 from commands import (
@@ -27,11 +27,12 @@ from storage.tokens import load_tracked_tokens, save_tracked_tokens, load_active
 from storage.symbols import load_symbols_from_file
 from storage.users import load_user_tracking, load_user_status, save_user_status
 from storage.history import load_token_history
+
 from admin import (
     addadmin, removeadmin, listadmins,
-    handle_removeadmin_callback, load_admins,
+    handle_removeadmin_callback, load_admins, ADMINS
 )
-from utils import load_json, save_json, send_message
+from utils import load_json, save_json, send_message, refresh_user_commands
 from monitor import background_price_monitor
 
 
@@ -155,6 +156,26 @@ async def on_startup(app):
         app._monitor_task = monitor_task
         app._monitor_started = True
         logging.info("🔄 Monitor loop auto-started after restart recovery.")
+
+    # 🔧 Set fallback default commands
+    default_cmds = [
+        BotCommand("start", "Start tracking tokens"),
+        BotCommand("stop", "Stop tracking tokens"),
+        BotCommand("add", "Add a token to track"),
+        BotCommand("remove", "Remove token"),
+        BotCommand("list", "List tracked tokens"),
+        BotCommand("reset", "Clear all tracked tokens"),
+        BotCommand("help", "Show help message"),
+        BotCommand("status", "Show stats of tracked tokens"),
+    ]
+    await app.bot.set_my_commands(default_cmds, scope=BotCommandScopeDefault())
+
+    # 🔧 Re-apply scoped commands for all admins
+    for admin_id in ADMINS:
+        await refresh_user_commands(admin_id, app.bot)
+
+    # 🔧 Also refresh super admin's scoped menu
+    await refresh_user_commands(SUPER_ADMIN_ID, app.bot)
 
 def main():
 

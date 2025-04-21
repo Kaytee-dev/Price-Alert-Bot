@@ -1,6 +1,6 @@
 # File that handles commands
 import logging
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand, BotCommandScopeChat
 from telegram.ext import ContextTypes
 
 from admin import restricted_to_admin, ADMINS
@@ -13,13 +13,14 @@ import storage.history as history
 import storage.tiers as tiers
 
 from monitor import background_price_monitor
-from utils import send_message
+from utils import send_message, refresh_user_commands, load_admins
 
 
 # --- Telegram Bot Commands ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
-    is_admin = int(chat_id) in ADMINS
+    user_id = int(chat_id)
+    is_admin = user_id in ADMINS
 
     users.USER_STATUS[chat_id] = True
     users.save_user_status()
@@ -37,22 +38,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.application._monitor_started = True
         logging.info(f"🟢 Monitor loop started by {'admin' if is_admin else 'user'} {chat_id}")
     
-    await context.bot.set_my_commands([
-        BotCommand("start", "Start tracking tokens"),
-        BotCommand("stop", "Stop tracking tokens"),
-        BotCommand("add", "Add a token to track"),
-        BotCommand("alltokens", "List tracked tokens by all user (admin only)"),
-        BotCommand("remove", "Remove token"),
-        BotCommand("list", "List tracked tokens"),
-        BotCommand("reset", "Clear all tracked tokens"),
-        BotCommand("help", "Show help message"),
-        BotCommand("restart", "Restart the bot (admin only)"),
-        BotCommand("status", "Show stats of tracked tokens"),
-        BotCommand("addadmin", "Add a new admin (admin only)"),
-        BotCommand("removeadmin", "Remove an admin (admin only)"),
-        BotCommand("listadmins", "List all admins (admin only)")
-
-    ])
+    await refresh_user_commands(user_id, context.bot)
 
     await update.message.reply_text("🤖 Bot started and monitoring your tokens!")
 
@@ -306,21 +292,48 @@ async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔄 Your tracked tokens, symbols, and history have been cleared.")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = (
-        "🤖 *Price Alert Bot Help*\n\n"
-        "Use the following commands to manage your token alerts:\n"
-        "\n/start - Start the bot and monitoring"
-        "\n/stop - Stop the bot monitoring"
-        "\n/add <token1>, <token2>, ... - Track token(s)"
-        "\n/remove <token1>, <token2>, ... - Stop tracking token(s)"
-        "\n/list - Show your tracked tokens"
-        "\n/reset - Clear all your tracking data"
-        "\n/help - Show this help message"
-        "\n/status - Show stats of tracked token(s)"
-        "\n/alltokens - Show all unique token(s) tracked by all user (admin only)"
-        "\n\nEach user can track their own set of tokens independently."
+    chat_id = str(update.effective_chat.id)
+    user_id = int(chat_id)
+
+    admin = load_admins()
+    is_admin = user_id in admin
+    is_super_admin = user_id == SUPER_ADMIN_ID
+
+    msg_lines = [
+
+        "*🤖 Price Alert Bot Help*\n",
+        "Use the following commands to manage your token alerts:\n",
+        "*🔹 Regular Commands:*",
+        "/start — Start the bot",
+        "/stop — Stop the bot",
+        "/add — Add a token to track",
+        "/remove — Remove a tracked token",
+        "/list — List your tracked tokens",
+        "/reset — Clear all tracked tokens",
+        "/help — Show this help menu",
+        "/status — View your token tracking stats\n",
+    ]
+
+    if is_admin or is_super_admin:
+        msg_lines += [
+            "\n*🔧 Admin Commands:*",
+            "/restart — Restart the bot",
+            "/alltokens — List all tracked tokens\n",
+        ]
+
+    if is_super_admin:
+        msg_lines += [
+            "\n*👑 Super Admin Commands:*",
+            "/addadmin — Add a new admin",
+            "/removeadmin — Remove an admin",
+            "/listadmins — List all admins",
+        ]
+
+    await update.message.reply_text(
+        "\n".join(msg_lines),
+        parse_mode="Markdown"
     )
-    await update.message.reply_text(msg, parse_mode="Markdown")
+    
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
