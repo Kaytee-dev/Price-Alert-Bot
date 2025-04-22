@@ -1,12 +1,12 @@
 
 
 # --- Global Bot Configuration ---
-POLL_INTERVAL = 330  # seconds
+#POLL_INTERVAL = 330  # seconds
 
 # Main Bot details
 BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY" 
 SUPER_ADMIN_ID = -4750674293  
-POLL_INTERVAL = 330  # seconds
+POLL_INTERVAL = 240  # seconds
 
 # Test Bot details
 # BOT_TOKEN = "8120859286:AAFKrigrQnt9UEgOg-mewE2D18fT6KuKwus" 
