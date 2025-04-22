@@ -94,7 +94,7 @@ def background_price_monitor(app):
                             ]
 
                             change = cleaned_data.get("priceChange_m5")
-                            if isinstance(change, (int, float)) and change >= 15 and any(p >= 15 for p in recent_changes[1:]):
+                            if isinstance(change, (int, float)) and change >= 5 and any(p >= 5 for p in recent_changes[1:]):
                                 link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
                                 msg = (
                                     f"📢 {link} is spiking!\n"
