@@ -2,7 +2,7 @@
 import json
 import logging
 from telegram import Update, BotCommand, BotCommandScopeChat
-from config import SUPER_ADMIN_ID, ADMINS_FILE
+from config import SUPER_ADMIN_ID, ADMINS_FILE, USER_THRESHOLDS_FILE
 
 
 def load_json(file_path: str, fallback, log_label: str = ""):
@@ -55,28 +55,31 @@ def load_admins():
 
 
 async def refresh_user_commands(user_id: int, bot):
+
     ADMINS = load_admins()
 
     regular_cmds = [
+        BotCommand("launch", "Launch bot dashboard"),
         BotCommand("start", "Start tracking tokens"),
         BotCommand("stop", "Stop tracking tokens"),
-        BotCommand("add", "Add a token to track"),
-        BotCommand("remove", "Remove token"),
-        BotCommand("list", "List tracked tokens"),
-        BotCommand("reset", "Clear all tracked tokens"),
-        BotCommand("help", "Show help message"),
-        BotCommand("status", "Show stats of tracked tokens"),
+        BotCommand("add", "Add a token to track -- /a"),
+        BotCommand("remove", "Remove token from tracking -- /rm"),
+        BotCommand("list", "List tracked tokens -- /l"),
+        BotCommand("reset", "Clear all tracked tokens -- /x"),
+        BotCommand("help", "Show help message -- /h"),
+        BotCommand("status", "Show stats of tracked tokens -- /s"),
+        BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
     ]
 
     admin_cmds = [
-        BotCommand("restart", "Restart the bot"),
-        BotCommand("alltokens", "List all tracked tokens"),
+        BotCommand("restart", "Restart the bot -- /rs"),
+        BotCommand("alltokens", "List all tracked tokens -- /at"),
     ]
 
     super_admin_cmds = [
-        BotCommand("addadmin", "Add a new admin"),
-        BotCommand("removeadmin", "Remove an admin"),
-        BotCommand("listadmins", "List all admins"),
+        BotCommand("addadmin", "Add a new admin -- /aa"),
+        BotCommand("removeadmin", "Remove an admin -- /ra"),
+        BotCommand("listadmins", "List all admins -- /la"),
     ]
 
     if user_id == SUPER_ADMIN_ID:
@@ -87,3 +90,11 @@ async def refresh_user_commands(user_id: int, bot):
         commands = regular_cmds
 
     await bot.set_my_commands(commands, scope=BotCommandScopeChat(chat_id=user_id))
+
+# def get_user_threshold(user_id: str, default: float = 5.0) -> float:
+#     """
+#     Fetch the user-specific threshold value for spike detection.
+#     If not set, fall back to a default threshold.
+#     """
+#     threshold = load_json(USER_THRESHOLDS_FILE, {}, "user thresholds")
+#     return threshold.get(user_id, default)

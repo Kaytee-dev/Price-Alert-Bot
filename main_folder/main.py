@@ -15,18 +15,21 @@ from config import (
 )
 
 from commands import (
-    start, stop, add, remove, list_tokens, reset, help_command, status, restart, alltokens
+    start, stop, add, remove, list_tokens, reset, help_command, 
+    status, restart, alltokens, threshold, handle_dashboard_button, launch
 )
 
 import storage.tokens
 import storage.users
 from storage.tiers import load_user_tiers
 import storage.tiers as tiers
+import storage.thresholds as thresholds
 
 from storage.tokens import load_tracked_tokens, save_tracked_tokens, load_active_token_data
 from storage.symbols import load_symbols_from_file
 from storage.users import load_user_tracking, load_user_status, save_user_status
 from storage.history import load_token_history
+from storage.thresholds import load_user_thresholds, save_user_thresholds
 
 from admin import (
     addadmin, removeadmin, listadmins,
@@ -159,14 +162,16 @@ async def on_startup(app):
 
     # 🔧 Set fallback default commands
     default_cmds = [
+        BotCommand("launch", "Launch bot dashboard"),
         BotCommand("start", "Start tracking tokens"),
         BotCommand("stop", "Stop tracking tokens"),
-        BotCommand("add", "Add a token to track"),
-        BotCommand("remove", "Remove token"),
-        BotCommand("list", "List tracked tokens"),
-        BotCommand("reset", "Clear all tracked tokens"),
-        BotCommand("help", "Show help message"),
-        BotCommand("status", "Show stats of tracked tokens"),
+        BotCommand("add", "Add a token to track -- /a"),
+        BotCommand("remove", "Remove token from tracking -- /rm"),
+        BotCommand("list", "List tracked tokens -- /l"),
+        BotCommand("reset", "Clear all tracked tokens -- /x"),
+        BotCommand("help", "Show help message -- /h"),
+        BotCommand("status", "Show stats of tracked tokens -- /s"),
+        BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
     ]
     await app.bot.set_my_commands(default_cmds, scope=BotCommandScopeDefault())
 
@@ -194,8 +199,6 @@ def main():
     for user_id_str in list(storage.users.USER_TRACKING.keys()):
         tiers.enforce_token_limit_core(int(user_id_str))
     
-    print("[MAIN DEBUG] USER_TRACKING length:", len(storage.users.USER_TRACKING))  # ✅ This now reflects correct value
-
     
 
     # Restore active users if bot restarted via /restart
@@ -220,6 +223,15 @@ def main():
     storage.tokens.save_tracked_tokens()
     logging.info(f"🔁 Rebuilt tracked tokens list: {len(storage.tokens.TRACKED_TOKENS)} tokens.")
 
+    # Adding threshold on startup
+    thresholds.load_user_thresholds()
+    updated = False
+    for chat_id in storage.users.USER_TRACKING:
+        if chat_id not in thresholds.USER_THRESHOLDS:
+            thresholds.USER_THRESHOLDS[chat_id] = 5.0
+            updated = True
+    if updated:
+        thresholds.save_user_thresholds()
 
     app = (
         ApplicationBuilder()
@@ -228,22 +240,51 @@ def main():
         .build()
     )
 
+    app.add_handler(CommandHandler("launch", launch))
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
+
     app.add_handler(CommandHandler("add", add))
+    app.add_handler(CommandHandler("a", add))
+
     app.add_handler(CommandHandler("alltokens", alltokens))
+    app.add_handler(CommandHandler("at", alltokens))
+
     app.add_handler(CommandHandler("remove", remove))
+    app.add_handler(CommandHandler("rm", remove))
+
     app.add_handler(CommandHandler("list", list_tokens))
+    app.add_handler(CommandHandler("l", list_tokens))
+
     app.add_handler(CommandHandler("reset", reset))
+    app.add_handler(CommandHandler("x", reset))
+
     app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("h", help_command))
+
     app.add_handler(CommandHandler("restart", restart))
+    app.add_handler(CommandHandler("rs", restart))
+
     app.add_handler(CommandHandler("status", status))
+    app.add_handler(CommandHandler("s", status))
+
     app.add_handler(CommandHandler("addadmin", addadmin))
+    app.add_handler(CommandHandler("aa", addadmin))
+
     app.add_handler(CommandHandler("removeadmin", removeadmin))
+    app.add_handler(CommandHandler("ra", removeadmin))
+
     app.add_handler(CommandHandler("listadmins", listadmins))
+    app.add_handler(CommandHandler("la", listadmins))
+
+    app.add_handler(CommandHandler("threshold", threshold))
+    app.add_handler(CommandHandler("t", threshold))
+
     app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
     app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
+    app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))
+
 
 
     app.run_polling()

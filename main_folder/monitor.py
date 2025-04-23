@@ -11,6 +11,7 @@ import storage.users as users
 import storage.tokens as tokens
 import storage.symbols as symbols
 import storage.history as history
+import storage.thresholds as thresholds
 
 from api import fetch_prices_for_tokens
 from utils import chunked, send_message
@@ -94,20 +95,27 @@ def background_price_monitor(app):
                             ]
 
                             change = cleaned_data.get("priceChange_m5")
-                            if isinstance(change, (int, float)) and change >= 5 and any(p >= 5 for p in recent_changes[1:]):
-                                link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
-                                msg = (
-                                    f"📢 {link} is spiking!\n"
-                                    f"🕓 Timestamps: {timestamp}\n"
-                                    f"5m Change: {cleaned_data['priceChange_m5']}%\n"
-                                    f"5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"
-                                    f"Market Cap: ${cleaned_data['marketCap']:,.0f}"
-                                )
+                            #if isinstance(change, (int, float)) and change >= 5 and any(p >= 5 for p in recent_changes[1:]):
+                            link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
+                            msg = (
+                                f"📢 {link} is spiking!\n\n"
+                                f"🕓 Timestamps: {timestamp}\n"
+                                f"💹 5m Change: {cleaned_data['priceChange_m5']}%\n"
+                                f"📈 5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"
+                                f"💰 Market Cap: ${cleaned_data['marketCap']:,.0f}"
+                            )
 
-                                notified_users = set()
+                            notified_users = set()
 
-                                for chat_id, tokens_list in users.USER_TRACKING.items():
-                                    if users.USER_STATUS.get(chat_id) and address in tokens_list:
+                            for chat_id, tokens_list in users.USER_TRACKING.items():
+                                if users.USER_STATUS.get(chat_id) and address in tokens_list:
+                                    threshold_value = thresholds.USER_THRESHOLDS.get(chat_id, 5.0)
+
+
+                                    if (isinstance(change, (int, float)) and 
+                                        change >= threshold_value and 
+                                        any(p >= threshold_value for p in recent_changes[1:])):
+
                                         await send_message(
                                             app.bot,
                                             msg,
@@ -118,14 +126,14 @@ def background_price_monitor(app):
                                         )
                                         notified_users.add(chat_id)
 
-                                for user_id in notified_users:
-                                    try:
-                                        chat = await app.bot.get_chat(user_id)
-                                        user_name = f"@{chat.username}" if chat.username else chat.full_name
-                                    except Exception:
-                                        user_name = f"User {user_id}"
+                            for user_id in notified_users:
+                                try:
+                                    chat = await app.bot.get_chat(user_id)
+                                    user_name = f"@{chat.username}" if chat.username else chat.full_name
+                                except Exception:
+                                    user_name = f"User {user_id}"
 
-                                admin_msg = f"🔔 [User Alert from {user_name}]\n" + msg
+                                admin_msg = f"🔔 [User Alert from {user_name}]\n\n" + msg
                                 await send_message(
                                     app.bot,
                                     admin_msg,
@@ -134,6 +142,9 @@ def background_price_monitor(app):
                                     admins=ADMINS,
                                     super_admin=SUPER_ADMIN_ID
                                 )
+
+
+
 
                 all_tracked_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
                 for token in list(history.TOKEN_DATA_HISTORY.keys()):

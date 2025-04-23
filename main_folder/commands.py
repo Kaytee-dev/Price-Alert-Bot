@@ -11,6 +11,7 @@ import storage.tokens as tokens
 import storage.symbols as symbols
 import storage.history as history
 import storage.tiers as tiers
+import storage.thresholds as thresholds
 
 from monitor import background_price_monitor
 from utils import send_message, refresh_user_commands, load_admins
@@ -76,7 +77,7 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
 
     if not context.args:
-        await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
+        await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ... or /a <token_address1>, <token_address2>, ...")
         return
 
     # Checking if user exists first
@@ -148,7 +149,7 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
 
     if not context.args:
-        await update.message.reply_text("Usage: /remove <token_address1>, <token_address2>, ...")
+        await update.message.reply_text("Usage: /remove <token_address1>, <token_address2>, ... or /rm <token_address1>, <token_address2>, ...")
         return
 
     addresses_raw = " ".join(context.args)
@@ -224,7 +225,7 @@ async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("📭 You're not tracking any tokens.")
         return
 
-    msg = "📊 Your Tracked Tokens:\n"
+    msg = "📊 Your Tracked Tokens:\n\n"
 
     for addr in user_tokens:
         symbol = symbols.ADDRESS_TO_SYMBOL.get(addr, addr[:6] + "...")
@@ -232,9 +233,9 @@ async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         history_data = history.TOKEN_DATA_HISTORY.get(addr, [])
         market_cap = history_data[0].get("marketCap") if history_data else None
-        mc_text = f" - Market Cap: ${market_cap:,.0f}" if market_cap else ""
+        mc_text = f"💰 Market Cap: ${market_cap:,.0f}" if market_cap else ""
 
-        msg += f"- {link} ({addr[:6]}...{addr[-4:]}){mc_text}\n"
+        msg += f"🪙 {link} ({addr[:6]}...{addr[-4:]})\n{mc_text}\n\n"
 
     await update.message.reply_text(msg, parse_mode="Markdown")
 
@@ -306,27 +307,28 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "*🔹 Regular Commands:*",
         "/start — Start the bot",
         "/stop — Stop the bot",
-        "/add — Add a token to track",
-        "/remove — Remove a tracked token",
-        "/list — List your tracked tokens",
-        "/reset — Clear all tracked tokens",
-        "/help — Show this help menu",
-        "/status — View your token tracking stats\n",
+        "/add or /a — Add a token to track",
+        "/remove or /rm — Remove a tracked token",
+        "/list or /l — List your tracked tokens",
+        "/reset or /x — Clear all tracked tokens",
+        "/help or /h — Show this help menu",
+        "/status or /s — View your token tracking stats",
+        "/threshold or /t — Set your spike alert threshold (%)\n",
     ]
 
     if is_admin or is_super_admin:
         msg_lines += [
             "\n*🔧 Admin Commands:*",
-            "/restart — Restart the bot",
-            "/alltokens — List all tracked tokens\n",
+            "/restart or /rs — Restart the bot",
+            "/alltokens or /at — List all tracked tokens\n",
         ]
 
     if is_super_admin:
         msg_lines += [
             "\n*👑 Super Admin Commands:*",
-            "/addadmin — Add a new admin",
-            "/removeadmin — Remove an admin",
-            "/listadmins — List all admins",
+            "/addadmin or /aa — Add a new admin",
+            "/removeadmin or /ra — Remove an admin",
+            "/listadmins or /la — List all admins",
         ]
 
     await update.message.reply_text(
@@ -354,7 +356,8 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     is_active = users.USER_STATUS.get(chat_id, False)
     monitor_state = "✅ Monitoring: Active" if is_active else "🔴 Monitoring: Inactive"
-
+    
+    user_threshold = thresholds.USER_THRESHOLDS.get(chat_id, 5.0)
     user_tier = tiers.get_user_tier(int(chat_id))
     user_limit = tiers.get_user_limit(int(chat_id))
 
@@ -362,6 +365,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"📊 *Bot Status*\n\n"
         f"{monitor_state}\n"
         f"🎯 Tier: {user_tier.capitalize()} ({user_limit} token limit)\n"
+         f"🔔 Alert threshold: {user_threshold}%\n"
         f"👤 You are tracking {len(user_tokens)} token(s).\n"
         f"🌐 Total unique tokens tracked: {len(all_tokens)}\n"
         f"💥 Active spikes (≥15%): {spike_count}\n"
@@ -383,6 +387,7 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @restricted_to_admin
 async def alltokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     all_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
     if not all_tokens:
         await update.message.reply_text("📭 No tokens are being tracked by any user.")
@@ -403,3 +408,154 @@ async def alltokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg += f"- {link} ({addr[:6]}...{addr[-4:]}){mc_text}\n"
 
     await update.message.reply_text(msg, parse_mode="Markdown")
+
+async def threshold(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    chat_id = str(update.effective_chat.id)
+
+    if not context.args:
+        await update.message.reply_text("❗ Usage: /threshold <value> or /t <value> (e.g. /threshold 10 or /t 10)")
+        return
+
+    try:
+        value = float(context.args[0])
+    except ValueError:
+        await update.message.reply_text("❌ Please provide a valid number.")
+        return
+
+    thresholds.USER_THRESHOLDS[chat_id] = value
+    thresholds.save_user_thresholds()
+
+    await update.message.reply_text(f"✅ Your threshold has been set to {value}%")
+
+async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    user_id = int(chat_id)
+
+    user_tokens = users.USER_TRACKING.get(chat_id, [])
+    all_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
+    spike_count = 0
+
+    for addr in all_tokens:
+        history_data = history.TOKEN_DATA_HISTORY.get(addr, [])
+        if history_data and isinstance(history_data[0].get("priceChange_m5"), (int, float)):
+            if history_data[0]["priceChange_m5"] >= 15:
+                spike_count += 1
+
+    last_update = None
+    timestamps = [entry[0].get("timestamp") for entry in history.TOKEN_DATA_HISTORY.values() if entry]
+    if timestamps:
+        last_update = max(timestamps)
+
+    is_active = users.USER_STATUS.get(chat_id, False)
+    monitor_state = "✅ Monitoring: Active" if is_active else "🔴 Monitoring: Inactive. Start tracking with /start"
+    user_tier = tiers.get_user_tier(user_id)
+    user_limit = tiers.get_user_limit(user_id)
+
+    msg = (
+        f"*Welcome To PumpCycle Bot*\n"
+        f"Tracks tokens that cooled off but still have holders. Alerts you when they’re warming up for Round 2. 🔥📈\n\n"
+        f"{monitor_state}\n"
+        f"🎯 Tier: {user_tier.capitalize()} ({user_limit} token limit)\n\n"
+        f"👤 You are tracking {len(user_tokens)} token(s).\n"
+        f"🌐 Total unique tokens tracked: {len(all_tokens)}\n\n"
+        f"💥 Active spikes (≥15%): {spike_count}\n"
+        f"🕓 Last update: {last_update if last_update else 'N/A'}"
+    )
+
+    # keyboard = InlineKeyboardMarkup([
+    #     [InlineKeyboardButton("✅ Start", callback_data="cmd_start")],
+    #     [InlineKeyboardButton("🛑 Stop", callback_data="cmd_stop")],
+    #     [InlineKeyboardButton("🔄 Reset", callback_data="cmd_reset")],
+    #     [InlineKeyboardButton("📋 List", callback_data="cmd_list")],
+    #     [InlineKeyboardButton("📊 Status", callback_data="cmd_status")],
+    #     [InlineKeyboardButton("❓ Help", callback_data="cmd_help")],
+    # ])
+
+    keyboard = InlineKeyboardMarkup([
+    [
+        InlineKeyboardButton("✅ Start", callback_data="cmd_start"),
+        InlineKeyboardButton("🛑 Stop", callback_data="cmd_stop")
+    ],
+    [
+        InlineKeyboardButton("🔄 Reset", callback_data="cmd_reset"),
+        InlineKeyboardButton("📋 List", callback_data="cmd_list")
+    ],
+    [
+        InlineKeyboardButton("📊 Status", callback_data="cmd_status"),
+        InlineKeyboardButton("❓ Help", callback_data="cmd_help")
+    ],
+    ])
+
+    await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=keyboard)
+
+# async def handle_dashboard_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     query = update.callback_query
+#     await query.answer()
+
+#     if query.data == "cmd_start":
+#         await start(update, context)
+#     elif query.data == "cmd_stop":
+#         await stop(update, context)
+#     elif query.data == "cmd_reset":
+#         await reset(update, context)
+#     elif query.data == "cmd_list":
+#         await list_tokens(update, context)
+#     elif query.data == "cmd_status":
+#         await status(update, context)
+#     elif query.data == "cmd_help":
+#         await help_command(update, context)
+
+
+async def handle_dashboard_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()  # Answer the callback query
+    
+    callback_data = query.data
+    chat_id = str(query.message.chat_id)
+    user_id = int(chat_id)
+    
+    # Create a new Update-like object with a message attribute
+    class CustomUpdate:
+        def __init__(self, effective_chat, message):
+            self.effective_chat = effective_chat
+            self.message = message
+    
+    # Create an EffectiveChat-like object
+    class CustomEffectiveChat:
+        def __init__(self, id):
+            self.id = id
+    
+    # Create a custom message object with reply_text method
+    class CustomMessage:
+        def __init__(self, chat_id, reply_markup=None):
+            self.chat_id = chat_id
+            self.reply_markup = reply_markup
+            
+        async def reply_text(self, text, parse_mode=None, reply_markup=None):
+            # Edit the original message instead of sending a new one
+            await query.message.edit_text(
+                text,
+                parse_mode=parse_mode,
+                reply_markup=query.message.reply_markup if reply_markup is None else reply_markup
+            )
+    
+    # Create a custom update object that mimics the structure expected by your commands
+    custom_chat = CustomEffectiveChat(id=user_id)
+    custom_message = CustomMessage(chat_id=user_id)
+    custom_update = CustomUpdate(effective_chat=custom_chat, message=custom_message)
+    
+    # Call the appropriate function based on the callback data
+    if callback_data == "cmd_start":
+        await start(custom_update, context)
+    elif callback_data == "cmd_stop":
+        await stop(custom_update, context)
+    elif callback_data == "cmd_reset":
+        await reset(custom_update, context)
+    elif callback_data == "cmd_list":
+        await list_tokens(custom_update, context)
+    elif callback_data == "cmd_status":
+        await status(custom_update, context)
+    elif callback_data == "cmd_help":
+        await help_command(custom_update, context)
+
