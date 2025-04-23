@@ -1,3 +1,8 @@
 *.pyc
 __pycache__/
+<<<<<<< HEAD
 main_folder/storage/data/
+=======
+*.pyc
+__pycache__/
+>>>>>>> 2452538 (token data update)
