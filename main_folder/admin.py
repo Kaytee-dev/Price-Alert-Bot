@@ -124,7 +124,7 @@ async def handle_removeadmin_callback(update: Update, context: ContextTypes.DEFA
         if user_id in ADMINS:
             ADMINS.remove(user_id)
             save_admins()
-            await tiers.set_user_tier(user_id, "free", bot=context.bot)
+            await tiers.set_user_tier(user_id, "Apprentice", bot=context.bot)
             await refresh_user_commands(user_id, bot=context.bot)
             await query.edit_message_text(f"🗑️ Removed user {user_id} from admins.")
         else:

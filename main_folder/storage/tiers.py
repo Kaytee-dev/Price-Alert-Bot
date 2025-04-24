@@ -6,18 +6,23 @@ from utils import load_json, save_json, send_message
 from typing import Optional
 from telegram import Bot
 
+from datetime import datetime
+
 import storage.users as users
+import storage.expiry as expiry
 
 
 FREE_LIMIT = 3
 STANDARD_LIMIT = 10
 PREMIUM_LIMIT = 20
+OVERLORD_LIMIT = 40
 SUPER_ADMIN_LIMIT = 999
 
 TIER_LIMITS = {
-    "free": FREE_LIMIT,
-    "standard": STANDARD_LIMIT,
-    "premium": PREMIUM_LIMIT,
+    "apprentice": FREE_LIMIT,
+    "disciple": STANDARD_LIMIT,
+    "chieftain": PREMIUM_LIMIT,
+    "overlord": OVERLORD_LIMIT,
     "super admin": SUPER_ADMIN_LIMIT,
 }
 
@@ -33,7 +38,7 @@ def save_user_tiers():
 def get_user_tier(user_id: int) -> str:
     user_id_str = str(user_id)
     if user_id_str not in USER_TIERS:
-        USER_TIERS[user_id_str] = "free"
+        USER_TIERS[user_id_str] = "Apprentice"
         save_user_tiers()
     return USER_TIERS[user_id_str]
 
@@ -81,7 +86,7 @@ def delete_user_tier(user_id: int):
         save_user_tiers()
 
 async def promote_to_premium(user_id: int, bot: Optional[Bot] = None):
-    await set_user_tier(user_id, "premium", bot=bot)
+    await set_user_tier(user_id, "Chieftain", bot=bot)
 
 
 def enforce_token_limit_core(user_id: int) -> bool:
@@ -91,7 +96,7 @@ def enforce_token_limit_core(user_id: int) -> bool:
         USER_TIERS[user_id_str] = "super admin"
         save_user_tiers()
 
-    tier = USER_TIERS.get(user_id_str, "free")
+    tier = USER_TIERS.get(user_id_str, "Apprentice")
     allowed_limit = TIER_LIMITS.get(tier, FREE_LIMIT)
     current_tokens = users.USER_TRACKING.get(user_id_str, [])
 
@@ -105,10 +110,15 @@ def enforce_token_limit_core(user_id: int) -> bool:
 async def enforce_token_limit(user_id: int, bot: Optional[Bot] = None):
     trimmed = enforce_token_limit_core(user_id)
     if trimmed and bot:
-        tier = USER_TIERS.get(str(user_id), "free")
+        tier = USER_TIERS.get(str(user_id), "Apprentice")
         allowed_limit = TIER_LIMITS.get(tier, FREE_LIMIT)
         await send_message(
             bot,
             f"🚫 Your tracked tokens exceeded your tier limit ({tier}). We trimmed it to the first {allowed_limit} token(s).",
             chat_id=user_id
         )
+
+def set_user_expiry(user_id: int, expiry_date: datetime):
+    user_id_str = str(user_id)
+    expiry.USER_EXPIRY[user_id_str] = expiry_date.isoformat()
+    expiry.save_user_expiry()

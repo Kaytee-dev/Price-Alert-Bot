@@ -19,6 +19,7 @@ from commands import (
     status, restart, alltokens, threshold, handle_dashboard_button, launch
 )
 
+
 import storage.tokens
 import storage.users
 from storage.tiers import load_user_tiers
@@ -30,6 +31,8 @@ from storage.symbols import load_symbols_from_file
 from storage.users import load_user_tracking, load_user_status, save_user_status
 from storage.history import load_token_history
 from storage.thresholds import load_user_thresholds, save_user_thresholds
+from storage.expiry import load_user_expiry
+
 
 from admin import (
     addadmin, removeadmin, listadmins,
@@ -37,6 +40,8 @@ from admin import (
 )
 from utils import load_json, save_json, send_message, refresh_user_commands
 from monitor import background_price_monitor
+
+from upgrade import upgrade_conv_handler
 
 
 logging.basicConfig(level=logging.INFO)
@@ -162,7 +167,7 @@ async def on_startup(app):
 
     # 🔧 Set fallback default commands
     default_cmds = [
-        BotCommand("launch", "Launch bot dashboard"),
+        BotCommand("lc", "Launch bot dashboard"),
         BotCommand("start", "Start tracking tokens"),
         BotCommand("stop", "Stop tracking tokens"),
         BotCommand("add", "Add a token to track -- /a"),
@@ -194,6 +199,7 @@ def main():
     load_token_history()
     load_active_token_data()
     load_user_tiers()
+    load_user_expiry()
 
     # 🔒 Enforce token limits based on user tiers
     for user_id_str in list(storage.users.USER_TRACKING.keys()):
@@ -240,7 +246,10 @@ def main():
         .build()
     )
 
-    app.add_handler(CommandHandler("launch", launch))
+    
+    app.add_handler(CommandHandler("lc", launch))
+
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
 
@@ -283,6 +292,8 @@ def main():
     app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
     app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
+
+    app.add_handler(upgrade_conv_handler)
     app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))
 
 

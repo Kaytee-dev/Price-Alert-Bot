@@ -14,7 +14,8 @@ import storage.tiers as tiers
 import storage.thresholds as thresholds
 
 from monitor import background_price_monitor
-from utils import send_message, refresh_user_commands, load_admins
+from utils import send_message, refresh_user_commands, load_admins, build_custom_update_from_query
+from upgrade import start_upgrade
 
 
 # --- Telegram Bot Commands ---
@@ -306,13 +307,13 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Use the following commands to manage your token alerts:\n",
         "*🔹 Regular Commands:*",
         "/start — Start the bot",
-        "/stop — Stop the bot",
+        "/stop — Stop the bot\n",
         "/add or /a — Add a token to track",
-        "/remove or /rm — Remove a tracked token",
+        "/remove or /rm — Remove a tracked token\n",
         "/list or /l — List your tracked tokens",
-        "/reset or /x — Clear all tracked tokens",
+        "/reset or /x — Clear all tracked tokens\n",
         "/help or /h — Show this help menu",
-        "/status or /s — View your token tracking stats",
+        "/status or /s — View your token tracking stats\n",
         "/threshold or /t — Set your spike alert threshold (%)\n",
     ]
 
@@ -363,11 +364,11 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     msg = (
         f"📊 *Bot Status*\n\n"
-        f"{monitor_state}\n"
+        f"{monitor_state}\n\n"
         f"🎯 Tier: {user_tier.capitalize()} ({user_limit} token limit)\n"
-         f"🔔 Alert threshold: {user_threshold}%\n"
+         f"🔔 Alert threshold: {user_threshold}%\n\n"
         f"👤 You are tracking {len(user_tokens)} token(s).\n"
-        f"🌐 Total unique tokens tracked: {len(all_tokens)}\n"
+        f"🌐 Total unique tokens tracked: {len(all_tokens)}\n\n"
         f"💥 Active spikes (≥15%): {spike_count}\n"
         f"🕓 Last update: {last_update if last_update else 'N/A'}"
     )
@@ -429,6 +430,7 @@ async def threshold(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"✅ Your threshold has been set to {value}%")
 
 async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logging.debug("I've been called")
     chat_id = str(update.effective_chat.id)
     user_id = int(chat_id)
 
@@ -453,7 +455,7 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_limit = tiers.get_user_limit(user_id)
 
     msg = (
-        f"*Welcome To PumpCycle Bot*\n"
+        f"*Welcome To PumpCycle Bot*\n\n"
         f"Tracks tokens that cooled off but still have holders. Alerts you when they’re warming up for Round 2. 🔥📈\n\n"
         f"{monitor_state}\n"
         f"🎯 Tier: {user_tier.capitalize()} ({user_limit} token limit)\n\n"
@@ -463,48 +465,26 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🕓 Last update: {last_update if last_update else 'N/A'}"
     )
 
-    # keyboard = InlineKeyboardMarkup([
-    #     [InlineKeyboardButton("✅ Start", callback_data="cmd_start")],
-    #     [InlineKeyboardButton("🛑 Stop", callback_data="cmd_stop")],
-    #     [InlineKeyboardButton("🔄 Reset", callback_data="cmd_reset")],
-    #     [InlineKeyboardButton("📋 List", callback_data="cmd_list")],
-    #     [InlineKeyboardButton("📊 Status", callback_data="cmd_status")],
-    #     [InlineKeyboardButton("❓ Help", callback_data="cmd_help")],
-    # ])
 
     keyboard = InlineKeyboardMarkup([
     [
-        InlineKeyboardButton("✅ Start", callback_data="cmd_start"),
-        InlineKeyboardButton("🛑 Stop", callback_data="cmd_stop")
+        InlineKeyboardButton("✅ Start Tracking", callback_data="cmd_start"),
+        InlineKeyboardButton("🛑 Stop Tracking", callback_data="cmd_stop")
     ],
     [
-        InlineKeyboardButton("🔄 Reset", callback_data="cmd_reset"),
-        InlineKeyboardButton("📋 List", callback_data="cmd_list")
+        InlineKeyboardButton("🔄 Reset Tracking List", callback_data="cmd_reset"),
+        InlineKeyboardButton("📋 List Tracked Tokens", callback_data="cmd_list")
     ],
     [
-        InlineKeyboardButton("📊 Status", callback_data="cmd_status"),
+        InlineKeyboardButton("📊 Tracking Status", callback_data="cmd_status"),
         InlineKeyboardButton("❓ Help", callback_data="cmd_help")
+    ],
+    [
+        InlineKeyboardButton("⭐ Upgrade", callback_data="cmd_upgrade")
     ],
     ])
 
     await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=keyboard)
-
-# async def handle_dashboard_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     query = update.callback_query
-#     await query.answer()
-
-#     if query.data == "cmd_start":
-#         await start(update, context)
-#     elif query.data == "cmd_stop":
-#         await stop(update, context)
-#     elif query.data == "cmd_reset":
-#         await reset(update, context)
-#     elif query.data == "cmd_list":
-#         await list_tokens(update, context)
-#     elif query.data == "cmd_status":
-#         await status(update, context)
-#     elif query.data == "cmd_help":
-#         await help_command(update, context)
 
 
 async def handle_dashboard_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -515,35 +495,13 @@ async def handle_dashboard_button(update: Update, context: ContextTypes.DEFAULT_
     chat_id = str(query.message.chat_id)
     user_id = int(chat_id)
     
-    # Create a new Update-like object with a message attribute
-    class CustomUpdate:
-        def __init__(self, effective_chat, message):
-            self.effective_chat = effective_chat
-            self.message = message
-    
-    # Create an EffectiveChat-like object
-    class CustomEffectiveChat:
-        def __init__(self, id):
-            self.id = id
-    
-    # Create a custom message object with reply_text method
-    class CustomMessage:
-        def __init__(self, chat_id, reply_markup=None):
-            self.chat_id = chat_id
-            self.reply_markup = reply_markup
-            
-        async def reply_text(self, text, parse_mode=None, reply_markup=None):
-            # Edit the original message instead of sending a new one
-            await query.message.edit_text(
-                text,
-                parse_mode=parse_mode,
-                reply_markup=query.message.reply_markup if reply_markup is None else reply_markup
-            )
-    
-    # Create a custom update object that mimics the structure expected by your commands
-    custom_chat = CustomEffectiveChat(id=user_id)
-    custom_message = CustomMessage(chat_id=user_id)
-    custom_update = CustomUpdate(effective_chat=custom_chat, message=custom_message)
+    # Handle upgrade button by transferring to the conversation
+    if callback_data == "cmd_upgrade":
+        # This will redirect to the ConversationHandler
+        return await start_upgrade(update, context)
+
+    custom_update = build_custom_update_from_query(query)
+
     
     # Call the appropriate function based on the callback data
     if callback_data == "cmd_start":

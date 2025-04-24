@@ -59,7 +59,7 @@ async def refresh_user_commands(user_id: int, bot):
     ADMINS = load_admins()
 
     regular_cmds = [
-        BotCommand("launch", "Launch bot dashboard"),
+        BotCommand("lc", "Launch bot dashboard"),
         BotCommand("start", "Start tracking tokens"),
         BotCommand("stop", "Stop tracking tokens"),
         BotCommand("add", "Add a token to track -- /a"),
@@ -98,3 +98,38 @@ async def refresh_user_commands(user_id: int, bot):
 #     """
 #     threshold = load_json(USER_THRESHOLDS_FILE, {}, "user thresholds")
 #     return threshold.get(user_id, default)
+
+class CustomEffectiveChat:
+    def __init__(self, id):
+        self.id = id
+
+
+class CustomMessage:
+    def __init__(self, chat_id, query, reply_markup=None):
+        self.chat_id = chat_id
+        self.query = query
+        self.reply_markup = reply_markup
+
+    async def reply_text(self, text, parse_mode=None, reply_markup=None):
+        if not self.query or not hasattr(self.query, "message"):
+            raise ValueError("Query object with message is required to edit text")
+
+        await self.query.message.edit_text(
+            text,
+            parse_mode=parse_mode,
+            reply_markup=self.query.message.reply_markup if reply_markup is None else reply_markup
+        )
+
+
+class CustomUpdate:
+    def __init__(self, effective_chat, message):
+        self.effective_chat = effective_chat
+        self.message = message
+
+
+def build_custom_update_from_query(query):
+    chat_id = str(query.message.chat_id)
+    user_id = int(chat_id)
+    chat = CustomEffectiveChat(id=user_id)
+    message = CustomMessage(chat_id=user_id, query=query)
+    return CustomUpdate(effective_chat=chat, message=message)
