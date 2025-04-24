@@ -1,7 +1,7 @@
 # script to extract chatgpt conversation for exported data
 import json
 
-with open("part.json", "r") as file:
+with open("conversations.json", "r") as file:
     loaded_data = json.load(file)
     chat_keys = loaded_data["mapping"].keys()
     
