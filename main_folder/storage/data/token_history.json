@@ -1,11 +1,16 @@
 {
   "9dipUPALacHLmYwN9ZnCfXcK45FWqExjAe1u6v21pump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "9dipUPALacHLmYwN9ZnCfXcK45FWqExjAe1u6v21pump",
       "symbol": "TOPSECRET",
       "priceChange_m5": null,
       "volume_m5": 0,
+<<<<<<< Updated upstream
       "marketCap": 4743
     },
     {
@@ -18,6 +23,20 @@
     },
     {
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "marketCap": 4784
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "9dipUPALacHLmYwN9ZnCfXcK45FWqExjAe1u6v21pump",
+      "symbol": "TOPSECRET",
+      "priceChange_m5": 0.87,
+      "volume_m5": 2.94,
+      "marketCap": 4784
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "9dipUPALacHLmYwN9ZnCfXcK45FWqExjAe1u6v21pump",
       "symbol": "TOPSECRET",
       "priceChange_m5": null,
@@ -27,7 +46,11 @@
   ],
   "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
       "symbol": "UncleSam",
       "priceChange_m5": null,
@@ -35,7 +58,11 @@
       "marketCap": 24119
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
       "symbol": "UncleSam",
       "priceChange_m5": null,
@@ -43,7 +70,11 @@
       "marketCap": 24119
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
       "symbol": "UncleSam",
       "priceChange_m5": null,
@@ -53,7 +84,11 @@
   ],
   "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
       "symbol": "BFC",
       "priceChange_m5": null,
@@ -61,7 +96,11 @@
       "marketCap": 6003
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
       "symbol": "BFC",
       "priceChange_m5": null,
@@ -69,7 +108,11 @@
       "marketCap": 6003
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
       "symbol": "BFC",
       "priceChange_m5": null,
@@ -79,7 +122,11 @@
   ],
   "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
       "symbol": "buzhidao",
       "priceChange_m5": null,
@@ -87,7 +134,11 @@
       "marketCap": 26776
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
       "symbol": "buzhidao",
       "priceChange_m5": null,
@@ -95,7 +146,11 @@
       "marketCap": 26776
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
       "symbol": "buzhidao",
       "priceChange_m5": null,
@@ -105,7 +160,11 @@
   ],
   "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
       "symbol": "Loopy",
       "priceChange_m5": null,
@@ -113,7 +172,11 @@
       "marketCap": 46005
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
       "symbol": "Loopy",
       "priceChange_m5": null,
@@ -121,7 +184,11 @@
       "marketCap": 46005
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
       "symbol": "Loopy",
       "priceChange_m5": null,
@@ -131,7 +198,11 @@
   ],
   "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
       "symbol": "TUPID",
       "priceChange_m5": null,
@@ -139,7 +210,11 @@
       "marketCap": 6530
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
       "symbol": "TUPID",
       "priceChange_m5": null,
@@ -147,7 +222,11 @@
       "marketCap": 6530
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
       "symbol": "TUPID",
       "priceChange_m5": null,
@@ -157,7 +236,11 @@
   ],
   "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
       "symbol": "$69M",
       "priceChange_m5": null,
@@ -165,7 +248,11 @@
       "marketCap": 10205
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
       "symbol": "$69M",
       "priceChange_m5": null,
@@ -173,7 +260,11 @@
       "marketCap": 10205
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
       "symbol": "$69M",
       "priceChange_m5": null,
@@ -183,6 +274,7 @@
   ],
   "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
       "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
       "symbol": "SCIENCE",
@@ -192,6 +284,17 @@
     },
     {
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+      "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
+      "symbol": "SCIENCE",
+      "priceChange_m5": 0.18,
+      "volume_m5": 6.05,
+      "marketCap": 3124
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
       "symbol": "SCIENCE",
       "priceChange_m5": null,
@@ -199,7 +302,11 @@
       "marketCap": 3119
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
       "symbol": "SCIENCE",
       "priceChange_m5": null,
@@ -209,11 +316,16 @@
   ],
   "5iLCv5CrigACST1MbFs3s59spnyq2QyWeqwSPFM6DUAh": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "5iLCv5CrigACST1MbFs3s59spnyq2QyWeqwSPFM6DUAh",
       "symbol": "Fartrrr",
       "priceChange_m5": 0.01,
       "volume_m5": 0,
+<<<<<<< Updated upstream
       "marketCap": 2996
     },
     {
@@ -230,12 +342,34 @@
       "symbol": "Fartrrr",
       "priceChange_m5": 0.11,
       "volume_m5": 0.03,
+=======
+      "marketCap": 2992
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "5iLCv5CrigACST1MbFs3s59spnyq2QyWeqwSPFM6DUAh",
+      "symbol": "Fartrrr",
+      "priceChange_m5": -0.13,
+      "volume_m5": 0,
+      "marketCap": 2992
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+      "address": "5iLCv5CrigACST1MbFs3s59spnyq2QyWeqwSPFM6DUAh",
+      "symbol": "Fartrrr",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+>>>>>>> Stashed changes
       "marketCap": 2996
     }
   ],
   "EVX97pWs1P67d2Xtjq7q8yFaA8xP9DDjRB3DNbSstray": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "EVX97pWs1P67d2Xtjq7q8yFaA8xP9DDjRB3DNbSstray",
       "symbol": "DADNME",
       "priceChange_m5": null,
@@ -243,6 +377,7 @@
       "marketCap": 3489
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
       "address": "EVX97pWs1P67d2Xtjq7q8yFaA8xP9DDjRB3DNbSstray",
       "symbol": "DADNME",
@@ -252,6 +387,17 @@
     },
     {
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "EVX97pWs1P67d2Xtjq7q8yFaA8xP9DDjRB3DNbSstray",
+      "symbol": "DADNME",
+      "priceChange_m5": -0.01,
+      "volume_m5": 1.5,
+      "marketCap": 3489
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "EVX97pWs1P67d2Xtjq7q8yFaA8xP9DDjRB3DNbSstray",
       "symbol": "DADNME",
       "priceChange_m5": null,
@@ -261,6 +407,7 @@
   ],
   "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
       "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
       "symbol": "Figure",
@@ -283,11 +430,39 @@
       "priceChange_m5": -4.48,
       "volume_m5": 18686.57,
       "marketCap": 839874
+=======
+      "timestamp": "2025-04-24 21:42:49",
+      "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
+      "symbol": "Figure",
+      "priceChange_m5": -0.48,
+      "volume_m5": 3232.15,
+      "marketCap": 868605
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
+      "symbol": "Figure",
+      "priceChange_m5": -0.14,
+      "volume_m5": 1442.59,
+      "marketCap": 872754
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+      "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
+      "symbol": "Figure",
+      "priceChange_m5": -4.8,
+      "volume_m5": 18723.09,
+      "marketCap": 837118
+>>>>>>> Stashed changes
     }
   ],
   "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
       "symbol": "point",
       "priceChange_m5": null,
@@ -295,7 +470,11 @@
       "marketCap": 11344
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
       "symbol": "point",
       "priceChange_m5": null,
@@ -303,7 +482,11 @@
       "marketCap": 11344
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
       "symbol": "point",
       "priceChange_m5": null,
@@ -313,7 +496,11 @@
   ],
   "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
       "symbol": "Wo",
       "priceChange_m5": null,
@@ -321,7 +508,11 @@
       "marketCap": 28017
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
       "symbol": "Wo",
       "priceChange_m5": null,
@@ -329,7 +520,11 @@
       "marketCap": 28017
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
       "symbol": "Wo",
       "priceChange_m5": null,
@@ -339,7 +534,11 @@
   ],
   "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
       "symbol": "FSM",
       "priceChange_m5": null,
@@ -347,7 +546,11 @@
       "marketCap": 12035
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
       "symbol": "FSM",
       "priceChange_m5": null,
@@ -355,7 +558,11 @@
       "marketCap": 12035
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
       "symbol": "FSM",
       "priceChange_m5": null,
@@ -365,7 +572,11 @@
   ],
   "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
       "symbol": "LLC",
       "priceChange_m5": null,
@@ -373,7 +584,11 @@
       "marketCap": 5259
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
       "symbol": "LLC",
       "priceChange_m5": null,
@@ -381,7 +596,11 @@
       "marketCap": 5259
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
       "symbol": "LLC",
       "priceChange_m5": null,
@@ -391,7 +610,11 @@
   ],
   "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
       "symbol": "LHC",
       "priceChange_m5": null,
@@ -399,7 +622,11 @@
       "marketCap": 13258
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
       "symbol": "LHC",
       "priceChange_m5": null,
@@ -407,7 +634,11 @@
       "marketCap": 13258
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
       "symbol": "LHC",
       "priceChange_m5": null,
@@ -417,6 +648,7 @@
   ],
   "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
       "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
       "symbol": "ReFi",
@@ -426,6 +658,17 @@
     },
     {
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+      "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
+      "symbol": "ReFi",
+      "priceChange_m5": -0.56,
+      "volume_m5": 9.27,
+      "marketCap": 123222
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
       "symbol": "ReFi",
       "priceChange_m5": null,
@@ -433,7 +676,11 @@
       "marketCap": 123915
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
       "symbol": "ReFi",
       "priceChange_m5": null,
@@ -443,7 +690,11 @@
   ],
   "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
       "symbol": "Grimace",
       "priceChange_m5": null,
@@ -451,7 +702,11 @@
       "marketCap": 9603
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
       "symbol": "Grimace",
       "priceChange_m5": null,
@@ -459,7 +714,11 @@
       "marketCap": 9603
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
       "symbol": "Grimace",
       "priceChange_m5": null,
@@ -469,11 +728,16 @@
   ],
   "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
       "symbol": "LeBarbie",
       "priceChange_m5": null,
       "volume_m5": 0,
+<<<<<<< Updated upstream
       "marketCap": 37354
     },
     {
@@ -486,6 +750,20 @@
     },
     {
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "marketCap": 37445
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
+      "symbol": "LeBarbie",
+      "priceChange_m5": 0.24,
+      "volume_m5": 7.57,
+      "marketCap": 37445
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
       "symbol": "LeBarbie",
       "priceChange_m5": 0.37,
@@ -495,6 +773,7 @@
   ],
   "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
       "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
       "symbol": "XIJINGPOOH",
@@ -504,6 +783,17 @@
     },
     {
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+      "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
+      "symbol": "XIJINGPOOH",
+      "priceChange_m5": -0.3,
+      "volume_m5": 0.89,
+      "marketCap": 15173
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
       "symbol": "XIJINGPOOH",
       "priceChange_m5": null,
@@ -511,7 +801,11 @@
       "marketCap": 15219
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
       "symbol": "XIJINGPOOH",
       "priceChange_m5": null,
@@ -521,7 +815,11 @@
   ],
   "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
       "symbol": "CP",
       "priceChange_m5": null,
@@ -529,7 +827,11 @@
       "marketCap": 10623
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
       "symbol": "CP",
       "priceChange_m5": null,
@@ -537,7 +839,11 @@
       "marketCap": 10623
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
       "symbol": "CP",
       "priceChange_m5": null,
@@ -547,6 +853,7 @@
   ],
   "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
       "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
       "symbol": "WW3",
@@ -564,6 +871,25 @@
     },
     {
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+      "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
+      "symbol": "WW3",
+      "priceChange_m5": 3.11,
+      "volume_m5": 1025.76,
+      "marketCap": 115690
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
+      "symbol": "WW3",
+      "priceChange_m5": -16.15,
+      "volume_m5": 2135.57,
+      "marketCap": 113061
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
       "symbol": "WW3",
       "priceChange_m5": -0.28,
@@ -573,6 +899,7 @@
   ],
   "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
       "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
       "symbol": "House",
@@ -590,6 +917,25 @@
     },
     {
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+      "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
+      "symbol": "House",
+      "priceChange_m5": -0.1,
+      "volume_m5": 1470.71,
+      "marketCap": 12420457
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
+      "symbol": "House",
+      "priceChange_m5": 2.58,
+      "volume_m5": 7704.07,
+      "marketCap": 12420200
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
       "symbol": "House",
       "priceChange_m5": -0.59,
@@ -599,7 +945,11 @@
   ],
   "4b83cYeo4BYfP9NfFUQQWRQYfomJjjChfsV64m5MqifY": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "4b83cYeo4BYfP9NfFUQQWRQYfomJjjChfsV64m5MqifY",
       "symbol": "ALGOAI",
       "priceChange_m5": null,
@@ -607,12 +957,25 @@
       "marketCap": 196562
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "4b83cYeo4BYfP9NfFUQQWRQYfomJjjChfsV64m5MqifY",
+      "symbol": "ALGOAI",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 196562
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "4b83cYeo4BYfP9NfFUQQWRQYfomJjjChfsV64m5MqifY",
       "symbol": "ALGOAI",
       "priceChange_m5": -0.11,
       "volume_m5": 30.53,
       "marketCap": 196562
+<<<<<<< Updated upstream
     },
     {
       "timestamp": "2025-04-24 21:29:42",
@@ -621,11 +984,17 @@
       "priceChange_m5": -0.11,
       "volume_m5": 30.53,
       "marketCap": 196562
+=======
+>>>>>>> Stashed changes
     }
   ],
   "5eafqp6ic7WpxUsKJLhnLxthUcEYatjhXPNLBRZCpump": [
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:32:07",
+=======
+      "timestamp": "2025-04-24 21:42:49",
+>>>>>>> Stashed changes
       "address": "5eafqp6ic7WpxUsKJLhnLxthUcEYatjhXPNLBRZCpump",
       "symbol": "PIU",
       "priceChange_m5": null,
@@ -633,7 +1002,11 @@
       "marketCap": 18049
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:30:45",
+=======
+      "timestamp": "2025-04-24 21:36:51",
+>>>>>>> Stashed changes
       "address": "5eafqp6ic7WpxUsKJLhnLxthUcEYatjhXPNLBRZCpump",
       "symbol": "PIU",
       "priceChange_m5": null,
@@ -641,12 +1014,149 @@
       "marketCap": 18049
     },
     {
+<<<<<<< Updated upstream
       "timestamp": "2025-04-24 21:29:42",
+=======
+      "timestamp": "2025-04-24 21:30:20",
+>>>>>>> Stashed changes
       "address": "5eafqp6ic7WpxUsKJLhnLxthUcEYatjhXPNLBRZCpump",
       "symbol": "PIU",
       "priceChange_m5": null,
       "volume_m5": 0,
       "marketCap": 18049
+<<<<<<< Updated upstream
+=======
+    }
+  ],
+  "38755kX6CswLKJopfAz1VEAUqnS8CGMU7s5amvrTpump": [
+    {
+      "timestamp": "2025-04-24 15:28:30",
+      "address": "38755kX6CswLKJopfAz1VEAUqnS8CGMU7s5amvrTpump",
+      "symbol": "HEHEYYEYAA",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 160
+    },
+    {
+      "timestamp": "2025-04-24 15:24:25",
+      "address": "38755kX6CswLKJopfAz1VEAUqnS8CGMU7s5amvrTpump",
+      "symbol": "HEHEYYEYAA",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 160
+    },
+    {
+      "timestamp": "2025-04-24 15:20:22",
+      "address": "38755kX6CswLKJopfAz1VEAUqnS8CGMU7s5amvrTpump",
+      "symbol": "HEHEYYEYAA",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 160
+>>>>>>> Stashed changes
+    }
+  ],
+  "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump": [
+    {
+      "timestamp": "2025-04-24 21:42:47",
+      "address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
+      "symbol": "Fartcoin2",
+      "priceChange_m5": 9.58,
+      "volume_m5": 9061.11,
+      "marketCap": 481344
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
+      "symbol": "Fartcoin2",
+      "priceChange_m5": 2.93,
+      "volume_m5": 2808.4,
+      "marketCap": 432314
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+      "address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
+      "symbol": "Fartcoin2",
+      "priceChange_m5": 24.3,
+      "volume_m5": 7903.12,
+      "marketCap": 447656
+    }
+  ],
+  "34HDZNbUkTyTrgYKy2ox43yp2f8PJ5hoM7xsrfNApump": [
+    {
+      "timestamp": "2025-04-24 21:42:49",
+      "address": "34HDZNbUkTyTrgYKy2ox43yp2f8PJ5hoM7xsrfNApump",
+      "symbol": "Routine",
+      "priceChange_m5": -0.54,
+      "volume_m5": 27.65,
+      "marketCap": 171663
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "34HDZNbUkTyTrgYKy2ox43yp2f8PJ5hoM7xsrfNApump",
+      "symbol": "Routine",
+      "priceChange_m5": 0.36,
+      "volume_m5": 36.82,
+      "marketCap": 172603
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+      "address": "34HDZNbUkTyTrgYKy2ox43yp2f8PJ5hoM7xsrfNApump",
+      "symbol": "Routine",
+      "priceChange_m5": -0.74,
+      "volume_m5": 187.1,
+      "marketCap": 171980
+    }
+  ],
+  "DPTP4fUfWuwVTgCmttWBu6Sy5B9TeCTBjc2YKgpDpump": [
+    {
+      "timestamp": "2025-04-24 21:42:49",
+      "address": "DPTP4fUfWuwVTgCmttWBu6Sy5B9TeCTBjc2YKgpDpump",
+      "symbol": "Defiant",
+      "priceChange_m5": -0.06,
+      "volume_m5": 17.96,
+      "marketCap": 169906
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "DPTP4fUfWuwVTgCmttWBu6Sy5B9TeCTBjc2YKgpDpump",
+      "symbol": "Defiant",
+      "priceChange_m5": -0.05,
+      "volume_m5": 1.39,
+      "marketCap": 169206
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+      "address": "DPTP4fUfWuwVTgCmttWBu6Sy5B9TeCTBjc2YKgpDpump",
+      "symbol": "Defiant",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 169893
+    }
+  ],
+  "JCV8BB8Zde8ukroWKTjLSENSWEj42kBkENjjws2Rh6vP": [
+    {
+      "timestamp": "2025-04-24 21:42:49",
+      "address": "JCV8BB8Zde8ukroWKTjLSENSWEj42kBkENjjws2Rh6vP",
+      "symbol": "POSEIDON",
+      "priceChange_m5": -8.92,
+      "volume_m5": 3243.03,
+      "marketCap": 154891
+    },
+    {
+      "timestamp": "2025-04-24 21:36:51",
+      "address": "JCV8BB8Zde8ukroWKTjLSENSWEj42kBkENjjws2Rh6vP",
+      "symbol": "POSEIDON",
+      "priceChange_m5": -2.29,
+      "volume_m5": 521.23,
+      "marketCap": 170053
+    },
+    {
+      "timestamp": "2025-04-24 21:30:20",
+      "address": "JCV8BB8Zde8ukroWKTjLSENSWEj42kBkENjjws2Rh6vP",
+      "symbol": "POSEIDON",
+      "priceChange_m5": -0.09,
+      "volume_m5": 11.33,
+      "marketCap": 174076
     }
   ]
 }
