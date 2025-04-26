@@ -4,7 +4,7 @@ import hashlib
 import logging
 from datetime import datetime
 
-from config import BASE_URL, POLL_INTERVAL, SUPER_ADMIN_ID
+from config import POLL_INTERVAL, SUPER_ADMIN_ID
 from admin import ADMINS
 
 import storage.users as users
@@ -15,6 +15,9 @@ import storage.thresholds as thresholds
 
 from api import fetch_prices_for_tokens
 from utils import chunked, send_message
+
+from storage.notify import build_normal_spike_message, build_first_spike_message
+
 
 
 def background_price_monitor(app):
@@ -95,26 +98,25 @@ def background_price_monitor(app):
                             ]
 
                             change = cleaned_data.get("priceChange_m5")
-                            #if isinstance(change, (int, float)) and change >= 5 and any(p >= 5 for p in recent_changes[1:]):
-                            link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
-                            msg = (
-                                f"📢 {link} is spiking!\n\n"
-                                f"🕓 Timestamps: {timestamp}\n"
-                                f"💹 5m Change: {cleaned_data['priceChange_m5']}%\n"
-                                f"📈 5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"
-                                f"💰 Market Cap: ${cleaned_data['marketCap']:,.0f}"
-                            )
-
                             notified_users = set()
+                            first_time_spike_users = set()
+                            user_alert_messages = {}
 
                             for chat_id, tokens_list in users.USER_TRACKING.items():
                                 if users.USER_STATUS.get(chat_id) and address in tokens_list:
                                     threshold_value = thresholds.USER_THRESHOLDS.get(chat_id, 5.0)
 
 
-                                    if (isinstance(change, (int, float)) and 
-                                        change >= threshold_value and 
-                                        any(p >= threshold_value for p in recent_changes[1:])):
+                                    if isinstance(change, (int, float)) and change >= threshold_value:
+                                        if any(p >= threshold_value for p in recent_changes[1:]):
+                                            # Normal spike
+                                            msg = await build_normal_spike_message(cleaned_data, address, timestamp)
+                                          
+                                        else:
+                                            # First-time spike
+                                            msg = await build_first_spike_message(cleaned_data, address, timestamp)
+                                            first_time_spike_users.add(chat_id)
+                                        
 
                                         await send_message(
                                             app.bot,
@@ -125,6 +127,14 @@ def background_price_monitor(app):
                                             super_admin=SUPER_ADMIN_ID
                                         )
                                         notified_users.add(chat_id)
+                                        user_alert_messages[chat_id] = msg
+                            
+                            # if notified_users:
+                            #     logging.info(f"📢 Spike alerts sent to {len(notified_users)} users this round.")
+                            # else:
+                            #     logging.info("ℹ️ No spike alerts triggered this round.")
+
+
 
                             for user_id in notified_users:
                                 try:
@@ -132,8 +142,19 @@ def background_price_monitor(app):
                                     user_name = f"@{chat.username}" if chat.username else chat.full_name
                                 except Exception:
                                     user_name = f"User {user_id}"
+                                
+                                # Decide spike type text
+                                spike_type_text = "📈 First-Time Spike" if user_id in first_time_spike_users else "📈 Ongoing Spike"
 
-                                admin_msg = f"🔔 [User Alert from {user_name}]\n\n" + msg
+
+                                admin_msg = (
+                                    
+                                    f"🔔 [User Alert from {user_name}]\n\n"
+                                    f"{spike_type_text}\n\n"
+                                    f"{user_alert_messages[user_id]}" 
+                                             )
+
+
                                 await send_message(
                                     app.bot,
                                     admin_msg,

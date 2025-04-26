@@ -32,6 +32,7 @@ from storage.users import load_user_tracking, load_user_status, save_user_status
 from storage.history import load_token_history
 from storage.thresholds import load_user_thresholds, save_user_thresholds
 from storage.expiry import load_user_expiry
+from storage.notify import remind_inactive_users
 
 
 from admin import (
@@ -42,6 +43,8 @@ from utils import load_json, save_json, send_message, refresh_user_commands
 from monitor import background_price_monitor
 
 from upgrade import upgrade_conv_handler
+from referral import register_referral_handlers
+
 
 
 logging.basicConfig(level=logging.INFO)
@@ -165,6 +168,12 @@ async def on_startup(app):
         app._monitor_started = True
         logging.info("🔄 Monitor loop auto-started after restart recovery.")
 
+    # 📣 Also start the inactive user reminder loop
+    reminder_task = app.create_task(remind_inactive_users(app))
+    app._reminder_task = reminder_task
+    logging.info("🔔 Inactive user reminder loop started.")
+
+
     # 🔧 Set fallback default commands
     default_cmds = [
         BotCommand("lc", "Launch bot dashboard"),
@@ -246,6 +255,8 @@ def main():
         .build()
     )
 
+    app.bot_data["launch_dashboard"] = launch
+
     
     app.add_handler(CommandHandler("lc", launch))
 
@@ -295,6 +306,9 @@ def main():
 
     app.add_handler(upgrade_conv_handler)
     app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))
+
+    register_referral_handlers(app)
+
 
 
 

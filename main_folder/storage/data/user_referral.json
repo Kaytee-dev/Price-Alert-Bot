@@ -1,0 +1,18 @@
+{
+  "-4710110042": {
+    "referred_users": [],
+    "total_commission": 0.0,
+    "total_paid": 0.0,
+    "wallet_address": "",
+    "successful_referrals": 0
+  },
+  "965551493": {
+    "referred_users": [
+      "7129984365"
+    ],
+    "total_commission": 5.0,
+    "total_paid": 0.0,
+    "wallet_address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
+    "successful_referrals": 1
+  }
+}

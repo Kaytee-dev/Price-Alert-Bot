@@ -38,7 +38,7 @@ def save_user_tiers():
 def get_user_tier(user_id: int) -> str:
     user_id_str = str(user_id)
     if user_id_str not in USER_TIERS:
-        USER_TIERS[user_id_str] = "Apprentice"
+        USER_TIERS[user_id_str] = "apprentice"
         save_user_tiers()
     return USER_TIERS[user_id_str]
 
@@ -96,7 +96,7 @@ def enforce_token_limit_core(user_id: int) -> bool:
         USER_TIERS[user_id_str] = "super admin"
         save_user_tiers()
 
-    tier = USER_TIERS.get(user_id_str, "Apprentice")
+    tier = USER_TIERS.get(user_id_str, "apprentice")
     allowed_limit = TIER_LIMITS.get(tier, FREE_LIMIT)
     current_tokens = users.USER_TRACKING.get(user_id_str, [])
 
@@ -110,7 +110,7 @@ def enforce_token_limit_core(user_id: int) -> bool:
 async def enforce_token_limit(user_id: int, bot: Optional[Bot] = None):
     trimmed = enforce_token_limit_core(user_id)
     if trimmed and bot:
-        tier = USER_TIERS.get(str(user_id), "Apprentice")
+        tier = USER_TIERS.get(str(user_id), "apprentice")
         allowed_limit = TIER_LIMITS.get(tier, FREE_LIMIT)
         await send_message(
             bot,

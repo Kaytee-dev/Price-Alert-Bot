@@ -10,68 +10,22 @@ import storage.tiers as tiers
 from datetime import datetime, timedelta
 import urllib.parse
 
-from utils import CustomUpdate, CustomEffectiveChat, CustomMessage, build_custom_update_from_query
+from utils import CustomUpdate, CustomEffectiveChat, CustomMessage, build_custom_update_from_query, send_message
+from config import SUPER_ADMIN_ID
+
+from referral import on_upgrade_completed
 
 
 # At the top of your file
 SELECTING_TIER, SELECTING_DURATION, PAYMENT, VERIFICATION = range(4)
 
-async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
-    user_id = int(chat_id)
-
-    user_tokens = users.USER_TRACKING.get(chat_id, [])
-    all_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
-    spike_count = 0
-
-    for addr in all_tokens:
-        history_data = history.TOKEN_DATA_HISTORY.get(addr, [])
-        if history_data and isinstance(history_data[0].get("priceChange_m5"), (int, float)):
-            if history_data[0]["priceChange_m5"] >= 15:
-                spike_count += 1
-
-    last_update = None
-    timestamps = [entry[0].get("timestamp") for entry in history.TOKEN_DATA_HISTORY.values() if entry]
-    if timestamps:
-        last_update = max(timestamps)
-
-    is_active = users.USER_STATUS.get(chat_id, False)
-    monitor_state = "✅ Monitoring: Active" if is_active else "🔴 Monitoring: Inactive. Start tracking with /start"
-    user_tier = tiers.get_user_tier(user_id)
-    user_limit = tiers.get_user_limit(user_id)
-
-    msg = (
-        f"*Welcome To PumpCycle Bot*\n\n"
-        f"Tracks tokens that cooled off but still have holders. Alerts you when they’re warming up for Round 2. 🔥📈\n\n"
-        f"{monitor_state}\n"
-        f"🎯 Tier: {user_tier.capitalize()} ({user_limit} token limit)\n\n"
-        f"👤 You are tracking {len(user_tokens)} token(s).\n"
-        f"🌐 Total unique tokens tracked: {len(all_tokens)}\n\n"
-        f"💥 Active spikes (≥15%): {spike_count}\n"
-        f"🕓 Last update: {last_update if last_update else 'N/A'}"
-    )
-
-
-    keyboard = InlineKeyboardMarkup([
-    [
-        InlineKeyboardButton("✅ Start Tracking", callback_data="cmd_start"),
-        InlineKeyboardButton("🛑 Stop Tracking", callback_data="cmd_stop")
-    ],
-    [
-        InlineKeyboardButton("🔄 Reset Tracking List", callback_data="cmd_reset"),
-        InlineKeyboardButton("📋 List Tracked Tokens", callback_data="cmd_list")
-    ],
-    [
-        InlineKeyboardButton("📊 Tracking Status", callback_data="cmd_status"),
-        InlineKeyboardButton("❓ Help", callback_data="cmd_help")
-    ],
-    [
-        InlineKeyboardButton("⭐ Upgrade", callback_data="cmd_upgrade")
-    ],
-    ])
-
-    await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=keyboard)
-
+async def go_back_to_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    launch_func = context.bot_data.get("launch_dashboard")
+    if launch_func:
+        custom_update = build_custom_update_from_query(update.callback_query)
+        return await launch_func(custom_update, context)
+    else:
+        await update.callback_query.edit_message_text("⚠️ Dashboard unavailable.")
 
 
 async def start_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -87,32 +41,78 @@ async def start_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
         message = update.message
     
     user_id = int(chat_id)
+
     current_tier = tiers.get_user_tier(user_id)
-    
+
     # Store the original message if we need to return to dashboard
     if hasattr(update, 'callback_query') and update.callback_query:
         context.user_data['dashboard_message'] = update.callback_query.message
-    
-    # Create tier options
+
+    # Create tier options based on current tier
     tier_options = []
-    if current_tier != "Disciple":
+
+    if current_tier == "apprentice":
+        # Show all upgrade options for Apprentice
         tier_options.append(InlineKeyboardButton("🛡️ Disciple", callback_data="tier_disciple"))
-    if current_tier != "Chieftain":
         tier_options.append(InlineKeyboardButton("👑 Chieftain", callback_data="tier_chieftain"))
-    if current_tier != "Overlord":
         tier_options.append(InlineKeyboardButton("🕶️ Overlord", callback_data="tier_overlord"))
-    
-    
-    # Add a cancel button
-    tier_options.append(InlineKeyboardButton("🔙 Cancel", callback_data="cancel"))
-    
-    keyboard = InlineKeyboardMarkup([[btn] for btn in tier_options])
-    
-    msg = (
-        f"⭐ *Upgrade your Tier*\n\n"
-        f"Your current tier: {current_tier.capitalize()}\n\n"
-        f"Select a tier to upgrade to:"
-    )
+    elif current_tier == "disciple":
+        # Show only Chieftain and Overlord for Disciple
+        tier_options.append(InlineKeyboardButton("👑 Chieftain", callback_data="tier_chieftain"))
+        tier_options.append(InlineKeyboardButton("🕶️ Overlord", callback_data="tier_overlord"))
+    elif current_tier == "chieftain":
+        # Show only Overlord for Chieftain
+        tier_options.append(InlineKeyboardButton("🕶️ Overlord", callback_data="tier_overlord"))
+
+    # Create keyboard layout
+    keyboard = []
+    if tier_options:
+        if len(tier_options) == 3:
+            # For Apprentice: Two columns for first two tiers
+            keyboard.append([tier_options[0], tier_options[1]])
+            # Highest tier gets full width
+            keyboard.append([tier_options[2]])
+        elif len(tier_options) == 2:
+            # For Disciple: One button per row
+            keyboard.append([tier_options[0], tier_options[1]])
+            # keyboard.append([tier_options[0]])
+            # keyboard.append([tier_options[1]])
+        else:
+            # For Chieftain: Just one button
+            keyboard.append([tier_options[0]])
+        
+        # Add the cancel button (full width)
+        keyboard.append([InlineKeyboardButton("🔙 Cancel", callback_data="cancel")])
+        
+        msg = (
+            f"⭐ *Upgrade your Tier*\n\n"
+            f"Your current tier: *{current_tier.capitalize()}*\n\n"
+            f"Select a tier to upgrade to:\n\n"
+            f"🛡️ *Disciple*\n"
+            f"🪙 Track up to 10 tokens\n"
+            f"🔔 Real time spike alerts\n"
+            f"🕓 Around the clock token tracking\n\n"
+            f"👑 *Chieftain*\n"
+            f"🪙 Track up to 20 tokens\n"
+            f"🔔 Real time spike alerts\n"
+            f"🕓 Around the clock token tracking\n\n"
+            f"🕶️ *Overlord*\n"
+            f"🪙 Track up to 40 tokens\n"
+            f"🔔 Real time spike alerts\n"
+            f"🕓 Around the clock token tracking\n\n"
+        )
+    else:
+        # For Overlord or any other case, display the message about contacting admin
+        keyboard = [[InlineKeyboardButton("🔙 Back to Dashboard", callback_data="cancel")]]
+        
+        msg = (
+            f"⭐ *Upgrade Information*\n\n"
+            f"Your current tier: {current_tier.capitalize()}\n\n"
+            f"You've reached the highest tier available. If you need more access to token tracking, "
+            f"please [contact an administrator](https://your-contact-link-here)."
+        )
+
+    keyboard = InlineKeyboardMarkup(keyboard)
     
     if query:
         await query.message.edit_text(msg, parse_mode="Markdown", reply_markup=keyboard)
@@ -121,45 +121,109 @@ async def start_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     return SELECTING_TIER
 
+# async def select_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     """Handle tier selection and ask for duration."""
+#     query = update.callback_query
+#     await query.answer()
+    
+#     # Extract selected tier and store it
+#     selected_tier = query.data.split("_")[1]
+#     context.user_data['selected_tier'] = selected_tier
+    
+#     # Create duration keyboard
+#     duration_keyboard = InlineKeyboardMarkup([
+#         [InlineKeyboardButton("🗓️ 1 Month", callback_data="duration_1"),
+#          InlineKeyboardButton("🗓️ 6 Months", callback_data="duration_6")
+#         ],
+
+#         [InlineKeyboardButton("🗓️ 1 Year", callback_data="duration_12")],
+
+#         [InlineKeyboardButton("🔙 Back", callback_data="back"),
+#          InlineKeyboardButton("❌ Cancel", callback_data="cancel")
+#         ]
+#     ])
+    
+#     # Show pricing information
+#     prices = {
+#         "disciple": {"1": "10 SOL", "6": "50 SOL", "12": "90 SOL"},
+#         "chieftain": {"1": "20 SOL", "6": "100 SOL", "12": "180 SOL"},
+#         "overlord": {"1": "30 SOL", "6": "120 SOL", "12": "280 SOL"}
+#     }
+    
+#     msg = (
+#         f"⭐ *{selected_tier.capitalize()} Tier*\n\n"
+#         f"Select subscription duration:\n\n"
+#         f"🗓️ 1 Month: *{prices[selected_tier]['1']}*\n"
+#         f"🗓️ 6 Months: *{prices[selected_tier]['6']}*. 🏷️ Save 10%\n"
+#         f"🗓️ 1 Year: *{prices[selected_tier]['12']}*"
+#     )
+    
+#     await query.message.edit_text(msg, parse_mode="Markdown", reply_markup=duration_keyboard)
+#     return SELECTING_DURATION
+
 async def select_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle tier selection and ask for duration."""
     query = update.callback_query
     await query.answer()
-    
-    # Extract selected tier and store it
+
     selected_tier = query.data.split("_")[1]
     context.user_data['selected_tier'] = selected_tier
-    
-    # Create duration keyboard
+
+    prices = {
+        "disciple": {"1": 10, "6": 54, "12": 102},
+        "chieftain": {"1": 20, "6": 108, "12": 204},
+        "overlord": {"1": 40, "6": 216, "12": 408}
+    }
+
+    one_month_price = prices[selected_tier]["1"]
+    six_months_price = prices[selected_tier]["6"]
+    twelve_months_price = prices[selected_tier]["12"]
+
+    six_months_original = one_month_price * 6
+    twelve_months_original = one_month_price * 12
+
+    six_months_saved = six_months_original - six_months_price
+    twelve_months_saved = twelve_months_original - twelve_months_price
+
+    # 🏷️ Smarter Button Labels
     duration_keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🗓️ 1 Month", callback_data="duration_1"),
-         InlineKeyboardButton("🗓️ 6 Months", callback_data="duration_6")
+        [
+            InlineKeyboardButton("🗓️ 1 Month", callback_data="duration_1"),
+            InlineKeyboardButton(f"⭐ 6 Months (Save 10%)", callback_data="duration_6")
         ],
-
-        [InlineKeyboardButton("🗓️ 1 Year", callback_data="duration_12")],
-
-        [InlineKeyboardButton("🔙 Back", callback_data="back"),
-         InlineKeyboardButton("❌ Cancel", callback_data="cancel")
+        [
+            InlineKeyboardButton(f"🔥 1 Year (Save 15%)", callback_data="duration_12")
+        ],
+        [
+            InlineKeyboardButton("🔙 Back", callback_data="back"),
+            InlineKeyboardButton("❌ Cancel", callback_data="cancel")
         ]
     ])
-    
-    # Show pricing information
-    prices = {
-        "disciple": {"1": "10 SOL", "6": "50 SOL", "12": "90 SOL"},
-        "chieftain": {"1": "20 SOL", "6": "100 SOL", "12": "180 SOL"},
-        "overlord": {"1": "30 SOL", "6": "120 SOL", "12": "280 SOL"}
-    }
-    
+
+    # msg = (
+    #     f"⭐ *{selected_tier.capitalize()} Tier*\n\n"
+    #     f"Choose your subscription plan:\n\n"
+    #     f"🗓️ 1 Month: *{one_month_price} SOL*\n\n"
+    #     f"⭐ 6 Months:\n"
+    #     f"~~{six_months_original} SOL~~ ➔ *{six_months_price} SOL*  🏷️ *Save {six_months_saved} SOL (10%)*\n\n"
+    #     f"🔥 1 Year:\n"
+    #     f"~~{twelve_months_original} SOL~~ ➔ *{twelve_months_price} SOL*  🏷️ *Save {twelve_months_saved} SOL (15%)*\n"
+    # )
+
+    # await query.message.edit_text(msg, parse_mode="Markdown", reply_markup=duration_keyboard)
+
     msg = (
-        f"⭐ *{selected_tier.capitalize()} Tier*\n\n"
-        f"Select subscription duration:\n\n"
-        f"🗓️ 1 Month: {prices[selected_tier]['1']}\n"
-        f"🗓️ 6 Months: {prices[selected_tier]['6']}\n"
-        f"🗓️ 1 Year: {prices[selected_tier]['12']}"
+    f"⭐ <b>{selected_tier.capitalize()} Tier</b>\n\n"
+    f"Choose your subscription plan:\n\n"
+    f"🗓️ 1 Month: <b>{one_month_price} SOL</b>\n\n"
+    f"⭐ 6 Months:\n"
+    f"<s>{six_months_original} SOL</s> ➔ <b>{six_months_price} SOL</b>  🏷️ <b>Save {six_months_saved} SOL (10%)</b>\n\n"
+    f"🔥 1 Year:\n"
+    f"<s>{twelve_months_original} SOL</s> ➔ <b>{twelve_months_price} SOL</b>  🏷️ <b>Save {twelve_months_saved} SOL (15%)</b>\n"
     )
-    
-    await query.message.edit_text(msg, parse_mode="Markdown", reply_markup=duration_keyboard)
+
+    await query.message.edit_text(msg, parse_mode="HTML", reply_markup=duration_keyboard)
     return SELECTING_DURATION
+
 
 # Continue with handlers for other states...
 async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -174,9 +238,9 @@ async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Generate payment information
     amount = {
-        "disciple": {"1": 10, "6": 50, "12": 90},
-        "chieftain": {"1": 20, "6": 100, "12": 180},
-        "overlord": {"1": 40, "6": 120, "12": 280}
+        "disciple": {"1": 10, "6": 54, "12": 102},
+        "chieftain": {"1": 20, "6": 108, "12": 204},
+        "overlord": {"1": 40, "6": 216, "12": 408}
     }
     
     # Generate Solana Pay link
@@ -243,7 +307,35 @@ async def verify_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Calculate and store subscription expiry
         expiry_date = datetime.now() + timedelta(days=int(duration_months) * 30)
         tiers.set_user_expiry(user_id, expiry_date)
-        
+
+        if context.user_data.get("referred_by"):
+            referrer_id = context.user_data["referred_by"]
+            upgrade_fee = context.user_data.get("payment_amount", 0)  # Get SOL amount
+            success, commission = on_upgrade_completed(user_id, upgrade_fee, int(duration_months))
+            
+            if success:
+                # Fetch both user profiles
+                referrer = await context.bot.get_chat(referrer_id)
+                referred = await context.bot.get_chat(user_id)
+
+                referrer_name = referrer.full_name or f"User {referrer_id}"
+                referred_name = referred.full_name or f"User {user_id}"
+
+                # Notify referrer
+                await send_message(
+                    context.bot,
+                    f"🎉 Hey {referrer_name},\n\n You just earned ${commission:.2f} commission from referring {referred_name}!",
+                    chat_id=referrer_id
+                )
+
+                # Notify super admin
+                await send_message(
+                    context.bot,
+                    f"📣 Referral bonus:\n\nReferrer {referrer_name} (ID: `{referrer_id}`) earned ${commission:.2f} commission from referring {referred_name} (ID: `{user_id}`) after upgrading to {selected_tier.capitalize()} for {duration_months} month(s).",
+                    chat_id=SUPER_ADMIN_ID,
+                    super_admin=SUPER_ADMIN_ID
+                )
+
         # Create dashboard button
         complete_keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton("🏠 Back to Dashboard", callback_data="complete")]
@@ -257,6 +349,16 @@ async def verify_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         
         await query.message.edit_text(msg, parse_mode="Markdown", reply_markup=complete_keyboard)
+
+        # Notifying super admin of the upgrade
+        await send_message(
+            context.bot,
+            f"📢 User {referred_name} (ID: `{user_id}`) has successfully upgraded to *{selected_tier.capitalize()}* tier for {duration_months} month(s).\n\n"
+            f"⏳ Expiry: {expiry_date.strftime('%d %b %Y')} | Ref: `{payment_reference}`",
+            chat_id=SUPER_ADMIN_ID,
+            super_admin=SUPER_ADMIN_ID
+        )
+
         return VERIFICATION
     else:
         # Payment not found
@@ -271,6 +373,15 @@ async def verify_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         
         await query.message.edit_text(msg, parse_mode="Markdown", reply_markup=retry_keyboard)
+
+        # Notifying the super admin of the error in payment
+        await send_message(
+            context.bot,
+            f"❌ Payment failed for user `{user_id}`.\nTier: *{selected_tier.capitalize()}* | Ref: `{payment_reference}`",
+            chat_id=SUPER_ADMIN_ID,
+            super_admin=SUPER_ADMIN_ID
+        )
+
         return PAYMENT
 
 async def complete_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -281,8 +392,7 @@ async def complete_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Return to dashboard
     # custom_chat = CustomEffectiveChat(id=int(query.message.chat_id))
     # custom_message = CustomMessage(chat_id=int(query.message.chat_id))
-    custom_update = build_custom_update_from_query(query)
-    await launch(custom_update, context)
+    await go_back_to_dashboard(update, context)
     
     # Clear user data
     context.user_data.clear()
@@ -362,8 +472,7 @@ async def cancel_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # custom_chat = CustomEffectiveChat(id=int(query.message.chat_id))
         # custom_message = CustomMessage(chat_id=int(query.message.chat_id))
 
-        custom_update = build_custom_update_from_query(query)
-        await launch(custom_update, context)
+        await go_back_to_dashboard(update, context)
     else:
         # If triggered by command instead of button
         await update.message.reply_text("Upgrade canceled. Use /lc to return to main menu.")

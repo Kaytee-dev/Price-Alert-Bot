@@ -1,7 +1,9 @@
 # File that handles commands
+import asyncio
 import logging
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand, BotCommandScopeChat
 from telegram.ext import ContextTypes
+from telegram.constants import ChatAction
 
 from admin import restricted_to_admin, ADMINS
 from config import BASE_URL, SUPER_ADMIN_ID
@@ -16,10 +18,14 @@ import storage.thresholds as thresholds
 from monitor import background_price_monitor
 from utils import send_message, refresh_user_commands, load_admins, build_custom_update_from_query
 from upgrade import start_upgrade
+from referral import show_referral_page, start_with_referral
 
 
 # --- Telegram Bot Commands ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await start_with_referral(update, context)
+
+
     chat_id = str(update.effective_chat.id)
     user_id = int(chat_id)
     is_admin = user_id in ADMINS
@@ -42,11 +48,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await refresh_user_commands(user_id, context.bot)
 
-    await update.message.reply_text("🤖 Bot started and monitoring your tokens!")
-
     if not users.USER_TRACKING.get(chat_id):
+        # User has no tokens tracked yet
         await update.message.reply_text("🔍 You’re not tracking any tokens yet. Use /add <address> to begin.")
+        
+        # 🚀 Immediately launch dashboard after message
+        launch_func = context.bot_data.get("launch_dashboard")
+        if launch_func:
+            chat_id = update.effective_chat.id
 
+            # 📝 Show 'typing...' animation
+            await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+
+            await asyncio.sleep(2)
+            await launch_func(update, context)
+    else:
+        # User already tracking tokens
+        await update.message.reply_text("🤖 Bot started and monitoring your tokens!")
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles stop command, with confirmation only for super admin."""
@@ -472,8 +490,11 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
         InlineKeyboardButton("🛑 Stop Tracking", callback_data="cmd_stop")
     ],
     [
-        InlineKeyboardButton("🔄 Reset Tracking List", callback_data="cmd_reset"),
-        InlineKeyboardButton("📋 List Tracked Tokens", callback_data="cmd_list")
+        InlineKeyboardButton("🔄 Reset List", callback_data="cmd_reset"),
+        InlineKeyboardButton("📋 List Tokens", callback_data="cmd_list")
+    ],
+    [
+        InlineKeyboardButton("👤 Refferral", callback_data="cmd_refer"),
     ],
     [
         InlineKeyboardButton("📊 Tracking Status", callback_data="cmd_status"),
@@ -516,4 +537,6 @@ async def handle_dashboard_button(update: Update, context: ContextTypes.DEFAULT_
         await status(custom_update, context)
     elif callback_data == "cmd_help":
         await help_command(custom_update, context)
+    elif callback_data == "cmd_refer":
+        await show_referral_page(custom_update, context)
 
