@@ -107,7 +107,7 @@ def background_price_monitor(app):
                                     threshold_value = thresholds.USER_THRESHOLDS.get(chat_id, 5.0)
 
                                     if isinstance(change, (int, float)) and change >= threshold_value:
-                                        minutes_per_period = 4
+                                        minutes_per_period = 5
                                         if not any(p >= threshold_value for p in recent_changes[1:]):
                                             minutes = minutes_per_period
                                             msg = await build_first_spike_message(cleaned_data, address, timestamp)
