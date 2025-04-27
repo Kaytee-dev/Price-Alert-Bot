@@ -11,12 +11,13 @@ from telegram.ext import (
 )
 
 from config import (
-    BOT_TOKEN, RESTART_FLAG_FILE, ACTIVE_RESTART_USERS_FILE, SUPER_ADMIN_ID
+    BOT_TOKEN, RESTART_FLAG_FILE, ACTIVE_RESTART_USERS_FILE, SUPER_ADMIN_ID, BOT_LOGS_ID
 )
 
 from commands import (
     start, stop, add, remove, list_tokens, reset, help_command, 
-    status, restart, alltokens, threshold, handle_dashboard_button, launch
+    status, restart, alltokens, threshold, handle_dashboard_button, launch,
+    handle_list_navigation, callback_reset_confirmation
 )
 
 
@@ -302,7 +303,11 @@ def main():
 
     app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
+    app.add_handler(CallbackQueryHandler(callback_reset_confirmation, pattern="^confirm_reset$|^cancel_reset$"))
     app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
+
+    app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$"))
+    app.add_handler(CallbackQueryHandler(launch, pattern="^back_to_dashboard$"))
 
     app.add_handler(upgrade_conv_handler)
     app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))

@@ -2,8 +2,8 @@ import logging
 from typing import Callable
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
-from utils import load_json, save_json
-from config import ADMINS_FILE, SUPER_ADMIN_ID
+from utils import load_json, save_json, refresh_user_commands
+from config import ADMINS_FILE, SUPER_ADMIN_ID, BOT_LOGS_ID
 
 import storage.tiers as tiers
 
@@ -62,14 +62,15 @@ async def addadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if user_id in ADMINS:
-        tiers.promote_to_premium(user_id)
+        await tiers.promote_to_premium(user_id, bot=context.bot)
+        await refresh_user_commands(user_id, bot=context.bot)
         await update.message.reply_text(f"ℹ️ User {user_id} is already an admin.")
     else:
         ADMINS.add(user_id)
         save_admins()
 
-        tiers.promote_to_premium(user_id)
-
+        await tiers.promote_to_premium(user_id, bot=context.bot)
+        await refresh_user_commands(user_id, bot=context.bot)
         await update.message.reply_text(f"✅ Added user {user_id} as admin.")
 
 @restricted_to_super_admin
@@ -123,6 +124,8 @@ async def handle_removeadmin_callback(update: Update, context: ContextTypes.DEFA
         if user_id in ADMINS:
             ADMINS.remove(user_id)
             save_admins()
+            await tiers.set_user_tier(user_id, "Apprentice", bot=context.bot)
+            await refresh_user_commands(user_id, bot=context.bot)
             await query.edit_message_text(f"🗑️ Removed user {user_id} from admins.")
         else:
             await query.edit_message_text(f"ℹ️ User {user_id} is no longer an admin.")

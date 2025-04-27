@@ -4,7 +4,7 @@ import hashlib
 import logging
 from datetime import datetime
 
-from config import POLL_INTERVAL, SUPER_ADMIN_ID
+from config import POLL_INTERVAL, SUPER_ADMIN_ID, BOT_LOGS_ID
 from admin import ADMINS
 
 import storage.users as users
@@ -106,17 +106,24 @@ def background_price_monitor(app):
                                 if users.USER_STATUS.get(chat_id) and address in tokens_list:
                                     threshold_value = thresholds.USER_THRESHOLDS.get(chat_id, 5.0)
 
-
                                     if isinstance(change, (int, float)) and change >= threshold_value:
-                                        if any(p >= threshold_value for p in recent_changes[1:]):
-                                            # Normal spike
-                                            msg = await build_normal_spike_message(cleaned_data, address, timestamp)
-                                          
-                                        else:
-                                            # First-time spike
+                                        minutes_per_period = 4
+                                        if not any(p >= threshold_value for p in recent_changes[1:]):
+                                            minutes = minutes_per_period
                                             msg = await build_first_spike_message(cleaned_data, address, timestamp)
                                             first_time_spike_users.add(chat_id)
-                                        
+                                            spike_type_for_user = f"🚀 First spike detected in the last {minutes} minutes!"
+                                        else:
+                                            furthest_spike_idx = None
+                                            for idx, p in enumerate(recent_changes[1:], start=1):
+                                                if p >= threshold_value:
+                                                    furthest_spike_idx = idx
+                                            total_periods = (furthest_spike_idx + 1) if furthest_spike_idx is not None else 1
+                                            minutes = total_periods * minutes_per_period
+                                            msg = await build_normal_spike_message(cleaned_data, address, timestamp)
+                                            spike_type_for_user = f"📈 Ongoing spike sustained over {minutes} minutes!"
+
+                                        msg = f"{spike_type_for_user}\n\n{msg}"
 
                                         await send_message(
                                             app.bot,
@@ -128,13 +135,6 @@ def background_price_monitor(app):
                                         )
                                         notified_users.add(chat_id)
                                         user_alert_messages[chat_id] = msg
-                            
-                            # if notified_users:
-                            #     logging.info(f"📢 Spike alerts sent to {len(notified_users)} users this round.")
-                            # else:
-                            #     logging.info("ℹ️ No spike alerts triggered this round.")
-
-
 
                             for user_id in notified_users:
                                 try:
@@ -142,23 +142,17 @@ def background_price_monitor(app):
                                     user_name = f"@{chat.username}" if chat.username else chat.full_name
                                 except Exception:
                                     user_name = f"User {user_id}"
-                                
-                                # Decide spike type text
-                                spike_type_text = "📈 First-Time Spike" if user_id in first_time_spike_users else "📈 Ongoing Spike"
 
 
                                 admin_msg = (
-                                    
                                     f"🔔 [User Alert from {user_name}]\n\n"
-                                    f"{spike_type_text}\n\n"
-                                    f"{user_alert_messages[user_id]}" 
-                                             )
-
+                                    f"{user_alert_messages[user_id]}"
+                                )
 
                                 await send_message(
                                     app.bot,
                                     admin_msg,
-                                    chat_id=SUPER_ADMIN_ID,
+                                    chat_id=BOT_LOGS_ID,
                                     parse_mode="Markdown",
                                     admins=ADMINS,
                                     super_admin=SUPER_ADMIN_ID

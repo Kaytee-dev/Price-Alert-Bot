@@ -4,16 +4,20 @@ import hashlib
 import logging
 from datetime import datetime
 
-from config import BASE_URL, POLL_INTERVAL, SUPER_ADMIN_ID
+from config import POLL_INTERVAL, SUPER_ADMIN_ID, BOT_LOGS_ID
 from admin import ADMINS
 
 import storage.users as users
 import storage.tokens as tokens
 import storage.symbols as symbols
 import storage.history as history
+import storage.thresholds as thresholds
 
 from api import fetch_prices_for_tokens
 from utils import chunked, send_message
+
+from storage.notify import build_normal_spike_message, build_first_spike_message
+
 
 
 def background_price_monitor(app):
@@ -94,20 +98,33 @@ def background_price_monitor(app):
                             ]
 
                             change = cleaned_data.get("priceChange_m5")
-                            if isinstance(change, (int, float)) and change >= 15 and any(p >= 15 for p in recent_changes[1:]):
-                                link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
-                                msg = (
-                                    f"📢 {link} is spiking!\n"
-                                    f"🕓 Timestamps: {timestamp}\n"
-                                    f"5m Change: {cleaned_data['priceChange_m5']}%\n"
-                                    f"5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"
-                                    f"Market Cap: ${cleaned_data['marketCap']:,.0f}"
-                                )
+                            notified_users = set()
+                            first_time_spike_users = set()
+                            user_alert_messages = {}
 
-                                notified_users = set()
+                            for chat_id, tokens_list in users.USER_TRACKING.items():
+                                if users.USER_STATUS.get(chat_id) and address in tokens_list:
+                                    threshold_value = thresholds.USER_THRESHOLDS.get(chat_id, 5.0)
 
-                                for chat_id, tokens_list in users.USER_TRACKING.items():
-                                    if users.USER_STATUS.get(chat_id) and address in tokens_list:
+                                    if isinstance(change, (int, float)) and change >= threshold_value:
+                                        minutes_per_period = 4
+                                        if not any(p >= threshold_value for p in recent_changes[1:]):
+                                            minutes = minutes_per_period
+                                            msg = await build_first_spike_message(cleaned_data, address, timestamp)
+                                            first_time_spike_users.add(chat_id)
+                                            spike_type_for_user = f"🚀 First spike detected in the last {minutes} minutes!"
+                                        else:
+                                            furthest_spike_idx = None
+                                            for idx, p in enumerate(recent_changes[1:], start=1):
+                                                if p >= threshold_value:
+                                                    furthest_spike_idx = idx
+                                            total_periods = (furthest_spike_idx + 1) if furthest_spike_idx is not None else 1
+                                            minutes = total_periods * minutes_per_period
+                                            msg = await build_normal_spike_message(cleaned_data, address, timestamp)
+                                            spike_type_for_user = f"📈 Ongoing spike sustained over {minutes} minutes!"
+
+                                        msg = f"{spike_type_for_user}\n\n{msg}"
+
                                         await send_message(
                                             app.bot,
                                             msg,
@@ -117,23 +134,32 @@ def background_price_monitor(app):
                                             super_admin=SUPER_ADMIN_ID
                                         )
                                         notified_users.add(chat_id)
+                                        user_alert_messages[chat_id] = msg
 
-                                for user_id in notified_users:
-                                    try:
-                                        chat = await app.bot.get_chat(user_id)
-                                        user_name = f"@{chat.username}" if chat.username else chat.full_name
-                                    except Exception:
-                                        user_name = f"User {user_id}"
+                            for user_id in notified_users:
+                                try:
+                                    chat = await app.bot.get_chat(user_id)
+                                    user_name = f"@{chat.username}" if chat.username else chat.full_name
+                                except Exception:
+                                    user_name = f"User {user_id}"
 
-                                admin_msg = f"🔔 [User Alert from {user_name}]\n" + msg
+
+                                admin_msg = (
+                                    f"🔔 [User Alert from {user_name}]\n\n"
+                                    f"{user_alert_messages[user_id]}"
+                                )
+
                                 await send_message(
                                     app.bot,
                                     admin_msg,
-                                    chat_id=SUPER_ADMIN_ID,
+                                    chat_id=BOT_LOGS_ID,
                                     parse_mode="Markdown",
                                     admins=ADMINS,
                                     super_admin=SUPER_ADMIN_ID
                                 )
+
+
+
 
                 all_tracked_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
                 for token in list(history.TOKEN_DATA_HISTORY.keys()):

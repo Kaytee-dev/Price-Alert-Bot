@@ -3,7 +3,7 @@ from typing import Callable
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 from utils import load_json, save_json, refresh_user_commands
-from config import ADMINS_FILE, SUPER_ADMIN_ID
+from config import ADMINS_FILE, SUPER_ADMIN_ID, BOT_LOGS_ID
 
 import storage.tiers as tiers
 

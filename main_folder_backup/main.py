@@ -5,34 +5,47 @@ import logging
 import os
 import sys
 
-from telegram import Update
+from telegram import Update, BotCommand, BotCommandScopeDefault
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes,
 )
 
 from config import (
-    BOT_TOKEN, RESTART_FLAG_FILE, ACTIVE_RESTART_USERS_FILE, DATA_DIR
+    BOT_TOKEN, RESTART_FLAG_FILE, ACTIVE_RESTART_USERS_FILE, SUPER_ADMIN_ID, BOT_LOGS_ID
 )
 
 from commands import (
-    start, stop, add, remove, list_tokens, reset, help_command, status, restart, alltokens
+    start, stop, add, remove, list_tokens, reset, help_command, 
+    status, restart, alltokens, threshold, handle_dashboard_button, launch,
+    handle_list_navigation, callback_reset_confirmation
 )
+
 
 import storage.tokens
 import storage.users
 from storage.tiers import load_user_tiers
 import storage.tiers as tiers
+import storage.thresholds as thresholds
 
 from storage.tokens import load_tracked_tokens, save_tracked_tokens, load_active_token_data
 from storage.symbols import load_symbols_from_file
 from storage.users import load_user_tracking, load_user_status, save_user_status
 from storage.history import load_token_history
+from storage.thresholds import load_user_thresholds, save_user_thresholds
+from storage.expiry import load_user_expiry
+from storage.notify import remind_inactive_users
+
+
 from admin import (
     addadmin, removeadmin, listadmins,
-    handle_removeadmin_callback, load_admins,
+    handle_removeadmin_callback, load_admins, ADMINS
 )
-from utils import load_json, save_json, send_message
+from utils import load_json, save_json, send_message, refresh_user_commands
 from monitor import background_price_monitor
+
+from upgrade import upgrade_conv_handler
+from referral import register_referral_handlers
+
 
 
 logging.basicConfig(level=logging.INFO)
@@ -95,7 +108,6 @@ async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    print(f"Received callback query: {query.data}")  # Debugging line
     await query.answer()
 
     if query.data == "confirm_stop":
@@ -103,10 +115,18 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         async def safe_shutdown():
             try:
+
+                 # ✅ Save current active users
+                active_users = [user_id for user_id, status in storage.users.USER_STATUS.items() if status]
+                save_json(ACTIVE_RESTART_USERS_FILE, active_users, "active restart users")
+                save_json(RESTART_FLAG_FILE, {"from_restart": True}, "restart flag")
+
+                # ✅ Reset all statuses
                 for user_id in storage.users.USER_STATUS:
                     storage.users.USER_STATUS[user_id] = False
                 save_user_status()
 
+                # ✅ Cancel monitor loop
                 if hasattr(context.application, "_monitor_task"):
                     task = context.application._monitor_task
                     if not task.done():
@@ -118,7 +138,7 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 await context.application.stop()
 
-                # Cancel all remaining asyncio tasks before exiting
+                # ✅ Cancel all running tasks
                 tasks = asyncio.all_tasks()
                 for task in tasks:
                     if task is not asyncio.current_task():
@@ -149,6 +169,34 @@ async def on_startup(app):
         app._monitor_started = True
         logging.info("🔄 Monitor loop auto-started after restart recovery.")
 
+    # 📣 Also start the inactive user reminder loop
+    reminder_task = app.create_task(remind_inactive_users(app))
+    app._reminder_task = reminder_task
+    logging.info("🔔 Inactive user reminder loop started.")
+
+
+    # 🔧 Set fallback default commands
+    default_cmds = [
+        BotCommand("lc", "Launch bot dashboard"),
+        BotCommand("start", "Start tracking tokens"),
+        BotCommand("stop", "Stop tracking tokens"),
+        BotCommand("add", "Add a token to track -- /a"),
+        BotCommand("remove", "Remove token from tracking -- /rm"),
+        BotCommand("list", "List tracked tokens -- /l"),
+        BotCommand("reset", "Clear all tracked tokens -- /x"),
+        BotCommand("help", "Show help message -- /h"),
+        BotCommand("status", "Show stats of tracked tokens -- /s"),
+        BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
+    ]
+    await app.bot.set_my_commands(default_cmds, scope=BotCommandScopeDefault())
+
+    # 🔧 Re-apply scoped commands for all admins
+    for admin_id in ADMINS:
+        await refresh_user_commands(admin_id, app.bot)
+
+    # 🔧 Also refresh super admin's scoped menu
+    await refresh_user_commands(SUPER_ADMIN_ID, app.bot)
+
 def main():
 
     load_admins()
@@ -161,13 +209,12 @@ def main():
     load_token_history()
     load_active_token_data()
     load_user_tiers()
+    load_user_expiry()
 
     # 🔒 Enforce token limits based on user tiers
     for user_id_str in list(storage.users.USER_TRACKING.keys()):
-        tiers.enforce_token_limit(int(user_id_str))
+        tiers.enforce_token_limit_core(int(user_id_str))
     
-    print("[MAIN DEBUG] USER_TRACKING length:", len(storage.users.USER_TRACKING))  # ✅ This now reflects correct value
-
     
 
     # Restore active users if bot restarted via /restart
@@ -192,6 +239,15 @@ def main():
     storage.tokens.save_tracked_tokens()
     logging.info(f"🔁 Rebuilt tracked tokens list: {len(storage.tokens.TRACKED_TOKENS)} tokens.")
 
+    # Adding threshold on startup
+    thresholds.load_user_thresholds()
+    updated = False
+    for chat_id in storage.users.USER_TRACKING:
+        if chat_id not in thresholds.USER_THRESHOLDS:
+            thresholds.USER_THRESHOLDS[chat_id] = 5.0
+            updated = True
+    if updated:
+        thresholds.save_user_thresholds()
 
     app = (
         ApplicationBuilder()
@@ -200,22 +256,65 @@ def main():
         .build()
     )
 
+    app.bot_data["launch_dashboard"] = launch
+
+    
+    app.add_handler(CommandHandler("lc", launch))
+
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
+
     app.add_handler(CommandHandler("add", add))
+    app.add_handler(CommandHandler("a", add))
+
     app.add_handler(CommandHandler("alltokens", alltokens))
+    app.add_handler(CommandHandler("at", alltokens))
+
     app.add_handler(CommandHandler("remove", remove))
+    app.add_handler(CommandHandler("rm", remove))
+
     app.add_handler(CommandHandler("list", list_tokens))
+    app.add_handler(CommandHandler("l", list_tokens))
+
     app.add_handler(CommandHandler("reset", reset))
+    app.add_handler(CommandHandler("x", reset))
+
     app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("h", help_command))
+
     app.add_handler(CommandHandler("restart", restart))
+    app.add_handler(CommandHandler("rs", restart))
+
     app.add_handler(CommandHandler("status", status))
+    app.add_handler(CommandHandler("s", status))
+
     app.add_handler(CommandHandler("addadmin", addadmin))
+    app.add_handler(CommandHandler("aa", addadmin))
+
     app.add_handler(CommandHandler("removeadmin", removeadmin))
+    app.add_handler(CommandHandler("ra", removeadmin))
+
     app.add_handler(CommandHandler("listadmins", listadmins))
+    app.add_handler(CommandHandler("la", listadmins))
+
+    app.add_handler(CommandHandler("threshold", threshold))
+    app.add_handler(CommandHandler("t", threshold))
+
     app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
+    app.add_handler(CallbackQueryHandler(callback_reset_confirmation, pattern="^confirm_reset$|^cancel_reset$"))
     app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
+
+    app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$"))
+    app.add_handler(CallbackQueryHandler(launch, pattern="^back_to_dashboard$"))
+
+    app.add_handler(upgrade_conv_handler)
+    app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))
+
+    register_referral_handlers(app)
+
+
 
 
     app.run_polling()
