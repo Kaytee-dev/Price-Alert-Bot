@@ -8,11 +8,20 @@
   },
   "965551493": {
     "referred_users": [
-      "7129984365"
+      "7129984365",
+      "723161032",
+      "773521138",
+      "5775627206",
+      "6015881080",
+      "6914164320"
     ],
+<<<<<<< Updated upstream
     "total_commission": 20.400000000000002,
+=======
+    "total_commission": 86.60000000000001,
+>>>>>>> Stashed changes
     "total_paid": 0.0,
     "wallet_address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
-    "successful_referrals": 1
+    "successful_referrals": 6
   }
 }
