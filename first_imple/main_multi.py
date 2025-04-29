@@ -1,0 +1,752 @@
+# token_alert_bot.py
+
+import asyncio
+import json
+import logging
+from typing import Dict, List
+import time
+import hashlib
+from datetime import datetime
+import os
+import sys
+
+from typing import Optional
+import requests
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, BotCommand
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
+
+# --- Globals ---
+TRACKED_TOKENS: List[str] = []  # List of Solana token addresses
+TRACKED_TOKENS_FILE = "tracked_tokens_multi.json"
+ADDRESS_TO_SYMBOL: Dict[str, str] = {}
+SYMBOLS_FILE = "symbols_multi.json"
+
+ACTIVE_TOKEN_DATA = {}  # Only for active tokens
+ACTIVE_TOKENS_FILE = "active_tokens.json"
+
+POLL_INTERVAL = 330  # seconds
+BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY"
+
+USER_CHAT_ID: int | None = None
+ADMIN_CHAT_ID = -4750674293
+BASE_URL = "https://gmgn.ai/sol/token/"
+
+# Cache for recent token data
+TOKEN_DATA_HISTORY: Dict[str, List[dict]] = {}
+TOKEN_HISTORY_FILE = "token_history_multi.json"
+LAST_SAVED_HASHES: Dict[str, str] = {}
+
+MONITOR_TASK: Optional[asyncio.Task] = None
+
+# Multi user feature
+USER_TRACKING_FILE = "user_tracking.json"
+USER_TRACKING = {}
+
+# --- User Active Status ---
+USER_STATUS = {}
+USER_STATUS_FILE = "user_status.json"
+
+logging.basicConfig(level=logging.INFO)
+
+# --- Admin-only decorator ---
+def restricted_to_admin(func):
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if update.effective_chat.id != ADMIN_CHAT_ID:
+            await update.message.reply_text("❌ You are not authorized to use this command.")
+            return
+        return await func(update, context)
+    return wrapper
+
+
+# --- Generic JSON Utilities ---
+def load_json(file_path: str, fallback, log_label: str = ""):
+    try:
+        with open(file_path, "r") as f:
+            data = json.load(f)
+            logging.info(f"📂 Loaded {log_label or file_path}.")
+            return data
+    except (FileNotFoundError, json.JSONDecodeError):
+        logging.info(f"📂 No valid {log_label or file_path} found. Starting fresh.")
+        return fallback.copy() if isinstance(fallback, dict) else list(fallback)
+
+def save_json(file_path: str, data, log_label: str = ""):
+    try:
+        with open(file_path, "w") as f:
+            json.dump(data, f, indent=2)
+        logging.info(f"💾 Saved {log_label or file_path}.")
+    except Exception as e:
+        logging.error(f"❌ Failed to save {log_label or file_path}: {e}")
+
+# --- Load/Save User Tracking ---
+def load_user_tracking():
+    global USER_TRACKING
+    USER_TRACKING = load_json(USER_TRACKING_FILE, {}, "user tracking")
+
+def save_user_tracking():
+    save_json(USER_TRACKING_FILE, USER_TRACKING, "user tracking")
+
+# --- Symbol Persistence ---
+def load_symbols_from_file():
+    global ADDRESS_TO_SYMBOL
+    ADDRESS_TO_SYMBOL = load_json(SYMBOLS_FILE, {}, "symbols")
+
+def save_symbols_to_file():
+    save_json(SYMBOLS_FILE, ADDRESS_TO_SYMBOL, "symbols")
+
+# --- Token History Persistence ---
+def load_token_history():
+    global TOKEN_DATA_HISTORY
+    TOKEN_DATA_HISTORY = load_json(TOKEN_HISTORY_FILE, {}, "token history")
+
+    for addr, history in TOKEN_DATA_HISTORY.items():
+        if history:
+            latest = history[0]
+            hash_val = hashlib.md5(json.dumps(latest, sort_keys=True).encode()).hexdigest()
+            LAST_SAVED_HASHES[addr] = hash_val
+
+def save_token_history():
+    for addr in list(TOKEN_DATA_HISTORY.keys()):
+        if addr not in TRACKED_TOKENS:
+            del TOKEN_DATA_HISTORY[addr]
+            LAST_SAVED_HASHES.pop(addr, None)
+
+    save_json(TOKEN_HISTORY_FILE, TOKEN_DATA_HISTORY, "token history")
+
+# --- Tracked Tokens Persistence ---
+def load_tracked_tokens():
+    global TRACKED_TOKENS
+    TRACKED_TOKENS = load_json(TRACKED_TOKENS_FILE, [], "tracked tokens")
+
+def save_tracked_tokens():
+    save_json(TRACKED_TOKENS_FILE, TRACKED_TOKENS, "tracked tokens")
+
+# --- Load User Status ---
+def load_user_status():
+    global USER_STATUS
+    USER_STATUS = load_json(USER_STATUS_FILE, {}, "user status")
+
+# --- Save User Status ---
+def save_user_status():
+    save_json(USER_STATUS_FILE, USER_STATUS, "user status")
+
+
+# --- Save active token data ---
+def save_active_token_data():
+    save_json(ACTIVE_TOKENS_FILE, ACTIVE_TOKEN_DATA, "active token data")
+
+# --- Load active token data ---
+def load_active_token_data():
+    global ACTIVE_TOKEN_DATA
+    ACTIVE_TOKEN_DATA = load_json(ACTIVE_TOKENS_FILE, {}, "active token data")
+
+
+
+# --- Dexscreener Fetcher ---
+def fetch_prices_for_tokens(addresses: List[str], max_retries: int = 3, retry_delay: int = 2) -> List[dict]:
+    token_query = ",".join(addresses)
+    url = f"https://api.dexscreener.com/tokens/v1/solana/{token_query}"
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = requests.get(url, timeout=10)
+
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logging.warning(f"📡 Attempt {attempt}: Non-200 response ({response.status_code})")
+
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as net_err:
+            logging.warning(f"🌐 Attempt {attempt}: Network error: {net_err}")
+        except requests.exceptions.RequestException as req_err:
+            logging.warning(f"⚠️ Attempt {attempt}: General request failure: {req_err}")
+        except Exception as e:
+            logging.warning(f"❌ Attempt {attempt}: Unexpected error: {e}")
+
+        if attempt < max_retries:
+            backoff = retry_delay * (2 ** (attempt - 1))
+            time.sleep(backoff)
+
+    logging.error("🚫 All retry attempts failed.")
+    return []
+
+
+# --- Helper: Chunking ---
+def chunked(iterable, size):
+    for i in range(0, len(iterable), size):
+        yield iterable[i:i + size]
+
+# --- Helper: Message Sender ---
+async def send_message(bot, text: str, chat_id, parse_mode="Markdown"):
+    try:
+        await bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
+    except Exception as e:
+        logging.error(f"❌ Failed to send message to {chat_id}: {e}")
+        if ADMIN_CHAT_ID:
+            try:
+                await bot.send_message(chat_id=ADMIN_CHAT_ID, text=f"❌ Failed to send message to {chat_id}: {e}")
+            except Exception as inner:
+                logging.error(f"❌ Also failed to notify admin: {inner}")
+
+# --- Telegram Bot Commands ---
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    is_admin = chat_id == str(ADMIN_CHAT_ID)
+
+    USER_STATUS[chat_id] = True
+    save_user_status()
+
+     # Start global monitor loop if not already running (admin OR first-time user)
+    if not getattr(context.application, "_monitor_started", False):
+        # Create the task and store the reference
+        monitor_task = context.application.create_task(background_price_monitor(context.application))
+        context.application._monitor_task = monitor_task  # Store reference to the task
+        context.application._monitor_started = True
+        logging.info(f"🟢 Monitor loop started by {'admin' if is_admin else 'user'} {chat_id}")
+    
+    await context.bot.set_my_commands([
+        BotCommand("start", "Start tracking tokens"),
+        BotCommand("stop", "Stop tracking tokens"),
+        BotCommand("add", "Add a token to track"),
+        BotCommand("alltokens", "List tracked tokens by all user (admin only)"),
+        BotCommand("remove", "Remove token"),
+        BotCommand("list", "List tracked tokens"),
+        BotCommand("reset", "Clear all tracked tokens"),
+        BotCommand("help", "Show help message"),
+        BotCommand("restart", "Restart the bot (admin only)"),
+        BotCommand("status", "Show stats of tracked tokens")
+    ])
+
+    await update.message.reply_text("🤖 Bot started and monitoring your tokens!")
+
+    if not USER_TRACKING.get(chat_id):
+        await update.message.reply_text("🔍 You’re not tracking any tokens yet. Use /add <address> to begin.")
+
+
+async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handles stop command, with confirmation only for admin."""
+    chat_id = str(update.effective_chat.id)
+    is_admin = chat_id == str(ADMIN_CHAT_ID)
+
+    if is_admin:
+        # Send confirmation prompt before stopping for admin
+        keyboard = [
+            [InlineKeyboardButton("✅ Confirm Shutdown", callback_data="confirm_stop")],
+            [InlineKeyboardButton("❌ Cancel", callback_data="cancel_stop")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await update.message.reply_text(
+            "⚠️ Are you sure you want to shut down the bot?",
+            reply_markup=reply_markup
+        )
+        return  # Don't proceed further until admin confirms
+
+    # Regular user shutdown (no confirmation needed)
+    USER_STATUS[chat_id] = False
+    save_user_status()
+    await update.message.reply_text(
+        f"🛑 Monitoring paused.\nYou're still tracking {len(USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
+    
+
+async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+
+    if not context.args:
+        await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
+        return
+
+    addresses_raw = " ".join(context.args)
+    addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
+
+    if not addresses:
+        await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
+        return
+
+    if chat_id not in USER_TRACKING:
+        USER_TRACKING[chat_id] = []
+
+    added = []
+    skipped = []
+
+    for address in addresses:
+        if address not in USER_TRACKING[chat_id]:
+            USER_TRACKING[chat_id].append(address)
+            added.append(address)
+            if address not in TRACKED_TOKENS:
+                TRACKED_TOKENS.append(address)
+        else:
+            skipped.append(address)
+
+    # Auto-start the user if they haven't started yet
+    if USER_STATUS.get(chat_id, False) is False:
+        USER_STATUS[chat_id] = True  # Mark as started
+        
+        # Log and notify the admin
+        logging.info(f"🤖 User {chat_id} auto-started monitoring.")
+        await context.bot.send_message(
+            chat_id=ADMIN_CHAT_ID, 
+            text=f"🧹 User {chat_id} auto-started monitoring."
+        )
+
+        # Trigger the /start functionality for the user
+        await start(update, context)  # Directly call the /start function logic
+
+    save_user_tracking()
+    save_tracked_tokens()
+
+    if added:
+        await update.message.reply_text(f"✅ Tracking token(s):\n" + "\n".join(added))
+    if skipped:
+        await update.message.reply_text(f"ℹ️ Already tracked:\n" + "\n".join(skipped))
+
+
+async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+
+    if not context.args:
+        await update.message.reply_text("Usage: /remove <token_address1>, <token_address2>, ...")
+        return
+
+    addresses_raw = " ".join(context.args)
+    addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
+
+    if not addresses:
+        await update.message.reply_text("Usage: /remove <token_address1>, <token_address2>, ...")
+        return
+
+    if chat_id not in USER_TRACKING:
+        await update.message.reply_text("ℹ️ You're not tracking any tokens.")
+        return
+
+    removed = []
+    not_found = []
+    tokens_removed = []
+
+    for address in addresses:
+        if address in USER_TRACKING[chat_id]:
+            USER_TRACKING[chat_id].remove(address)
+            removed.append(address)
+        else:
+            not_found.append(address)
+
+    # Clean up global tracked list
+    for token in removed:
+        if not any(token in tokens for tokens in USER_TRACKING.values()):
+            if token in TRACKED_TOKENS:
+                TRACKED_TOKENS.remove(token)
+                tokens_removed.append(token)
+                ADDRESS_TO_SYMBOL.pop(token, None)
+                TOKEN_DATA_HISTORY.pop(token, None)
+                LAST_SAVED_HASHES.pop(token, None)
+
+    save_user_tracking()
+    save_tracked_tokens()
+    save_symbols_to_file()
+    save_token_history()
+
+    if removed:
+        await update.message.reply_text(f"🗑️ Removed token(s):\n" + "\n".join(removed))
+    if not_found:
+        await update.message.reply_text(f"❌ Address(es) not found in your tracking list:\n" + "\n".join(not_found))
+    if tokens_removed:
+        msg = f"🧼 Removed {len(tokens_removed)} untracked token(s) from tracking after /remove."
+        logging.info(msg)
+        await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=msg)
+    
+    # If user no longer tracks any tokens, clean up their entry
+    if not USER_TRACKING.get(chat_id):
+        USER_TRACKING.pop(chat_id, None)
+        USER_STATUS.pop(chat_id, None)
+        save_user_tracking()
+        save_user_status()
+        logging.info(f"🧹 Removed user {chat_id} from tracking (no tokens left).")
+        await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=f"🧹 Removed user {chat_id} from tracking (no tokens left).")
+
+
+async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+
+    user_tokens = USER_TRACKING.get(chat_id, [])
+    if not user_tokens:
+        await update.message.reply_text("📭 You're not tracking any tokens.")
+        return
+
+    msg = "📊 Your Tracked Tokens:\n"
+
+    for addr in user_tokens:
+        symbol = ADDRESS_TO_SYMBOL.get(addr, addr[:6] + "...")
+        link = f"[{symbol}]({BASE_URL}{addr})"
+
+        history = TOKEN_DATA_HISTORY.get(addr, [])
+        market_cap = history[0].get("marketCap") if history else None
+        mc_text = f" - Market Cap: ${market_cap:,.0f}" if market_cap else ""
+
+        msg += f"- {link} ({addr[:6]}...{addr[-4:]}){mc_text}\n"
+
+    await update.message.reply_text(msg, parse_mode="Markdown")
+
+
+async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+
+    tokens_removed = []
+
+    user_tokens = USER_TRACKING.get(chat_id, [])
+    if chat_id in USER_TRACKING:
+        USER_TRACKING.pop(chat_id, None)
+        logging.info(f"🧹 Removed user {chat_id} from tracking.")
+        await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=f"🧹 Removed user {chat_id} from tracking.")
+
+    # Clean tracked tokens that are no longer used
+    for token in user_tokens:
+        if not any(token in tokens for tokens in USER_TRACKING.values()):
+            if token in TRACKED_TOKENS:
+                TRACKED_TOKENS.remove(token)
+                tokens_removed.append(token)
+                ADDRESS_TO_SYMBOL.pop(token, None)
+                TOKEN_DATA_HISTORY.pop(token, None)
+                LAST_SAVED_HASHES.pop(token, None)
+
+    save_user_tracking()
+    save_tracked_tokens()
+    save_symbols_to_file()
+    save_token_history()
+
+    if tokens_removed:
+        msg = f"🧼 Removed {len(tokens_removed)} untracked token(s) from tracking after /reset."
+        logging.info(msg)
+        await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=msg)
+
+    await update.message.reply_text("🔄 Your tracked tokens, symbols, and history have been cleared.")
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = (
+        "🤖 *Price Alert Bot Help*\n\n"
+        "Use the following commands to manage your token alerts:\n"
+        "\n/start - Start the bot and monitoring"
+        "\n/stop - Stop the bot monitoring"
+        "\n/add <token1>, <token2>, ... - Track token(s)"
+        "\n/remove <token1>, <token2>, ... - Stop tracking token(s)"
+        "\n/list - Show your tracked tokens"
+        "\n/reset - Clear all your tracking data"
+        "\n/help - Show this help message"
+        "\n/status - Show stats of tracked token(s)"
+        "\n/alltokens - Show all unique token(s) tracked by all user (admin only)"
+        "\n\nEach user can track their own set of tokens independently."
+    )
+    await update.message.reply_text(msg, parse_mode="Markdown")
+
+async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = str(update.effective_chat.id)
+    user_tokens = USER_TRACKING.get(chat_id, [])
+    all_tokens = set(addr for tokens in USER_TRACKING.values() for addr in tokens)
+
+    spike_count = 0
+    for addr in all_tokens:
+        history = TOKEN_DATA_HISTORY.get(addr, [])
+        if history and isinstance(history[0].get("priceChange_m5"), (int, float)):
+            if history[0]["priceChange_m5"] >= 15:
+                spike_count += 1
+
+    last_update = None
+    timestamps = [entry[0].get("timestamp") for entry in TOKEN_DATA_HISTORY.values() if entry]
+    if timestamps:
+        last_update = max(timestamps)
+
+    msg = (
+        f"📊 *Bot Status*\n\n"
+        f"👤 You are tracking {len(user_tokens)} token(s).\n"
+        f"🌐 Total unique tokens tracked: {len(all_tokens)}\n"
+        f"💥 Active spikes (≥15%): {spike_count}\n"
+        f"🕓 Last update: {last_update if last_update else 'N/A'}"
+    )
+
+    await update.message.reply_text(msg, parse_mode="Markdown")
+
+@restricted_to_admin
+async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        [InlineKeyboardButton("✅ Yes, Restart", callback_data="confirm_restart")],
+        [InlineKeyboardButton("❌ Cancel", callback_data="cancel_restart")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text("⚠️ Are you sure you want to restart the bot?", reply_markup=reply_markup)
+
+
+@restricted_to_admin
+async def alltokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    all_tokens = set(addr for tokens in USER_TRACKING.values() for addr in tokens)
+    if not all_tokens:
+        await update.message.reply_text("📭 No tokens are being tracked by any user.")
+        return
+
+    def get_market_cap(addr):
+        history = TOKEN_DATA_HISTORY.get(addr, [])
+        return history[0].get("marketCap") if history else None
+
+    sorted_tokens = sorted(all_tokens, key=lambda addr: (get_market_cap(addr) is None, -(get_market_cap(addr) or 0)))
+
+    msg = f"📦 *All Tracked Tokens (Total: {len(all_tokens)}):*\n\n"
+    for addr in sorted_tokens:
+        symbol = ADDRESS_TO_SYMBOL.get(addr, addr[:6] + "...")
+        link = f"[{symbol}]({BASE_URL}{addr})"
+        market_cap = get_market_cap(addr)
+        mc_text = f" - Market Cap: ${market_cap:,.0f}" if market_cap else ""
+        msg += f"- {link} ({addr[:6]}...{addr[-4:]}){mc_text}\n"
+
+    await update.message.reply_text(msg, parse_mode="Markdown")
+
+# --- Price Monitor Background Task ---
+def background_price_monitor(app):
+    async def monitor():
+        try:
+            while True:
+                save_needed = False
+
+                active_tokens = set()
+                for chat_id, tokens in USER_TRACKING.items():
+                    if USER_STATUS.get(chat_id) and tokens:
+                        active_tokens.update(tokens)
+
+                if active_tokens:
+                    for chunk in chunked(sorted(active_tokens), 30):
+                        token_data_list = fetch_prices_for_tokens(chunk)
+                        for data in token_data_list:
+                            base = data.get("baseToken", {})
+                            address = base.get("address")
+                            if not address:
+                                continue
+
+                            if address not in ADDRESS_TO_SYMBOL:
+                                symbol = base.get("symbol", address[:6])
+                                ADDRESS_TO_SYMBOL[address] = symbol
+                                save_symbols_to_file()
+
+                            symbol = ADDRESS_TO_SYMBOL.get(address)
+                            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                            cleaned_data = {
+                                "timestamp": timestamp,
+                                "address": address,
+                                "symbol": symbol,
+                                "priceChange_m5": data.get("priceChange", {}).get("m5"),
+                                "volume_m5": data.get("volume", {}).get("m5"),
+                                "marketCap": data.get("marketCap")
+                            }
+
+                            if address not in TOKEN_DATA_HISTORY:
+                                TOKEN_DATA_HISTORY[address] = []
+                            TOKEN_DATA_HISTORY[address].insert(0, cleaned_data)
+                            TOKEN_DATA_HISTORY[address] = TOKEN_DATA_HISTORY[address][:3]
+
+                            ACTIVE_TOKEN_DATA[address] = ACTIVE_TOKEN_DATA.get(address, [])
+                            ACTIVE_TOKEN_DATA[address].insert(0, cleaned_data)
+                            ACTIVE_TOKEN_DATA[address] = ACTIVE_TOKEN_DATA[address][:3]
+
+                            hash_base = {
+                                "address": cleaned_data["address"],
+                                "symbol": cleaned_data["symbol"],
+                                "priceChange_m5": cleaned_data["priceChange_m5"],
+                                "volume_m5": cleaned_data["volume_m5"],
+                                "marketCap": cleaned_data["marketCap"]
+                                }
+                            
+                            snapshot_json = json.dumps(hash_base, sort_keys=True)
+
+                            hash_val = hashlib.md5(snapshot_json.encode()).hexdigest()
+
+                            if LAST_SAVED_HASHES.get(address) != hash_val:
+                                LAST_SAVED_HASHES[address] = hash_val
+                                save_needed = True
+
+                            history = TOKEN_DATA_HISTORY[address][:3]
+                            recent_changes = [
+                                entry.get("priceChange_m5")
+                                for entry in history
+                                if isinstance(entry.get("priceChange_m5"), (int, float))
+                            ]
+
+                            change = cleaned_data.get("priceChange_m5")
+                            if isinstance(change, (int, float)) and change >= 15 and any(p >= 15 for p in recent_changes[1:]):
+                                link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
+                                msg = (
+                                    f"📢 {link} is spiking!\n"
+                                    f"🕓 Timestamps: {timestamp}\n"
+                                    f"5m Change: {cleaned_data['priceChange_m5']}%\n"
+                                    f"5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"
+                                    f"Market Cap: ${cleaned_data['marketCap']:,.0f}"
+                                )
+
+                                notified_users = set()
+
+                                # Notify all relevant users
+                                for chat_id, tokens in USER_TRACKING.items():
+                                    if USER_STATUS.get(chat_id) and address in tokens:
+                                        await send_message(app.bot, msg, chat_id=chat_id, parse_mode="Markdown")
+                                        notified_users.add(chat_id)
+
+                                for user_id in notified_users:
+                                    try:
+                                        chat = await app.bot.get_chat(user_id)
+                                        user_name = f"@{chat.username}" if chat.username else chat.full_name
+                                    except Exception:
+                                        user_name = f"User {user_id}"
+
+                                # Notify admin for visibility
+                                admin_msg = f"🔔 [User Alert from {user_name}]\n" + msg
+                                await send_message(app.bot, admin_msg, chat_id=ADMIN_CHAT_ID, parse_mode="Markdown")
+
+
+                # Cleanup: remove any tokens no longer tracked by anyone
+                all_tracked_tokens = set(addr for tokens in USER_TRACKING.values() for addr in tokens)
+                for token in list(TOKEN_DATA_HISTORY.keys()):
+                    if token not in all_tracked_tokens:
+                        TOKEN_DATA_HISTORY.pop(token, None)
+                        ACTIVE_TOKEN_DATA.pop(token, None)
+                        LAST_SAVED_HASHES.pop(token, None)
+                        ADDRESS_TO_SYMBOL.pop(token, None)
+                        if token in TRACKED_TOKENS:
+                            TRACKED_TOKENS.remove(token)
+
+                # Prune stale tokens from ACTIVE_TOKEN_DATA
+                for token in list(ACTIVE_TOKEN_DATA):
+                    if token not in active_tokens:
+                        ACTIVE_TOKEN_DATA.pop(token, None)
+
+                if save_needed:
+                    await asyncio.to_thread(save_token_history)
+                    await asyncio.to_thread(save_active_token_data)
+
+                await asyncio.sleep(POLL_INTERVAL)
+        except asyncio.CancelledError:
+            logging.info("🛑 Monitor task cancelled cleanly.")
+
+    return monitor()
+
+# --- Rebuild Tracked Tokens ---
+def rebuild_tracked_tokens():
+    global TRACKED_TOKENS
+    all_tokens = set()
+    for tokens in USER_TRACKING.values():
+        all_tokens.update(tokens)
+    TRACKED_TOKENS = sorted(all_tokens)
+    save_tracked_tokens()
+    logging.info(f"🔁 Rebuilt tracked tokens list: {len(TRACKED_TOKENS)} tokens.")
+
+async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "confirm_restart":
+        await query.edit_message_text("♻️ Restarting bot...")
+
+        # Safe restart logic
+        async def safe_restart():
+            try:
+                for user_id in USER_STATUS:
+                    USER_STATUS[user_id] = False
+                save_user_status()
+
+                if hasattr(context.application, "_monitor_task"):
+                    task = context.application._monitor_task
+                    if not task.done():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+
+                await context.application.stop()
+                await asyncio.sleep(1)
+
+                logging.info("🔁 Restarting...")
+            except Exception as e:
+                logging.error(f"Restart error: {e}")
+            finally:
+                os.execl(sys.executable, sys.executable, *sys.argv)
+
+        asyncio.create_task(safe_restart())
+
+    elif query.data == "cancel_restart":
+        await query.edit_message_text("❌ Restart cancelled.")
+
+
+async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    print(f"Received callback query: {query.data}")  # Debugging line
+    await query.answer()
+
+    if query.data == "confirm_stop":
+        await query.edit_message_text("🔌 Shutting down bot...")
+
+        async def safe_shutdown():
+            try:
+                for user_id in USER_STATUS:
+                    USER_STATUS[user_id] = False
+                save_user_status()
+
+                if hasattr(context.application, "_monitor_task"):
+                    task = context.application._monitor_task
+                    if not task.done():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+
+                await context.application.stop()
+
+                # Cancel all remaining asyncio tasks before exiting
+                tasks = asyncio.all_tasks()
+                for task in tasks:
+                    if task is not asyncio.current_task():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+
+                await asyncio.sleep(1)
+                logging.info("🔌 Bot stopped cleanly.")
+            except Exception as e:
+                logging.error(f"Shutdown error: {e}")
+            finally:
+                os._exit(0)
+
+        asyncio.create_task(safe_shutdown())
+
+    elif query.data == "cancel_stop":
+        await query.edit_message_text("❌ Shutdown cancelled.")
+
+
+# --- Bot Runner ---
+def main():
+    load_symbols_from_file()
+    load_token_history()  # ✅ Restore TOKEN_DATA_HISTORY and LAST_SAVED_HASHES
+    load_tracked_tokens()
+    load_user_tracking()
+    rebuild_tracked_tokens()
+    load_user_status()
+    load_active_token_data()
+
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("stop", stop))
+    app.add_handler(CommandHandler("add", add))
+    app.add_handler(CommandHandler("alltokens", alltokens))
+    app.add_handler(CommandHandler("remove", remove))
+    app.add_handler(CommandHandler("list", list_tokens))
+    app.add_handler(CommandHandler("reset", reset))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("restart", restart))
+    app.add_handler(CommandHandler("status", status))
+    app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
+    app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
+
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()

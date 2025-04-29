@@ -1,0 +1,101 @@
+{
+    "jsonrpc": "2.0",
+    "result": {
+        "blockTime": 1745591162,
+        "meta": {
+            "computeUnitsConsumed": 450,
+            "err": null,
+            "fee": 80000,
+            "innerInstructions": [],
+            "logMessages": [
+                "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+                "Program ComputeBudget111111111111111111111111111111 success",
+                "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+                "Program ComputeBudget111111111111111111111111111111 success",
+                "Program 11111111111111111111111111111111 invoke [1]",
+                "Program 11111111111111111111111111111111 success"
+            ],
+            "postBalances": [
+                86256255,
+                52000000,
+                1,
+                1
+            ],
+            "postTokenBalances": [],
+            "preBalances": [
+                138336255,
+                0,
+                1,
+                1
+            ],
+            "preTokenBalances": [],
+            "rewards": [],
+            "status": {
+                "Ok": null
+            }
+        },
+        "slot": 335823539,
+        "transaction": {
+            "message": {
+                "accountKeys": [
+                    {
+                        "pubkey": "DNBXp1BgzVPgbydfYWQmj6X5zQRo62fBrx7pukCx6qBZ",
+                        "signer": true,
+                        "source": "transaction",
+                        "writable": true
+                    },
+                    {
+                        "pubkey": "BJUcnDreSQRNpbsS9KhConMgc34Ta63k7UoWXiKeFDi9",
+                        "signer": false,
+                        "source": "transaction",
+                        "writable": true
+                    },
+                    {
+                        "pubkey": "11111111111111111111111111111111",
+                        "signer": false,
+                        "source": "transaction",
+                        "writable": false
+                    },
+                    {
+                        "pubkey": "ComputeBudget111111111111111111111111111111",
+                        "signer": false,
+                        "source": "transaction",
+                        "writable": false
+                    }
+                ],
+                "instructions": [
+                    {
+                        "accounts": [],
+                        "data": "3b1H8Rq1T3d1",
+                        "programId": "ComputeBudget111111111111111111111111111111",
+                        "stackHeight": null
+                    },
+                    {
+                        "accounts": [],
+                        "data": "LKoyXd",
+                        "programId": "ComputeBudget111111111111111111111111111111",
+                        "stackHeight": null
+                    },
+                    {
+                        "parsed": {
+                            "info": {
+                                "destination": "BJUcnDreSQRNpbsS9KhConMgc34Ta63k7UoWXiKeFDi9",
+                                "lamports": 52000000,
+                                "source": "DNBXp1BgzVPgbydfYWQmj6X5zQRo62fBrx7pukCx6qBZ"
+                            },
+                            "type": "transfer"
+                        },
+                        "program": "system",
+                        "programId": "11111111111111111111111111111111",
+                        "stackHeight": null
+                    }
+                ],
+                "recentBlockhash": "J9QnbCNxh4FMjCWoZBsgqRXc7UFcQswDtu1Cjg2vyavs"
+            },
+            "signatures": [
+                "LmHGHqWL8H8qwELkHSdCxP9FH8Sft5NKaYnzevvtNQtoRuZiMmtuXjKgZuDacz6dDbdbAaE3YedWGWs6cKt9wC4"
+            ]
+        }
+    },
+    "id": "1"
+}
