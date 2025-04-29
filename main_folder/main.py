@@ -7,7 +7,8 @@ import sys
 
 from telegram import Update, BotCommand, BotCommandScopeDefault
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes,
+    ApplicationBuilder, CommandHandler, CallbackQueryHandler,
+    ContextTypes, TypeHandler
 )
 
 from config import (
@@ -27,6 +28,7 @@ from storage.tiers import load_user_tiers
 import storage.tiers as tiers
 import storage.thresholds as thresholds
 
+
 from storage.tokens import load_tracked_tokens, save_tracked_tokens, load_active_token_data
 from storage.symbols import load_symbols_from_file
 from storage.users import load_user_tracking, load_user_status, save_user_status
@@ -34,13 +36,16 @@ from storage.history import load_token_history
 from storage.thresholds import load_user_thresholds, save_user_thresholds
 from storage.expiry import load_user_expiry
 from storage.notify import remind_inactive_users
+from storage.payment_logs import load_payment_logs
 
 
 from admin import (
     addadmin, removeadmin, listadmins,
     handle_removeadmin_callback, load_admins, ADMINS
 )
-from utils import load_json, save_json, send_message, refresh_user_commands
+from utils import (load_json, save_json, send_message,
+                   refresh_user_commands
+                   )
 from monitor import background_price_monitor
 
 from upgrade import upgrade_conv_handler
@@ -197,6 +202,18 @@ async def on_startup(app):
     # 🔧 Also refresh super admin's scoped menu
     await refresh_user_commands(SUPER_ADMIN_ID, app.bot)
 
+async def extract_username(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Middleware: Save username globally into context.bot_data."""
+    if update.effective_user:
+        user = update.effective_user
+        username = f"@{user.username}" if user.username else user.full_name
+        chat_id = str(update.effective_user.id)
+
+        if "usernames" not in context.bot_data:
+            context.bot_data["usernames"] = {}
+        context.bot_data["usernames"][chat_id] = username
+
+
 def main():
 
     load_admins()
@@ -210,6 +227,7 @@ def main():
     load_active_token_data()
     load_user_tiers()
     load_user_expiry()
+    load_payment_logs()
 
     # 🔒 Enforce token limits based on user tiers
     for user_id_str in list(storage.users.USER_TRACKING.keys()):
@@ -258,7 +276,8 @@ def main():
 
     app.bot_data["launch_dashboard"] = launch
 
-    
+    app.add_handler(TypeHandler(Update, extract_username), group=-999)
+
     app.add_handler(CommandHandler("lc", launch))
 
 

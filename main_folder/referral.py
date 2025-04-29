@@ -306,9 +306,9 @@ def on_upgrade_completed(user_id: int, upgrade_fee: float, duration_months: int)
     if referred_by and duration_months >= 6:
         # Process commission for the referrer
         commission = handle_successful_referral_upgrade(referred_by, upgrade_fee)
-        return True, commission
+        return True, commission, referred_by
     
-    return False, 0
+    return False, 0, None
 
 # Modify handle_back_to_dashboard to work with referral module
 async def handle_back_to_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):

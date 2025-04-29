@@ -8,7 +8,7 @@ from telegram.constants import ChatAction
 from admin import restricted_to_admin, ADMINS
 from config import (BASE_URL, SUPER_ADMIN_ID, BOT_NAME,
                     PAGE_SIZE, PAGE_SIZE_ALL, BOT_LOGS_ID,
-                    BOT_TG_GROUP
+                    BOT_TG_GROUP, DIVIDER_LINE
                     )
 
 import storage.users as users
@@ -288,7 +288,6 @@ async def show_token_dashboard(update: Update, context: ContextTypes.DEFAULT_TYP
     total_pages = (len(tokens_list) - 1) // PAGE_SIZE + 1
 
     msg = f"\n\n📈 *{title}* (Page {page + 1}/{total_pages})\n\n"
-    divider = "-" * 37
 
     for addr in current_tokens:
         symbol = symbols.ADDRESS_TO_SYMBOL.get(addr, addr[:6] + "...")
@@ -313,8 +312,8 @@ async def show_token_dashboard(update: Update, context: ContextTypes.DEFAULT_TYP
             f"{mc_text}\n"
             f"{vol_text}\n"
             f"{change_text}\n\n"
-            f"{divider}\n"
-            f"{divider}\n\n"
+            f"{DIVIDER_LINE}\n"
+            f"{DIVIDER_LINE}\n\n"
         )
 
     buttons = []
@@ -614,8 +613,16 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_tier = tiers.get_user_tier(user_id)
     user_limit = tiers.get_user_limit(user_id)
 
-    user = update.effective_user
-    username = f"@{user.username}" if user.username else user.full_name
+    # # ✅ Always determine username properly
+    # if hasattr(update, "effective_user") and update.effective_user:
+    #     user = update.effective_user
+    #     username = f"@{user.username}" if user.username else user.full_name
+    #     context.user_data["username"] = username  # Save it
+    # else:
+    #     username = context.user_data.get("username", f"User {chat_id}")
+
+    #username = context.user_data.get("username", f"User {chat_id}")
+    username = context.bot_data.get("usernames", {}).get(chat_id, f"User {chat_id}")
 
 
     footer_text = (
@@ -630,7 +637,9 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🌐 Total unique tokens tracked: {len(all_tokens)}\n\n"
         f"💥 Active spikes (≥15%): {spike_count}\n"
         f"🕓 Last update: {last_update if last_update else 'N/A'}\n\n\n"
-        f"{footer_text}"
+        f"{DIVIDER_LINE}\n"
+        f"{footer_text}\n"
+        f"{DIVIDER_LINE}"
     )
 
 

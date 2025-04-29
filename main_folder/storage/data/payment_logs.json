@@ -1,0 +1,56 @@
+{
+  "7129984365": {
+    "vRy2GL0KtAU": {
+      "tier": "chieftain",
+      "duration_months": "1",
+      "payment_wallet": "68EEXEFsMb61gMqD4hvzWrPa5SGrULQqz6NRxSG3yF6b",
+      "amount_in_usdc": 5,
+      "amount_in_sol": 0.03,
+      "start_time": "2025-04-29T23:40:01.416646",
+      "tx_sig": null,
+      "logged_at": "2025-04-29T23:40:01.416646"
+    },
+    "wNvoxQ6LMeY": {
+      "tier": "chieftain",
+      "duration_months": "6",
+      "payment_wallet": "CLbzh8RphEKD6NqQL8G7p8GQu1KibLU7RhAXnHftkENB",
+      "amount_in_usdc": 8,
+      "amount_in_sol": 0.05,
+      "start_time": "2025-04-29T23:46:11.667128",
+      "tx_sig": "3y4mVNhXqb6jNPwce8oUqBiMFgMM2tXf9ES3vNBHSjeZ8XKtqCEGDQCzJcPm93zF4wYJeGSRF4P2WKGBbnkW7oy5",
+      "logged_at": "2025-04-29T23:46:11.667128"
+    },
+    "P8aFenRg1ek": {
+      "tier": "overlord",
+      "duration_months": "1",
+      "payment_wallet": "5xJ2qJLjq7Mp6dR2vZby8rgFTKmBWqcoEa1xxgA3LKZT",
+      "amount_in_usdc": 5,
+      "amount_in_sol": 0.03,
+      "start_time": "2025-04-30T00:18:14.987087",
+      "tx_sig": "5GCDsrGdrW3SkLnAbqfWqywzcnQGhkvzNXpDWhCchURpNEoDh11bpfjNqP7JzFrt9T6UdFoiEoK6uPns7qSAx2zn",
+      "logged_at": "2025-04-30T00:18:14.987087"
+    },
+    "11oLmXyM02w": {
+      "tier": "overlord",
+      "duration_months": "1",
+      "payment_wallet": "5xJ2qJLjq7Mp6dR2vZby8rgFTKmBWqcoEa1xxgA3LKZT",
+      "amount_in_usdc": 5,
+      "amount_in_sol": 0.03,
+      "start_time": "2025-04-30T00:23:41.428074",
+      "tx_sig": "2KMvie4LGtjU23nF3Th4iXx1Sg3tXTiWWjuwxsrYxNjsycf1J88wgvbDyAEN2uPdLDLNaveATSGrEoGEsDfWtdBg",
+      "logged_at": "2025-04-30T00:23:41.428074"
+    }
+  },
+  "6015881080": {
+    "KYxfw12KIIs": {
+      "tier": "chieftain",
+      "duration_months": "1",
+      "payment_wallet": "68EEXEFsMb61gMqD4hvzWrPa5SGrULQqz6NRxSG3yF6b",
+      "amount_in_usdc": 5,
+      "amount_in_sol": 0.03,
+      "start_time": "2025-04-29T23:49:30.065568",
+      "tx_sig": "5GCDsrGdrW3SkLnAbqfWqywzcnQGhkvzNXpDWhCchURpNEoDh11bpfjNqP7JzFrt9T6UdFoiEoK6uPns7qSAx2zn",
+      "logged_at": "2025-04-29T23:49:30.065568"
+    }
+  }
+}

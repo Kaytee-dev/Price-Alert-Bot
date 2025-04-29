@@ -8,7 +8,6 @@
   },
   "965551493": {
     "referred_users": [
-      "7129984365",
       "723161032",
       "773521138",
       "5775627206",
@@ -16,9 +15,10 @@
       "6914164320",
       "963037462"
     ],
-    "total_commission": 86.60000000000001,
+    "total_commission": 109.70000000000002,
     "total_paid": 0.0,
     "wallet_address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
+<<<<<<< Updated upstream
     "successful_referrals": 6
   },
   "-4750674293": {
@@ -33,6 +33,15 @@
     "total_commission": 0.0,
     "total_paid": 0.0,
     "wallet_address": "",
+=======
+    "successful_referrals": 7
+  },
+  "7129984365": {
+    "referred_users": [],
+    "total_commission": 0.0,
+    "total_paid": 0.0,
+    "wallet_address": "adressuhjkghkgadhfjdfg45",
+>>>>>>> Stashed changes
     "successful_referrals": 0
   }
 }
