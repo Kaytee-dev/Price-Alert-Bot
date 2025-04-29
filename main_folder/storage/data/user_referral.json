@@ -13,11 +13,26 @@
       "773521138",
       "5775627206",
       "6015881080",
-      "6914164320"
+      "6914164320",
+      "963037462"
     ],
     "total_commission": 86.60000000000001,
     "total_paid": 0.0,
     "wallet_address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
     "successful_referrals": 6
+  },
+  "-4750674293": {
+    "referred_users": [],
+    "total_commission": 0.0,
+    "total_paid": 0.0,
+    "wallet_address": "",
+    "successful_referrals": 0
+  },
+  "6015881080": {
+    "referred_users": [],
+    "total_commission": 0.0,
+    "total_paid": 0.0,
+    "wallet_address": "",
+    "successful_referrals": 0
   }
 }
