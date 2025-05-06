@@ -40,6 +40,7 @@
       "tx_sig": "2KMvie4LGtjU23nF3Th4iXx1Sg3tXTiWWjuwxsrYxNjsycf1J88wgvbDyAEN2uPdLDLNaveATSGrEoGEsDfWtdBg",
       "logged_at": "2025-04-30T00:23:41.428074"
     },
+<<<<<<< Updated upstream
     "HPXpltrsNjo": {
       "tier": "overlord",
       "duration_months": "1",
@@ -141,6 +142,47 @@
       "start_time": "2025-05-03T14:53:48.581165",
       "tx_sig": "KgnqGrnSjNjnGAQxB3atWydCE5DbiKjMXAS61Xh2ahNFTXhZ5joQ9LHG18H6GZ8Z7UpiZcvB1SoyBSg4h212Aa1",
       "logged_at": "2025-05-03T14:55:09.472789"
+=======
+    "8VzDoy7BiPQ": {
+      "tier": "overlord",
+      "duration_months": "1",
+      "payment_wallet": "CLbzh8RphEKD6NqQL8G7p8GQu1KibLU7RhAXnHftkENB",
+      "amount_in_usdc": 5,
+      "amount_in_sol": 0.03,
+      "start_time": "2025-04-30T08:04:40.987436",
+      "tx_sig": null,
+      "logged_at": "2025-04-30T08:04:40.987535"
+    },
+    "U5KpXn-jeKM": {
+      "tier": "overlord",
+      "duration_months": "1",
+      "payment_wallet": "68EEXEFsMb61gMqD4hvzWrPa5SGrULQqz6NRxSG3yF6b",
+      "amount_in_usdc": 5,
+      "amount_in_sol": 0.03,
+      "start_time": "2025-04-30T08:04:44.586155",
+      "tx_sig": null,
+      "logged_at": "2025-04-30T08:04:44.586270"
+    },
+    "K_-6e2-FIrI": {
+      "tier": "overlord",
+      "duration_months": "6",
+      "payment_wallet": "CLbzh8RphEKD6NqQL8G7p8GQu1KibLU7RhAXnHftkENB",
+      "amount_in_usdc": 8,
+      "amount_in_sol": 0.05,
+      "start_time": "2025-04-30T08:06:11.443212",
+      "tx_sig": null,
+      "logged_at": "2025-04-30T08:06:11.443256"
+    },
+    "aTrqlqXuHGE": {
+      "tier": "overlord",
+      "duration_months": "1",
+      "payment_wallet": "7eERmVPXxkdy3eE9bgDPAv7oVKmYuqwne7trKvUwrWAX",
+      "amount_in_usdc": 5,
+      "amount_in_sol": 0.03,
+      "start_time": "2025-04-30T08:34:25.765929",
+      "tx_sig": null,
+      "logged_at": "2025-04-30T08:34:25.766003"
+>>>>>>> Stashed changes
     }
   },
   "6015881080": {
