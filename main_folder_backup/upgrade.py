@@ -1,4 +1,4 @@
-
+import asyncio
 import aiohttp
 import qrcode
 import io
@@ -327,6 +327,8 @@ async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown",
         reply_markup=payment_keyboard
     )
+    context.user_data["from_payment"] = True
+
 
     return PAYMENT
 
@@ -604,30 +606,36 @@ async def back_to_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML", 
         reply_markup=duration_keyboard
     )
-    
+    context.user_data["from_payment"] = False
+
     return SELECTING_DURATION
 
 
 
 async def cancel_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel the upgrade process and return to dashboard."""
-     # Used to revert the status of the assigned wallet from
-    # in-use to available
     wallets.revert_wallet_status_from_context(context)
 
     if update.callback_query:
         await update.callback_query.answer()
-        context.user_data.clear()
         try:
             await go_back_to_dashboard(update, context)
+
+            if context.user_data.get("from_payment"):
+                await asyncio.sleep(2)
+                await update.callback_query.message.delete()
+                
         except Exception as e:
             await update.effective_chat.send_message("⚠️ Failed to return to dashboard.")
             raise e
+        finally:
+            context.user_data.clear()
     else:
         await update.message.reply_text("Upgrade canceled. Use /lc to return to main menu.")
         context.user_data.clear()
 
     return ConversationHandler.END
+
 
 
 # === UPGRADE CONVERSATION HANDLER ===

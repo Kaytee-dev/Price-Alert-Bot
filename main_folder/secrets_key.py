@@ -19,6 +19,7 @@ ITERATIONS = 390000
 # === In-memory cache of decrypted wallets ===
 DECRYPTED_WALLETS: Dict[str, str] = {}
 
+logger = logging.getLogger(__name__)
 
 # === KDF to derive encryption key from password ===
 def derive_key(password: str) -> bytes:

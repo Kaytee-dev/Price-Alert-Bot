@@ -92,6 +92,15 @@ async def start_renewal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     current_tier = tiers.get_user_tier(user_id)
     expiry_date = tiers.get_user_expiry(user_id)
+
+     # Check if user is on "apprentice" tier
+    if current_tier == "apprentice":
+        # Send a message directing them to use the /upgrade command instead
+        await message.reply_text(
+            "You're currently on the free Apprentice tier. "
+            "To upgrade to a premium tier with more features, please use the /upgrade command."
+        )
+        return
     
     # Store the original message if we need to return to dashboard
     if hasattr(update, 'callback_query') and update.callback_query:

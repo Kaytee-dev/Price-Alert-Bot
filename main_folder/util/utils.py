@@ -96,6 +96,7 @@ async def refresh_user_commands(user_id: int, bot):
         BotCommand("checkpayment", "Retrieve user payment log -- /cp"),
         BotCommand("manualupgrade", "Manually upgrade user tier -- /mu"),
         BotCommand("processpayouts", "Process referral commission -- /pp"),
+        BotCommand("listrefs", "View user referral data -- /lr"),
 
     ]
 

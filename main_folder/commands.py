@@ -27,6 +27,7 @@ from referral import show_referral_page, start_with_referral
 from renewal import start_renewal
 from datetime import datetime
 
+logger = logging.getLogger(__name__)
 
 # --- Telegram Bot Commands ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -344,7 +345,7 @@ async def show_token_dashboard(update: Update, context: ContextTypes.DEFAULT_TYP
         nav_buttons.append(InlineKeyboardButton("Next ⏭", callback_data="list_next"))
 
     buttons.append(nav_buttons)
-    buttons.append([InlineKeyboardButton("🏠 Dashboard", callback_data="back_to_dashboard")])
+    buttons.append([InlineKeyboardButton("🏠 Back to Dashboard", callback_data="back_to_dashboard")])
 
     keyboard = InlineKeyboardMarkup(buttons)
 
@@ -407,7 +408,18 @@ async def callback_reset_confirmation(update: Update, context: ContextTypes.DEFA
     if query.data == "confirm_reset":
         await perform_reset(update, context)
     elif query.data == "cancel_reset":
-        await query.edit_message_text("❌ Reset canceled.")
+        # Check if we came from dashboard and need to add back button
+        if context.user_data.get('from_dashboard', False):
+            keyboard = InlineKeyboardMarkup([[
+                InlineKeyboardButton("🏠 Back to Dashboard", callback_data="go_to_dashboard")
+            ]])
+            await query.edit_message_text("❌ Reset canceled.", reply_markup=keyboard)
+            # Reset the flag
+            context.user_data['from_dashboard'] = False
+        else:
+            await query.edit_message_text("❌ Reset canceled.")
+
+        #await query.edit_message_text("❌ Reset canceled.")
 
 async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
@@ -494,7 +506,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/restart or /rs — Restart the bot",
             "/alltokens or /at — List all tracked tokens\n",
             "/checkpayment or /cp — Retrieve user payment log",
-            "/manualupgrade or /mu — Manually upgrade user tier\n",
+            "/manualupgrade or /mu — Manually upgrade user tier",
+            "/listrefs or /lr — View user referral data\n",
 
         ]
 
@@ -506,10 +519,25 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/listadmins or /la — List all admins",
         ]
 
-    await update.message.reply_text(
-        "\n".join(msg_lines),
-        parse_mode="Markdown"
-    )
+    msg_txt = "\n".join(msg_lines)
+
+    # await update.message.reply_text(
+    #     "\n".join(msg_lines),
+    #     parse_mode="Markdown"
+    # )
+
+    # Check if we came from dashboard and need to add back button
+    if context.user_data.get('from_dashboard', False):
+        keyboard = InlineKeyboardMarkup([[
+            InlineKeyboardButton("🏠 Back to Dashboard", callback_data="go_to_dashboard")
+        ]])
+        await update.message.reply_text(msg_txt, parse_mode="Markdown", reply_markup=keyboard)
+        # Reset the flag
+        context.user_data['from_dashboard'] = False
+    else:
+        await update.message.reply_text(msg_txt, parse_mode="Markdown")
+
+
     
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -548,8 +576,18 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🕓 Last update: {last_update if last_update else 'N/A'}"
     )
 
+    # Check if we came from dashboard and need to add back button
+    if context.user_data.get('from_dashboard', False):
+        keyboard = InlineKeyboardMarkup([[
+            InlineKeyboardButton("🏠 Back to Dashboard", callback_data="go_to_dashboard")
+        ]])
+        await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=keyboard)
+        # Reset the flag
+        context.user_data['from_dashboard'] = False
+    else:
+        await update.message.reply_text(msg, parse_mode="Markdown")
     
-    await update.message.reply_text(msg, parse_mode="Markdown")
+    #await update.message.reply_text(msg, parse_mode="Markdown")
 
 @restricted_to_admin
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -636,11 +674,11 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for addr in all_tokens:
         history_data = history.TOKEN_DATA_HISTORY.get(addr, [])
         if history_data and isinstance(history_data[0].get("priceChange_m5"), (int, float)):
-            if history_data[0]["priceChange_m5"] >= 15:
+            if history_data[0]["priceChange_m5"] >= 5:
                 spike_count += 1
 
     last_update = None
-    timestamps = [entry[0].get("timestamp") for entry in history.TOKEN_DATA_HISTORY.values() if entry]
+    timestamps = [entry[2].get("timestamp") for entry in history.TOKEN_DATA_HISTORY.values() if entry]
     if timestamps:
         last_update = max(timestamps)
 
@@ -662,7 +700,7 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🎯 Tier: {user_tier.capitalize()} ({user_limit} token limit)\n\n"
         f"👤 You are tracking {len(user_tokens)} token(s).\n"
         f"🌐 Total unique tokens tracked: {len(all_tokens)}\n\n"
-        f"💥 Active spikes (≥15%): {spike_count}\n"
+        f"💥 Active spikes (≥5%): {spike_count}\n"
     )
 
     # Add expiry info
@@ -700,9 +738,6 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
         InlineKeyboardButton("📋 List Tokens", callback_data="cmd_list")
     ],
     [
-        InlineKeyboardButton("👤 Refferral", callback_data="cmd_refer"),
-    ],
-    [
         InlineKeyboardButton("📊 Tracking Status", callback_data="cmd_status"),
         InlineKeyboardButton("❓ Help", callback_data="cmd_help")
     ],
@@ -710,6 +745,7 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
         InlineKeyboardButton("⭐ Upgrade", callback_data="cmd_upgrade")
     ],
     [
+        InlineKeyboardButton("👤 Refferral", callback_data="cmd_refer"),
         InlineKeyboardButton("🔄 Renew Tier", callback_data="cmd_renew")
     ],
     ])
@@ -724,6 +760,9 @@ async def handle_dashboard_button(update: Update, context: ContextTypes.DEFAULT_
     callback_data = query.data
     chat_id = str(query.message.chat_id)
     user_id = int(chat_id)
+
+     # Set flag to indicate that we're coming from dashboard
+    context.user_data['from_dashboard'] = True
     
     # Handle upgrade button by transferring to the conversation
     if callback_data == "cmd_upgrade":
@@ -753,3 +792,11 @@ async def handle_dashboard_button(update: Update, context: ContextTypes.DEFAULT_
     elif callback_data == "cmd_refer":
         await show_referral_page(custom_update, context)
 
+
+async def back_to_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    # Delete the current message
+    await query.message.delete()
+    # Call the launch function to show the dashboard
+    await launch(update, context)

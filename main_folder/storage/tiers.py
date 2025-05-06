@@ -12,6 +12,7 @@ from datetime import datetime
 import storage.users as users
 import storage.expiry as expiry
 
+logger = logging.getLogger(__name__)
 
 FREE_LIMIT = 3
 STANDARD_LIMIT = 10
@@ -28,6 +29,9 @@ TIER_LIMITS = {
 }
 
 USER_TIERS = {}  # {user_id: tier_name}
+
+TIER_EXPIRY_CHECK_INTERVAL = 2 * 24 * 60 * 60 # 2 days
+TIER_EXPIRY_ERROR_SLEEP = 1 * 60 * 60 # 1 hour
 
 def load_user_tiers():
     global USER_TIERS
@@ -57,7 +61,7 @@ def set_user_tier_core(user_id: int, tier: str) -> bool:
     user_id_str = str(user_id)
     USER_TIERS[user_id_str] = tier
     save_user_tiers()
-    logging.info(f"🎯 Updated user {user_id} to tier '{tier}'")
+    logger.info(f"🎯 Updated user {user_id} to tier '{tier}'")
     trimmed = enforce_token_limit_core(user_id)
     return trimmed
 
@@ -102,7 +106,7 @@ def enforce_token_limit_core(user_id: int) -> bool:
     if len(current_tokens) > allowed_limit:
         users.USER_TRACKING[user_id_str] = current_tokens[:allowed_limit]
         users.save_user_tracking()
-        logging.info(f"🚫 Enforced token limit for user {user_id_str}. Trimmed to {allowed_limit} tokens.")
+        logger.info(f"🚫 Enforced token limit for user {user_id_str}. Trimmed to {allowed_limit} tokens.")
         return True
     return False
 
@@ -133,67 +137,192 @@ def get_user_expiry(user_id: int) -> datetime | None:
             return None
     return None
 
+# async def check_and_process_tier_expiry(bot: Bot):
+#     """
+#     Check for users with expiring tiers and process accordingly:
+#     - Send reminder 3 days before expiry
+#     - Send notice on expiry day
+#     - Downgrade after 3-day grace period.
+#     - 
+#     """
+#     current_date = datetime.now()
+    
+#     # Ensure expiry data is loaded
+#     expiry.load_user_expiry()
+
+#     # Process in batches of 50
+#     batch_size = 50
+#     user_ids_str = list(expiry.USER_EXPIRY.keys())
+    
+#     for user_id_str, expiry_str in expiry.USER_EXPIRY.items():
+#         try:
+#             user_id = int(user_id_str)
+#             expiry_date = datetime.fromisoformat(expiry_str)
+            
+#             # Calculate days until expiry
+#             days_until_expiry = (expiry_date - current_date).days
+#             grace_period = 3
+#             grace_period_remaining = grace_period + days_until_expiry
+            
+#             # Check if tier is not free already
+#             user_tier = get_user_tier(user_id)
+#             if user_tier == "apprentice":
+#                 continue
+                
+#             # Send reminder 3 days before expiry
+#             if days_until_expiry in range(1,4):
+#                 await send_message(
+#                     bot,
+#                     f"⚠️ Your {user_tier.capitalize()} tier will expire in {days_until_expiry} days. " 
+#                     f"Kindly renew your tier using /renew to keep your current benefits.",
+#                     chat_id=user_id
+#                 )
+#                 logger.info(f"Sent {days_until_expiry}-day expiry reminder to user {user_id}")
+                
+#             # Send notice on expiry day
+#             elif days_until_expiry == 0:
+#                 await send_message(
+#                     bot,
+#                     f"🔔 Your {user_tier.capitalize()} tier will expire today. "
+#                     f"You have a 3-day grace period before being automatically *downgraded* to Apprentice tier.",
+#                     chat_id=user_id
+#                 )
+#                 logger.info(f"Sent expiry notice to user {user_id}")
+                
+#             # Process downgrade after grace period (3 days)
+#             elif grace_period_remaining <= 0:
+#                 # Downgrade to free tier
+#                 await set_user_tier(user_id, "apprentice", bot=bot)
+                
+#                 # Clean up expiry record
+#                 del expiry.USER_EXPIRY[user_id_str]
+#                 expiry.save_user_expiry()
+                
+#                 logger.info(f"Downgraded user {user_id} to apprentice tier after grace period")
+                
+#         except (ValueError, TypeError) as e:
+#             logger.error(f"Error processing expiry for user {user_id_str}: {str(e)}")
+
 async def check_and_process_tier_expiry(bot: Bot):
     """
     Check for users with expiring tiers and process accordingly:
     - Send reminder 3 days before expiry
     - Send notice on expiry day
     - Downgrade after 3-day grace period
+    
+    Uses true batch processing to optimize performance and reduce API load
     """
     current_date = datetime.now()
     
     # Ensure expiry data is loaded
     expiry.load_user_expiry()
-    
-    for user_id_str, expiry_str in expiry.USER_EXPIRY.items():
-        try:
-            user_id = int(user_id_str)
-            expiry_date = datetime.fromisoformat(expiry_str)
-            
-            # Calculate days until expiry
-            days_until_expiry = (expiry_date - current_date).days
-            grace_period = 3
-            grace_period_remaining = grace_period + days_until_expiry
-            
-            # Check if tier is not free already
-            user_tier = get_user_tier(user_id)
-            if user_tier == "apprentice":
-                continue
-                
-            # Send reminder 3 days before expiry
-            if days_until_expiry in range(1,4):
-                await send_message(
-                    bot,
-                    f"⚠️ Your {user_tier.capitalize()} tier will expire in {days_until_expiry} days. " 
-                    f"Kindly renew your tier using /renew to keep your current benefits.",
-                    chat_id=user_id
-                )
-                logging.info(f"Sent {days_until_expiry}-day expiry reminder to user {user_id}")
-                
-            # Send notice on expiry day
-            elif days_until_expiry == 0:
-                await send_message(
-                    bot,
-                    f"🔔 Your {user_tier.capitalize()} tier will expire today. "
-                    f"You have a 3-day grace period before being automatically *downgraded* to Apprentice tier.",
-                    chat_id=user_id
-                )
-                logging.info(f"Sent expiry notice to user {user_id}")
-                
-            # Process downgrade after grace period (3 days)
-            elif grace_period_remaining <= 0:
-                # Downgrade to free tier
-                await set_user_tier(user_id, "apprentice", bot=bot)
-                
-                # Clean up expiry record
-                del expiry.USER_EXPIRY[user_id_str]
-                expiry.save_user_expiry()
-                
-                logging.info(f"Downgraded user {user_id} to apprentice tier after grace period")
-                
-        except (ValueError, TypeError) as e:
-            logging.error(f"Error processing expiry for user {user_id_str}: {str(e)}")
 
+    # Batch size for processing
+    batch_size = 50
+    user_ids_str = list(expiry.USER_EXPIRY.keys())
+    total_users = len(user_ids_str)
+    
+    # Group users by action type to enable proper batching
+    reminder_users = []      # 1-3 days before expiry
+    expiry_today_users = []  # expiry day
+    downgrade_users = []     # past grace period
+    
+    # First pass: categorize all users
+    for i in range(0, total_users, batch_size):
+        batch_user_ids = user_ids_str[i:i+batch_size]
+        
+        for user_id_str in batch_user_ids:
+            try:
+                user_id = int(user_id_str)
+                expiry_date = datetime.fromisoformat(expiry.USER_EXPIRY[user_id_str])
+                
+                # Calculate days until expiry
+                days_until_expiry = (expiry_date - current_date).days
+                grace_period = 3
+                grace_period_remaining = grace_period + days_until_expiry
+                
+                # Check if tier is not free already
+                user_tier = get_user_tier(user_id)
+                if user_tier == "apprentice":
+                    continue
+                    
+                # Categorize based on expiry status
+                if days_until_expiry in range(1, 4):
+                    reminder_users.append((user_id, user_tier, days_until_expiry))
+                elif days_until_expiry == 0:
+                    expiry_today_users.append((user_id, user_tier))
+                elif grace_period_remaining <= 0:
+                    downgrade_users.append(user_id_str)
+                    
+            except (ValueError, TypeError) as e:
+                logger.error(f"Error processing expiry for user {user_id_str}: {str(e)}")
+    
+    # Process reminders in batches
+    logger.info(f"Processing {len(reminder_users)} users for expiry reminders")
+    for i in range(0, len(reminder_users), batch_size):
+        batch = reminder_users[i:i+batch_size]
+        tasks = []
+        
+        for user_id, user_tier, days in batch:
+            tasks.append(send_message(
+                bot,
+                f"⚠️ Your {user_tier.capitalize()} tier will expire in {days} days. " 
+                f"Kindly renew your tier using /renew to keep your current benefits.",
+                chat_id=user_id
+            ))
+            
+        if tasks:
+            # Execute batch of reminder messages concurrently
+            await asyncio.gather(*tasks)
+            logger.info(f"Sent expiry reminders to batch of {len(tasks)} users")
+    
+    # Process expiry day notifications in batches
+    logger.info(f"Processing {len(expiry_today_users)} users for expiry day notifications")
+    for i in range(0, len(expiry_today_users), batch_size):
+        batch = expiry_today_users[i:i+batch_size]
+        tasks = []
+        
+        for user_id, user_tier in batch:
+            tasks.append(send_message(
+                bot,
+                f"🔔 Your {user_tier.capitalize()} tier will expire today. "
+                f"You have a 3-day grace period before being automatically *downgraded* to Apprentice tier.",
+                chat_id=user_id
+            ))
+            
+        if tasks:
+            # Execute batch of expiry notifications concurrently
+            await asyncio.gather(*tasks)
+            logger.info(f"Sent expiry day notifications to batch of {len(tasks)} users")
+    
+    # Process downgrades in batches
+    logger.info(f"Processing {len(downgrade_users)} users for tier downgrades")
+    for i in range(0, len(downgrade_users), batch_size):
+        batch_user_ids_str = downgrade_users[i:i+batch_size]
+        downgrade_tasks = []
+        
+        for user_id_str in batch_user_ids_str:
+            user_id = int(user_id_str)
+            downgrade_tasks.append(set_user_tier(user_id, "apprentice", bot=bot))
+        
+        if downgrade_tasks:
+            # Execute batch of downgrades concurrently
+            await asyncio.gather(*downgrade_tasks)
+            
+            # Clean up expiry records for this batch
+            for user_id_str in batch_user_ids_str:
+                if user_id_str in expiry.USER_EXPIRY:
+                    del expiry.USER_EXPIRY[user_id_str]
+            
+            # Save changes after each batch to prevent data loss
+            expiry.save_user_expiry()
+            logger.info(f"Downgraded batch of {len(downgrade_tasks)} users to apprentice tier")
+    
+    # Final save to ensure any remaining changes are persisted
+    expiry.save_user_expiry()
+    
+    logger.info(f"Completed tier expiry processing: {len(reminder_users)} reminders, " 
+               f"{len(expiry_today_users)} notifications, {len(downgrade_users)} downgrades")
 
 async def check_and_process_tier_expiry_scheduler(app):
     """
@@ -203,14 +332,14 @@ async def check_and_process_tier_expiry_scheduler(app):
     bot = app.bot
     while True:
         try:
-            logging.info("🕒 Running scheduled tier expiry check")
+            logger.info("🕒 Running scheduled tier expiry check")
             await check_and_process_tier_expiry(bot)
             # Sleep for 2 days (in seconds)
-            await asyncio.sleep(2 * 24 * 60 * 60)  # 2 days
+            await asyncio.sleep(TIER_EXPIRY_CHECK_INTERVAL)
         except asyncio.CancelledError:
-            logging.info("❌ Tier expiry check scheduler cancelled")
+            logger.info("❌ Tier expiry check scheduler cancelled")
             break
         except Exception as e:
-            logging.error(f"Error in tier expiry check scheduler: {str(e)}")
+            logger.error(f"Error in tier expiry check scheduler: {str(e)}")
             # Still sleep before retry, but shorter time
-            await asyncio.sleep(1 * 60 * 60)  # 1 hour
+            await asyncio.sleep(TIER_EXPIRY_ERROR_SLEEP)  

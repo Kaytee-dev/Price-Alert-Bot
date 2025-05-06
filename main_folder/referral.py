@@ -13,6 +13,8 @@ from telegram.constants import ChatAction
 
 import asyncio
 
+logger = logging.getLogger(__name__)
+
 # States for the wallet address conversation
 ENTERING_WALLET = 1
 

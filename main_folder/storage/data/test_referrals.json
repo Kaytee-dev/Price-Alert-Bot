@@ -1,0 +1,81 @@
+{
+  "-4710110042": {
+    "referred_users": [],
+    "total_commission": 0.0,
+    "total_paid": 0.0,
+    "wallet_address": "",
+    "successful_referrals": 0
+  },
+  "965551493": {
+    "referred_users": [
+      "723161032",
+      "773521138",
+      "5775627206",
+      "6914164320",
+      "963037462"
+    ],
+    "total_commission": 14,
+    "total_paid": 14.0,
+    "wallet_address": "GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj",
+    "successful_referrals": 0,
+    "tx_sig": "5rhxTfyQp8gksvgrxBSDs2HwBsVmyVLsVLGXK2hFpg3tRjqQsvBMgrZF1WAH8DUcygcmE3AyUGkANCLMnRWdAfLW"
+  },
+  "7129984365": {
+    "referred_users": [],
+    "total_commission": 5,
+    "total_paid": 5.0,
+    "wallet_address": "9S7LF9xHFRJQKY8X5gzsGGYjfLRQDFnM8KFJ6wQTpump",
+    "successful_referrals": 0,
+    "tx_sig": "2KiX6wrcT2JH1G7G7VVjgPCBdEZ57LivuDAW5Hp15q4xAQi1V7CU6Gq7VZiREDG1Rb35JKGUpNc1sK1RCJvzVY4q"
+  },
+  "6015881080": {
+    "referred_users": [],
+    "total_commission": 6,
+    "total_paid": 6.0,
+    "wallet_address": "HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5",
+    "successful_referrals": 0,
+    "tx_sig": "5rhxTfyQp8gksvgrxBSDs2HwBsVmyVLsVLGXK2hFpg3tRjqQsvBMgrZF1WAH8DUcygcmE3AyUGkANCLMnRWdAfLW"
+  },
+  "723161032": {
+    "total_commission": 1,
+    "total_paid": 1.0,
+    "successful_referrals": 0,
+    "wallet_address": "27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM",
+    "tx_sig": "5rhxTfyQp8gksvgrxBSDs2HwBsVmyVLsVLGXK2hFpg3tRjqQsvBMgrZF1WAH8DUcygcmE3AyUGkANCLMnRWdAfLW"
+  },
+  "773521138": {
+    "total_commission": 1,
+    "total_paid": 1.0,
+    "successful_referrals": 0,
+    "wallet_address": "GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4",
+    "tx_sig": "2KiX6wrcT2JH1G7G7VVjgPCBdEZ57LivuDAW5Hp15q4xAQi1V7CU6Gq7VZiREDG1Rb35JKGUpNc1sK1RCJvzVY4q"
+  },
+  "5775627206": {
+    "total_commission": 1,
+    "total_paid": 1.0,
+    "successful_referrals": 0,
+    "wallet_address": "N3ve9zJ71CGT6EmzY8qXBLjupiqW8kzRzWP33jSeMyh",
+    "tx_sig": "R5f8z2Hwq8su6qse8PPmqEwqKGR1qo5jxp8kRUKk62Zh1ey5iBadjvgyTevk7DPChripx74tVfrwR2aTibv825E"
+  },
+  "6914164320": {
+    "total_commission": 1,
+    "total_paid": 1.0,
+    "successful_referrals": 0,
+    "wallet_address": "BggN2aJagL95Lo7hSK6k8hgAuicaGV1LL1TTKfgPg9QT",
+    "tx_sig": "5rhxTfyQp8gksvgrxBSDs2HwBsVmyVLsVLGXK2hFpg3tRjqQsvBMgrZF1WAH8DUcygcmE3AyUGkANCLMnRWdAfLW"
+  },
+  "2102128217": {
+    "total_commission": 1,
+    "total_paid": 1.0,
+    "successful_referrals": 0,
+    "wallet_address": "Hi411Qp26KNyA52iX6jHFxeMqnep6tzrk6EbADhGPdq8",
+    "tx_sig": "R5f8z2Hwq8su6qse8PPmqEwqKGR1qo5jxp8kRUKk62Zh1ey5iBadjvgyTevk7DPChripx74tVfrwR2aTibv825E"
+  },
+  "963037462": {
+    "total_commission": 1,
+    "total_paid": 1.0,
+    "successful_referrals": 0,
+    "wallet_address": "C6RZwXDKxKDHfTMS22dtG3KbHL1cAxVZ1ZX8qYphsuiN",
+    "tx_sig": "5rhxTfyQp8gksvgrxBSDs2HwBsVmyVLsVLGXK2hFpg3tRjqQsvBMgrZF1WAH8DUcygcmE3AyUGkANCLMnRWdAfLW"
+  }
+}

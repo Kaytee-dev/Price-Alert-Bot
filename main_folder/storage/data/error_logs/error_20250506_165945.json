@@ -1,0 +1,40 @@
+{
+  "error_id": "error_20250506_165945",
+  "timestamp": "2025-05-06T16:59:45.304309",
+  "error_message": "'tx_sig'",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_application.py\", line 1264, in process_update\n    await coroutine\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\basehandler.py\", line 157, in handle_update\n    return await self.callback(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\admin.py\", line 52, in wrapper\n    return await func(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\admin.py\", line 390, in list_referrals\n    if data[\"tx_sig\"]:\n       ~~~~^^^^^^^^^^\nKeyError: 'tx_sig'\n",
+  "update": {
+    "message": {
+      "channel_chat_created": false,
+      "delete_chat_photo": false,
+      "entities": [
+        {
+          "length": 3,
+          "offset": 0,
+          "type": "bot_command"
+        }
+      ],
+      "group_chat_created": false,
+      "supergroup_chat_created": false,
+      "text": "/lr",
+      "chat": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "type": "private",
+        "username": "toheeb6538"
+      },
+      "date": 1746547185,
+      "message_id": 2201,
+      "from": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "is_bot": false,
+        "language_code": "en",
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "username": "toheeb6538"
+      }
+    },
+    "update_id": 223394433
+  }
+}

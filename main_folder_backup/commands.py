@@ -43,15 +43,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
      # Start global monitor loop if not already running (admin OR first-time user)
     if not getattr(context.application, "_monitor_started", False):
-        logging.info("📡 Monitor loop will be called...")
+        logger.info("📡 Monitor loop will be called...")
 
         # Create the task and store the reference
         monitor_task = context.application.create_task(background_price_monitor(context.application))
-        logging.info("📡 Monitor loop was called successfully...")
+        logger.info("📡 Monitor loop was called successfully...")
 
         context.application._monitor_task = monitor_task  # Store reference to the task
         context.application._monitor_started = True
-        logging.info(f"🟢 Monitor loop started by {'admin' if is_admin else 'user'} {chat_id}")
+        logger.info(f"🟢 Monitor loop started by {'admin' if is_admin else 'user'} {chat_id}")
     
     await refresh_user_commands(user_id, context.bot)
 
@@ -152,7 +152,7 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_name = user_chat.full_name or f"User {user_id}"
 
         # Log and notify the super admin
-        logging.info(f"🤖 {user_name} auto-started monitoring.")
+        logger.info(f"🤖 {user_name} auto-started monitoring.")
         await send_message(
             context.bot,
             f"🧹 {user_name} auto-started monitoring.",
@@ -227,7 +227,7 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Address(es) not found in your tracking list:\n" + "\n".join(not_found))
     if tokens_removed:
         msg = f"🧼 Removed {len(tokens_removed)} untracked token(s) from tracking after /remove."
-        logging.info(msg)
+        logger.info(msg)
         await send_message(
             context.bot,
             msg,
@@ -246,7 +246,7 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_chat = await context.bot.get_chat(user_id)
         user_name = user_chat.full_name or f"User {user_id}"
 
-        logging.info(f"🧹 Removed {user_name} from tracking (no tokens left).")
+        logger.info(f"🧹 Removed {user_name} from tracking (no tokens left).")
         await send_message(
             context.bot,
             f"🧹 Removed {user_name} from tracking (no tokens left).",
@@ -417,7 +417,7 @@ async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if users.USER_STATUS.get(chat_id):
         users.USER_STATUS[chat_id] = False
         users.save_user_status()
-        logging.info(f"🔴 Deactivated monitoring for user {chat_id}")
+        logger.info(f"🔴 Deactivated monitoring for user {chat_id}")
 
     tokens_removed = []
     user_tokens = users.USER_TRACKING.get(chat_id, [])
@@ -430,7 +430,7 @@ async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_chat = await context.bot.get_chat(user_id)
         user_name = user_chat.full_name or f"User {user_id}"
 
-        logging.info(f"🧹 Removed {user_name} from tracking.")
+        logger.info(f"🧹 Removed {user_name} from tracking.")
         await send_message(
             context.bot,
             f"🧹 Removed {user_name} (ID: {user_id}) from tracking.",
@@ -454,7 +454,7 @@ async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if tokens_removed:
         msg = f"🧼 Removed {len(tokens_removed)} untracked token(s) after /reset."
-        logging.info(msg)
+        logger.info(msg)
         await send_message(
             context.bot,
             msg,
@@ -513,7 +513,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
+    user_id = update.effective_chat.id
+    chat_id = str(user_id)
     user_tokens = users.USER_TRACKING.get(chat_id, [])
     all_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
 
@@ -547,6 +548,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🕓 Last update: {last_update if last_update else 'N/A'}"
     )
 
+    
     await update.message.reply_text(msg, parse_mode="Markdown")
 
 @restricted_to_admin
@@ -621,7 +623,7 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
         target_message = update.message
 
     if target_message is None:
-        logging.warning("❌ No target message found in update.")
+        logger.warning("❌ No target message found in update.")
         return
     
     user_id = update.effective_chat.id
@@ -665,13 +667,21 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Add expiry info
     expiry_date = tiers.get_user_expiry(user_id)
+
+    
     if expiry_date:
         days_left = (expiry_date - datetime.now()).days
-        if days_left <= 7:
+        grace_period = 3
+        grace_period_remaining = grace_period + days_left
+
+        if days_left in range(1,8):
             msg += f"\n⏰ Your {user_tier.capitalize()} tier expires in *{days_left} days*\n"
-        elif days_left >= -3:
-            msg += f"\n⚠️ Your {user_tier.capitalize()} tier has expired! " \
-                             f"You have {abs(days_left)}/3 days of grace period remaining\n"
+
+        elif days_left <= 0:
+            msg += f"\n⚠️ Your {user_tier.capitalize()} tier has expired! "\
+                        f"You have {grace_period_remaining}/{grace_period} days before your tier is downgraded. "\
+                            f"Use /renew to renew your tier to avoid disruptions.\n\n"
+
     
     msg += (
         f"🕓 Last update: {last_update if last_update else 'N/A'}\n\n\n"

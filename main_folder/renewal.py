@@ -102,6 +102,16 @@ async def start_renewal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
     
+    if current_tier == "super admin":
+        # Send a message directing them to use the /upgrade command instead
+        super_msg = "This command is not designed for you, O the *CEO*"
+           
+        await message.reply_text(
+            super_msg,
+            parse_mode="Markdown",
+        )
+        return
+    
     # Store the original message if we need to return to dashboard
     if hasattr(update, 'callback_query') and update.callback_query:
         context.user_data['dashboard_message'] = update.callback_query.message
@@ -131,7 +141,7 @@ async def start_renewal(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("🔥 1 Year", callback_data="duration_12")
         ],
         [
-            InlineKeyboardButton("🔙 Cancel", callback_data="cancel")
+            InlineKeyboardButton("🔙 Back", callback_data="cancel")
         ]
     ])
     
@@ -244,6 +254,8 @@ async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown",
         reply_markup=payment_keyboard
     )
+
+    context.user_data["from_renewal_payment"] = True
 
     return PAYMENT
 
@@ -536,15 +548,19 @@ async def cancel_renewal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if update.callback_query:
         await update.callback_query.answer()
-        context.user_data.clear()
         try:
             
             await go_back_to_dashboard(update, context)
-            await asyncio.sleep(2)
-            await update.callback_query.message.delete()
+            if context.user_data.get("from_renewal_payment"):
+                await asyncio.sleep(2)
+                await update.callback_query.message.delete()
+
         except Exception as e:
             await update.effective_chat.send_message("⚠️ Failed to return to dashboard.")
             raise e
+        finally:
+            context.user_data.clear()
+
     else:
         await update.message.reply_text("Renewal canceled. Use /lc to return to main menu.")
         context.user_data.clear()

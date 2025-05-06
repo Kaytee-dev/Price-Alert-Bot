@@ -23,7 +23,7 @@ import requests
 import referral as referral
 from upgrade import fetch_sol_price_usd
 from config import SOLSCAN_BASE, SOLSCAN_TX_BASE, SOLANA_RPC, BOT_NAME
-from util.process_single_payout_util import process_single_payout
+from util.process_batch_payout_util import process_batch_payouts
 
 logger = logging.getLogger(__name__)
 
@@ -437,38 +437,50 @@ async def process_payments(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Update processing message
     await processing_msg.edit_text(
-        f"⏳ Processing {len(valid_users)} payments...\n"
-        "0% complete (0/{len(valid_users)})"
+        f"⏳ Preparing to process {len(valid_users)} payments in batches..."
     )
     
-    successful_transfers = []
-    failed_transfers = []
-    
-    # Process each payment
-    for i, (user_id, data) in enumerate(valid_users):
+    # Prepare payment batch data
+    payment_batch = []
+    for user_id, data in valid_users:
         # Calculate unpaid commission
         unpaid_commission = data["total_commission"] - data["total_paid"]
         amount_usd = unpaid_commission
         wallet_address = data["wallet_address"]
         
-        # Update processing message with progress
-        if i % 5 == 0 or i == len(valid_users) - 1:  # Update every 5 transactions or on the last one
-            progress = int((i / len(valid_users)) * 100)
-            await processing_msg.edit_text(
-                f"⏳ Processing payments... {progress}% complete ({i}/{len(valid_users)})"
-            )
+        payment_batch.append((user_id, wallet_address, amount_usd))
+    
+    # Process payments in batch
+    await processing_msg.edit_text(
+        f"⏳ Processing {len(payment_batch)} payments in optimized batches..."
+    )
+    
+    # Import the batch processing function
+    
+    
+    # Process the payments in batch
+    results = await process_batch_payouts(payment_batch, keypair, context)
+    
+    # Parse results
+    successful_transfers = []
+    failed_transfers = []
+    
+    for user_id, success, tx_sig, message in results:
+        # Find the data for this user
+        user_data = next((data for uid, data in valid_users if uid == user_id), None)
         
-        # Process the actual payment
-        success, tx_sig, message = await process_single_payout(
-            user_id, wallet_address, amount_usd, keypair, context
-        )
+        if not user_data:
+            continue
+            
+        # Calculate unpaid commission
+        unpaid_commission = user_data["total_commission"] - user_data["total_paid"]
+        amount_usd = unpaid_commission
         
         if success:
             # Update referral data
             referral.REFERRAL_DATA[user_id]["total_paid"] += unpaid_commission
             referral.REFERRAL_DATA[user_id]["successful_referrals"] = 0  # Reset successful referrals
             referral.REFERRAL_DATA[user_id]["tx_sig"] = tx_sig  # Store transaction signature
-            
             
             successful_transfers.append((user_id, amount_usd, tx_sig))
         else:
@@ -517,11 +529,6 @@ async def process_payments(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Also notify users about their payouts
     await notify_users_about_payouts(context, successful_transfers)
-
-    # # Also notify users with invalid wallets
-    # invalid_users = context.user_data.get("invalid_users", [])
-    # if invalid_users:
-    #     await notify_users_invalid_wallet(context, invalid_users)
     
     return ConversationHandler.END
 

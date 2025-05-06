@@ -92,6 +92,16 @@ async def start_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     current_tier = tiers.get_user_tier(user_id)
 
+    if current_tier == "super admin":
+        # Send a message directing them to use the /upgrade command instead
+        super_msg = "This command is not designed for you, O the *CEO*"
+           
+        await message.reply_text(
+            super_msg,
+            parse_mode="Markdown",
+        )
+        return
+
     # Store the original message if we need to return to dashboard
     if hasattr(update, 'callback_query') and update.callback_query:
         context.user_data['dashboard_message'] = update.callback_query.message
@@ -130,7 +140,7 @@ async def start_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard.append([tier_options[0]])
         
         # Add the cancel button (full width)
-        keyboard.append([InlineKeyboardButton("🔙 Cancel", callback_data="cancel")])
+        keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="cancel")])
         
         msg = (
             f"⭐ *Upgrade your Tier*\n\n"

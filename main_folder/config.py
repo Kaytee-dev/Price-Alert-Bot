@@ -61,7 +61,7 @@ TIERS_FILE = f"{DATA_DIR}user_tiers.json"
 USER_THRESHOLDS_FILE = f"{DATA_DIR}user_threshold.json"
 USER_EXPIRY_FILE = f"{DATA_DIR}user_expiry.json"
 
-REFERRALS_FILE = f"{DATA_DIR}user_referral.json"
+REFERRALS_FILE = f"{DATA_DIR}test_referrals.json"
 NOTIFY_DATA_FILE = f"{DATA_DIR}user_notify_data.json"
 
 # Wallet list for users to make payment to

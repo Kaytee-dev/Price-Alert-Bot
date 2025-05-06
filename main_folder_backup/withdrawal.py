@@ -22,6 +22,8 @@ from config import (SOLANA_RPC, DEFAULT_FEE_LAMPORTS, LAMPORTS_PER_SOL,
                     BOT_PAYMENT_LOGS_ID
                     )
 
+logger = logging.getLogger(__name__)
+
 # Initialize Solana client
 SOLANA_CLIENT = Client(SOLANA_RPC)
 # Determine if we're on mainnet or devnet
@@ -46,7 +48,7 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
         # Get private key for the wallet
         private_key_b58 = get_decrypted_wallet(from_address)
         if not private_key_b58:
-            logging.error(f"Private key not found for wallet: {from_address}")
+            logger.error(f"Private key not found for wallet: {from_address}")
             return False, "Private key not found for wallet."
 
         keypair = Keypair.from_bytes(b58decode(private_key_b58))
@@ -54,7 +56,7 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
         # Get destination payout wallet
         to_address = get_next_payout_wallet()
         if not to_address:
-            logging.error("No payout wallet available.")
+            logger.error("No payout wallet available.")
             return False, "No payout wallet available."
 
         to_pubkey = Pubkey.from_string(to_address)
@@ -62,7 +64,7 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
         # Check balance with consideration for rent-exempt minimum
         balance_response = SOLANA_CLIENT.get_balance(keypair.pubkey())
         if not balance_response.value:
-            logging.error(f"Failed to get balance for wallet: {from_address}")
+            logger.error(f"Failed to get balance for wallet: {from_address}")
             return False, "Failed to get wallet balance."
             
         balance = balance_response.value
@@ -72,14 +74,14 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
         min_required = MIN_BALANCE_FOR_RENT + fee_buffer
         
         if balance <= min_required:
-            logging.warning(f"Insufficient balance: {balance} lamports (need at least {min_required}) for wallet: {from_address}")
+            logger.warning(f"Insufficient balance: {balance} lamports (need at least {min_required}) for wallet: {from_address}")
             return False, f"Insufficient balance: {balance} lamports (need at least {min_required})"
 
         # Calculate amount to transfer (leaving enough for rent + fees)
         amount = balance - min_required
         sol_amount = round(amount / LAMPORTS_PER_SOL, 4)
         
-        logging.info(f"Forwarding {sol_amount} SOL from {from_address} to {to_address}")
+        logger.info(f"Forwarding {sol_amount} SOL from {from_address} to {to_address}")
 
         # Create instruction
         instruction = transfer(TransferParams(
@@ -91,7 +93,7 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
         # Build transaction
         blockhash_response = SOLANA_CLIENT.get_latest_blockhash()
         if not blockhash_response.value:
-            logging.error("Failed to get latest blockhash")
+            logger.error("Failed to get latest blockhash")
             return False, "Failed to get latest blockhash"
             
         recent_blockhash = blockhash_response.value.blockhash
@@ -106,13 +108,13 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
         try:
             send_response = SOLANA_CLIENT.send_transaction(txn)
             if not send_response.value:
-                logging.error("Failed to send transaction")
+                logger.error("Failed to send transaction")
                 return False, "Failed to send transaction"
                 
             sig = send_response.value
-            logging.info(f"Sent transaction {sig}")
+            logger.info(f"Sent transaction {sig}")
         except Exception as e:
-            logging.error(f"Error sending transaction: {e}")
+            logger.error(f"Error sending transaction: {e}")
             return False, f"Error sending transaction: {str(e)}"
 
         # Confirm status - using the approach from test_withdrawal.py
@@ -120,7 +122,7 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
             try:
                 status_resp = SOLANA_CLIENT.get_signature_statuses([sig])
                 if not status_resp or not status_resp.value or not status_resp.value[0]:
-                    logging.info(f"Transaction status not available yet, attempt {attempt + 1}/{MAX_CONFIRMATION_ATTEMPTS}")
+                    logger.info(f"Transaction status not available yet, attempt {attempt + 1}/{MAX_CONFIRMATION_ATTEMPTS}")
                     time.sleep(CONFIRMATION_CHECK_INTERVAL)
                     continue
                     
@@ -129,15 +131,15 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
                     # Check for errors
                     err = status.err
                     if err:
-                        logging.error(f"Transaction failed: {err}")
+                        logger.error(f"Transaction failed: {err}")
                         return False, f"Transaction failed: {err}"
                     
                     # Get confirmation status
                     conf_status = status.confirmation_status
-                    logging.info(f"Transaction status: {conf_status}, attempt {attempt + 1}/{MAX_CONFIRMATION_ATTEMPTS}")
+                    logger.info(f"Transaction status: {conf_status}, attempt {attempt + 1}/{MAX_CONFIRMATION_ATTEMPTS}")
                     
                     # Let's print the raw type and value to debug
-                    logging.info(f"Status type: {type(conf_status)}, repr: {repr(conf_status)}")
+                    logger.info(f"Status type: {type(conf_status)}, repr: {repr(conf_status)}")
                     
                     # Try multiple methods to detect Finalized status
                     is_finalized = False
@@ -161,17 +163,17 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
                             context, from_address, to_address, sol_amount, sig
                         )
             except Exception as e:
-                logging.error(f"Error checking transaction status: {e}")
+                logger.error(f"Error checking transaction status: {e}")
                 # Continue trying despite error
             
             time.sleep(CONFIRMATION_CHECK_INTERVAL)
 
         # If we get here, transaction timed out
-        logging.error(f"Transaction {sig} not finalized after {MAX_CONFIRMATION_ATTEMPTS} attempts")
+        logger.error(f"Transaction {sig} not finalized after {MAX_CONFIRMATION_ATTEMPTS} attempts")
         return False, f"Transaction {sig} not finalized after waiting."
 
     except Exception as e:
-        logging.exception(f"Unexpected error in forward_user_payment: {e}")
+        logger.exception(f"Unexpected error in forward_user_payment: {e}")
         return False, str(e)
 
 
@@ -217,9 +219,9 @@ async def _notify_successful_transfer(
                 parse_mode="HTML",
                 #disable_web_page_preview=True
             )
-            logging.info("Payment notification sent successfully")
+            logger.info("Payment notification sent successfully")
         except Exception as e:
-            logging.error(f"Failed to send HTML notification: {e}")
+            logger.error(f"Failed to send HTML notification: {e}")
             
             # Fallback to plain text if HTML parsing fails
             try:
@@ -239,15 +241,15 @@ async def _notify_successful_transfer(
                     parse_mode=None,  # No parsing
                     #disable_web_page_preview=True
                 )
-                logging.info("Plain text notification sent as fallback")
+                logger.info("Plain text notification sent as fallback")
             except Exception as e2:
-                logging.error(f"Failed to send plain text notification: {e2}")
+                logger.error(f"Failed to send plain text notification: {e2}")
                 # Continue with success flow even if both notification attempts fail
         
         # Return success regardless of notification status
         return True, sig
         
     except Exception as e:
-        logging.error(f"Error in notification formatting: {e}")
+        logger.error(f"Error in notification formatting: {e}")
         # Even if notification fails, the transaction was successful
         return True, sig

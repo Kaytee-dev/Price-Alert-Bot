@@ -4,6 +4,8 @@ import requests
 import time
 from typing import List
 
+logger = logging.getLogger(__name__)
+
 def fetch_prices_for_tokens(addresses: List[str], max_retries: int = 3, retry_delay: int = 2) -> List[dict]:
     token_query = ",".join(addresses)
     url = f"https://api.dexscreener.com/tokens/v1/solana/{token_query}"
@@ -14,17 +16,17 @@ def fetch_prices_for_tokens(addresses: List[str], max_retries: int = 3, retry_de
             if response.status_code == 200:
                 return response.json()
             else:
-                logging.warning(f"📡 Attempt {attempt}: Non-200 response ({response.status_code})")
+                logger.warning(f"📡 Attempt {attempt}: Non-200 response ({response.status_code})")
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as net_err:
-            logging.warning(f"🌐 Attempt {attempt}: Network error: {net_err}")
+            logger.warning(f"🌐 Attempt {attempt}: Network error: {net_err}")
         except requests.exceptions.RequestException as req_err:
-            logging.warning(f"⚠️ Attempt {attempt}: General request failure: {req_err}")
+            logger.warning(f"⚠️ Attempt {attempt}: General request failure: {req_err}")
         except Exception as e:
-            logging.warning(f"❌ Attempt {attempt}: Unexpected error: {e}")
+            logger.warning(f"❌ Attempt {attempt}: Unexpected error: {e}")
 
         if attempt < max_retries:
             backoff = retry_delay * (2 ** (attempt - 1))
             time.sleep(backoff)
 
-    logging.error("🚫 All retry attempts failed.")
+    logger.error("🚫 All retry attempts failed.")
     return []

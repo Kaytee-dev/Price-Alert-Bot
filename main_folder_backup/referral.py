@@ -273,7 +273,7 @@ async def start_with_referral(update: Update, context: ContextTypes.DEFAULT_TYPE
                 
                 if success:
                     context.user_data["referred_by"] = referrer_id
-                    logging.info(f"User {user_id} was referred by {referrer_id}")
+                    logger.info(f"User {user_id} was referred by {referrer_id}")
 
                     # Get referrer name
                     referrer = await context.bot.get_chat(referrer_id)
@@ -296,7 +296,7 @@ async def start_with_referral(update: Update, context: ContextTypes.DEFAULT_TYPE
                     )
 
                     # Log the referral
-                    logging.info(f"User {user_id} was referred by {referrer_id}")
+                    logger.info(f"User {user_id} was referred by {referrer_id}")
             
         except (ValueError, IndexError):
             pass  # Invalid referral parameter

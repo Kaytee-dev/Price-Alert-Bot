@@ -1,4 +1,3 @@
-import logging
 from typing import Callable
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, ConversationHandler, CommandHandler, MessageHandler, filters

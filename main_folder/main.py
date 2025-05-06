@@ -18,7 +18,7 @@ from config import (
 from commands import (
     start, stop, add, remove, list_tokens, reset, help_command, 
     status, restart, alltokens, threshold, handle_dashboard_button, launch,
-    handle_list_navigation, callback_reset_confirmation
+    handle_list_navigation, callback_reset_confirmation, back_to_dashboard
 )
 
 
@@ -47,7 +47,7 @@ from secrets_key import load_encrypted_keys
 from admin import (
     addadmin, removeadmin, listadmins,
     handle_removeadmin_callback, load_admins, ADMINS, addwallet, addpayout,
-    check_payment_conv, manual_upgrade_conv
+    check_payment_conv, manual_upgrade_conv, list_referrals
 )
 from util.utils import (load_json, save_json, send_message,
                    refresh_user_commands
@@ -341,86 +341,57 @@ def main():
     )
 
     app.bot_data["launch_dashboard"] = launch
-
-    # Add error handler
     app.add_error_handler(error_handler)
 
     app.add_handler(TypeHandler(Update, extract_username), group=-999)
-
     app.add_handler(CommandHandler("lc", launch))
-
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
 
-    app.add_handler(CommandHandler("add", add))
-    app.add_handler(CommandHandler("a", add))
+    app.add_handler(CommandHandler(["add", "a"], add))
+    app.add_handler(CommandHandler(["alltokens", "at"], alltokens))
 
-    app.add_handler(CommandHandler("alltokens", alltokens))
-    app.add_handler(CommandHandler("at", alltokens))
+    app.add_handler(CommandHandler(["remove", "rm"], remove))
+    app.add_handler(CommandHandler(["list", "l"], list_tokens))
 
-    app.add_handler(CommandHandler("remove", remove))
-    app.add_handler(CommandHandler("rm", remove))
+    app.add_handler(CommandHandler(["reset", "x"], reset))
+    app.add_handler(CommandHandler(["help", "h"], help_command))
 
-    app.add_handler(CommandHandler("list", list_tokens))
-    app.add_handler(CommandHandler("l", list_tokens))
+    app.add_handler(CommandHandler(["restart", "rs"], restart))
+    app.add_handler(CommandHandler(["status", "s"], status))
 
-    app.add_handler(CommandHandler("reset", reset))
-    app.add_handler(CommandHandler("x", reset))
+    app.add_handler(CommandHandler(["addadmin", "aa"], addadmin))
+    app.add_handler(CommandHandler(["removeadmin", "ra"], removeadmin))
 
-    app.add_handler(CommandHandler("help", help_command))
-    app.add_handler(CommandHandler("h", help_command))
-
-    app.add_handler(CommandHandler("restart", restart))
-    app.add_handler(CommandHandler("rs", restart))
-
-    app.add_handler(CommandHandler("status", status))
-    app.add_handler(CommandHandler("s", status))
-
-    app.add_handler(CommandHandler("addadmin", addadmin))
-    app.add_handler(CommandHandler("aa", addadmin))
-
-    app.add_handler(CommandHandler("removeadmin", removeadmin))
-    app.add_handler(CommandHandler("ra", removeadmin))
-
-    app.add_handler(CommandHandler("listadmins", listadmins))
-    app.add_handler(CommandHandler("la", listadmins))
-
+    app.add_handler(CommandHandler(["listadmins", "la"], listadmins))
     app.add_handler(CommandHandler("aw", addwallet))
-    app.add_handler(CommandHandler("ap", addpayout))
 
+    app.add_handler(CommandHandler("ap", addpayout))
+    app.add_handler(CommandHandler(["listrefs", "lr"], list_referrals))
 
     app.add_handler(CommandHandler("threshold", threshold))
     app.add_handler(CommandHandler("t", threshold))
-
-    
 
     app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
     app.add_handler(CallbackQueryHandler(callback_reset_confirmation, pattern="^confirm_reset$|^cancel_reset$"))
     app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
 
-    # app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$"))
-    # app.add_handler(CallbackQueryHandler(launch, pattern="^back_to_dashboard$"))
-
+    app.add_handler(CallbackQueryHandler(back_to_dashboard, pattern="^go_to_dashboard$"))
     app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$|^back_to_dashboard$"))
 
     app.add_handler(upgrade_conv_handler)
     app.add_handler(renewal_conv_handler)
-    app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))
 
+    app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))
     register_referral_handlers(app)
 
     app.add_handler(check_payment_conv)
     app.add_handler(manual_upgrade_conv)
+
     register_payout_handlers(app)
-
-
-
-
     app.run_polling()
-
-
 
 if __name__ == "__main__":
     main()

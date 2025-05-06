@@ -49,7 +49,7 @@ def load_encrypted_keys() -> Dict[str, str]:
     for address, stored_value in encrypted_data.items():
         try:
             if not is_encrypted_value(stored_value):
-                logging.warning(f"⚠️ Wallet {address} contains an unencrypted key; encrypting it now.")
+                logger.warning(f"⚠️ Wallet {address} contains an unencrypted key; encrypting it now.")
                 encrypted_value = encrypt_key(stored_value, password)
                 encrypted_data[address] = encrypted_value
                 stored_value = encrypted_value
@@ -59,9 +59,9 @@ def load_encrypted_keys() -> Dict[str, str]:
             decrypted_keys[address] = decrypted
 
         except InvalidToken:
-            logging.warning(f"⚠️ Invalid decryption token for wallet {address}")
+            logger.warning(f"⚠️ Invalid decryption token for wallet {address}")
         except Exception as e:
-            logging.error(f"❌ Error decrypting wallet {address}: {e}")
+            logger.error(f"❌ Error decrypting wallet {address}: {e}")
 
     if modified:
         save_json(WALLET_SECRETS_FILE, encrypted_data, "wallet secrets")

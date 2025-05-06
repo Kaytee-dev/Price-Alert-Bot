@@ -5,6 +5,7 @@ from util.utils import load_json, save_json, refresh_user_commands
 from config import ADMINS_FILE, SUPER_ADMIN_ID, WALLET_SECRETS_FILE, SOLSCAN_BASE
 
 import storage.tiers as tiers
+import referral
 
 from base58 import b58decode
 from solders.keypair import Keypair # type: ignore
@@ -347,3 +348,92 @@ manual_upgrade_conv = ConversationHandler(
     fallbacks=[],
 )
 
+
+@restricted_to_admin
+async def list_referrals(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin command to view referral data for all users or a specific user."""
+    
+    
+    # Ensure referral data is loaded
+    referral.load_referral_data()
+    
+    # If no args, show summary of all referrers
+    if not context.args:
+        if not referral.REFERRAL_DATA:
+            await update.message.reply_text("📊 No referral data found in the system.")
+            return
+            
+        # Sort referrers by total commission (highest first)
+        sorted_referrers = sorted(
+            referral.REFERRAL_DATA.items(), 
+            key=lambda x: x[1]["total_commission"], 
+            reverse=True
+        )
+        
+        msg = "📊 *Referral Program Summary*\n\n"
+        
+        for user_id, data in sorted_referrers[:5]:  # Show top 5
+            try:
+                user_info = await context.bot.get_chat(int(user_id))
+                user_name = user_info.full_name or f"User {user_id}"
+            except:
+                user_name = f"User {user_id}"
+            
+                
+            msg += (
+                f"👤 *{user_name}* (ID: `{user_id}`)\n"
+                f"  • Successful Referrals: {data['successful_referrals']}\n"
+                f"  • Pending Referrals: {len(data['referred_users'])}\n"
+                f"  • Total Commission: ${data['total_commission']:.2f}\n"
+                #f"  • Paid: ${data['total_paid']:.2f}\n"
+            )
+            if data.get("tx_sig"):
+                msg += (
+                    f"  • Paid: ${data['total_paid']:.2f}\n"
+                    f"  • Tx Sig: `{data['tx_sig']}`\n\n")
+            else:
+                msg += f"  • Paid: ${data['total_paid']:.2f}\n\n"
+            
+            
+        msg += "\n\nUse `/listrefs <user_id>` to see details for a specific user."
+        
+        await update.message.reply_text(msg, parse_mode="Markdown")
+        
+    else:
+        # Show details for specific user
+        user_id = context.args[0]
+        
+        if user_id not in referral.REFERRAL_DATA:
+            await update.message.reply_text(f"❌ No referral data found for user ID {user_id}.")
+            return
+            
+        data = referral.REFERRAL_DATA[user_id]
+        
+        try:
+            user_info = await context.bot.get_chat(int(user_id))
+            user_name = user_info.full_name or f"User {user_id}"
+        except:
+            user_name = f"User {user_id}"
+            
+        msg = f"📊 *Referral Data for {user_name}* (ID: `{user_id}`)\n\n"
+        
+        # User's data
+        msg += (
+            f"✅ Successful Referrals: {data['successful_referrals']}\n"
+            f"🔄 Pending Referrals: {len(data['referred_users'])}\n\n"
+            f"💰 Total Commission: ${data['total_commission']:.2f}\n"
+            f"💵 Paid Amount: ${data['total_paid']:.2f}\n"
+            f"💸 Unpaid Amount: ${data['total_commission'] - data['total_paid']:.2f}\n"
+        )
+
+        if data.get("tx_sig"):
+                msg += f"\n🔗 Signature: `{data['tx_sig']}`\n"
+        
+        # Wallet info
+        if data["wallet_address"]:
+            msg += f"\n🔑 Wallet: `{data['wallet_address']}`\n"
+        else:
+            msg += "\n🔑 No wallet address set\n"
+            
+        
+        await update.message.reply_text(msg, parse_mode="Markdown")

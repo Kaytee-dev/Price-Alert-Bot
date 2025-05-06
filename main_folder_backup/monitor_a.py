@@ -37,7 +37,7 @@ def background_price_monitor(app):
                         token_data_list = fetch_prices_for_tokens(chunk)
 
                         if not token_data_list:
-                            logging.warning("⚠️ No token data returned from API — skipping chunk.")
+                            logger.warning("⚠️ No token data returned from API — skipping chunk.")
                             continue  # Skip processing
                         
                         for data in token_data_list:
@@ -68,7 +68,7 @@ def background_price_monitor(app):
                             history.TOKEN_DATA_HISTORY[address].insert(0, cleaned_data)
                             hist_data = history.TOKEN_DATA_HISTORY[address]
                             
-                            logging.debug("📊 First 3 history entries:\n%s", json.dumps(hist_data[:3], indent=2)[:500])
+                            logger.debug("📊 First 3 history entries:\n%s", json.dumps(hist_data[:3], indent=2)[:500])
                             history.TOKEN_DATA_HISTORY[address] = history.TOKEN_DATA_HISTORY[address][:3]
 
                             tokens.ACTIVE_TOKEN_DATA[address] = tokens.ACTIVE_TOKEN_DATA.get(address, [])
@@ -176,16 +176,16 @@ def background_price_monitor(app):
                         tokens.ACTIVE_TOKEN_DATA.pop(token, None)
 
                 if save_needed:
-                    logging.debug("[MONITOR] Changes detected. Saving token history and active tokens...")
+                    logger.debug("[MONITOR] Changes detected. Saving token history and active tokens...")
                     await asyncio.to_thread(tokens.save_active_token_data)
                     await asyncio.to_thread(history.save_token_history)
                 else:
-                    logging.debug("[MONITOR] No changes detected. Skipping save operations.")
+                    logger.debug("[MONITOR] No changes detected. Skipping save operations.")
 
 
                 await asyncio.sleep(POLL_INTERVAL)
 
         except asyncio.CancelledError:
-            logging.info("🛑 Monitor task cancelled cleanly.")
+            logger.info("🛑 Monitor task cancelled cleanly.")
 
     return monitor()

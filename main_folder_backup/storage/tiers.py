@@ -152,6 +152,8 @@ async def check_and_process_tier_expiry(bot: Bot):
             
             # Calculate days until expiry
             days_until_expiry = (expiry_date - current_date).days
+            grace_period = 3
+            grace_period_remaining = grace_period + days_until_expiry
             
             # Check if tier is not free already
             user_tier = get_user_tier(user_id)
@@ -159,11 +161,11 @@ async def check_and_process_tier_expiry(bot: Bot):
                 continue
                 
             # Send reminder 3 days before expiry
-            if days_until_expiry <= 3:
+            if days_until_expiry in range(1,4):
                 await send_message(
                     bot,
                     f"⚠️ Your {user_tier.capitalize()} tier will expire in {days_until_expiry} days. " 
-                    f"Please renew your tier using /renew to keep your current benefits.",
+                    f"Kindly renew your tier using /renew to keep your current benefits.",
                     chat_id=user_id
                 )
                 logging.info(f"Sent {days_until_expiry}-day expiry reminder to user {user_id}")
@@ -172,14 +174,14 @@ async def check_and_process_tier_expiry(bot: Bot):
             elif days_until_expiry == 0:
                 await send_message(
                     bot,
-                    f"🔔 Your {user_tier.capitalize()} tier has expired today. "
+                    f"🔔 Your {user_tier.capitalize()} tier will expire today. "
                     f"You have a 3-day grace period before being automatically *downgraded* to Apprentice tier.",
                     chat_id=user_id
                 )
                 logging.info(f"Sent expiry notice to user {user_id}")
                 
             # Process downgrade after grace period (3 days)
-            elif days_until_expiry < -3:
+            elif grace_period_remaining <= 0:
                 # Downgrade to free tier
                 await set_user_tier(user_id, "apprentice", bot=bot)
                 

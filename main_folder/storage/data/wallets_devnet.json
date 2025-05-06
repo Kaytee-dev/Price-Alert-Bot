@@ -2,11 +2,11 @@
   "wallets": [
     {
       "address": "GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj",
-      "status": "in-use"
+      "status": "available"
     },
     {
       "address": "HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5",
-      "status": "in-use"
+      "status": "available"
     },
     {
       "address": "27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM",
@@ -22,7 +22,7 @@
     },
     {
       "address": "C6RZwXDKxKDHfTMS22dtG3KbHL1cAxVZ1ZX8qYphsuiN",
-      "status": "in-use"
+      "status": "available"
     },
     {
       "address": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
@@ -30,7 +30,7 @@
     },
     {
       "address": "Hi411Qp26KNyA52iX6jHFxeMqnep6tzrk6EbADhGPdq8",
-      "status": "in-use"
+      "status": "available"
     }
   ]
 }

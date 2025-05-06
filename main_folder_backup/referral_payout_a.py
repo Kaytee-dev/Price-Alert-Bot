@@ -25,6 +25,8 @@ from upgrade import fetch_sol_price_usd
 from config import SOLSCAN_BASE, SOLSCAN_TX_BASE, SOLANA_RPC
 from util.process_single_payout_util import process_single_payout
 
+logger = logging.getLogger(__name__)
+
 # Constants
 MIN_PAYOUT_THRESHOLD = 0.005  # Minimum payout in SOL
 NETWORK_FEE_PER_TX = 0.000005  # SOL fee per transaction
@@ -357,7 +359,7 @@ async def notify_users_about_payouts(context: ContextTypes.DEFAULT_TYPE, success
                 disable_web_page_preview=True
             )
         except Exception as e:
-            logging.error(f"Failed to notify user {user_id} about payout: {str(e)}")
+            logger.error(f"Failed to notify user {user_id} about payout: {str(e)}")
 
 # Cancel handler
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):

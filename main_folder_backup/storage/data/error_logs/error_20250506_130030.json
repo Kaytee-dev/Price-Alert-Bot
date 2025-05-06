@@ -1,0 +1,86 @@
+{
+  "error_id": "error_20250506_130030",
+  "timestamp": "2025-05-06T13:00:30.428281",
+  "error_message": "'apprentice'",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_application.py\", line 1264, in process_update\n    await coroutine\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\conversationhandler.py\", line 857, in handle_update\n    new_state: object = await handler.handle_update(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\basehandler.py\", line 157, in handle_update\n    return await self.callback(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\renewal.py\", line 175, in handle_payment\n    price_usd = tier_prices_usd[current_tier][duration_months]\n                ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\nKeyError: 'apprentice'\n",
+  "update": {
+    "callback_query": {
+      "chat_instance": "-1144835290764206658",
+      "data": "duration_1",
+      "id": "7391268424156928059",
+      "message": {
+        "channel_chat_created": false,
+        "delete_chat_photo": false,
+        "edit_date": 1746532829,
+        "entities": [
+          {
+            "length": 23,
+            "offset": 3,
+            "type": "bold"
+          },
+          {
+            "length": 10,
+            "offset": 47,
+            "type": "bold"
+          },
+          {
+            "length": 7,
+            "offset": 71,
+            "type": "bold"
+          }
+        ],
+        "group_chat_created": false,
+        "reply_markup": {
+          "inline_keyboard": [
+            [
+              {
+                "callback_data": "duration_1",
+                "text": "🗓️ 1 Month"
+              },
+              {
+                "callback_data": "duration_6",
+                "text": "⭐ 6 Months"
+              }
+            ],
+            [
+              {
+                "callback_data": "duration_12",
+                "text": "🔥 1 Year"
+              }
+            ],
+            [
+              {
+                "callback_data": "cancel",
+                "text": "🔙 Cancel"
+              }
+            ]
+          ]
+        },
+        "supergroup_chat_created": false,
+        "text": "♻️ Renew Your Subscription\n\nYour current tier: Apprentice\nExpiry date: Not set\n\nChoose a renewal period:",
+        "chat": {
+          "first_name": "Tee kay | WEB DEV | WEB DESIGNER 🐾",
+          "id": 6015881080,
+          "type": "private",
+          "username": "kayteehdev"
+        },
+        "date": 1746532821,
+        "message_id": 2071,
+        "from": {
+          "first_name": "Price Alert Bot (Testing)",
+          "id": 8120859286,
+          "is_bot": true,
+          "username": "TestSolMoonBot"
+        }
+      },
+      "from": {
+        "first_name": "Tee kay | WEB DEV | WEB DESIGNER 🐾",
+        "id": 6015881080,
+        "is_bot": false,
+        "language_code": "en",
+        "username": "kayteehdev"
+      }
+    },
+    "update_id": 223394270
+  }
+}
