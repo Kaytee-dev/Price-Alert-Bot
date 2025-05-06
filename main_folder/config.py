@@ -4,14 +4,14 @@
 #POLL_INTERVAL = 330  # seconds
 
 # Main Bot details
-# BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY" 
-# # SUPER_ADMIN_ID = -4750674293  
-# POLL_INTERVAL = 305  # seconds
+BOT_TOKEN = "7645462301:AAGPzpLZ03ddKIzQb3ovADTWYMztD9cKGNY" 
+# SUPER_ADMIN_ID = -4750674293  
+POLL_INTERVAL = 305  # seconds
 
 # Test Bot details
-BOT_TOKEN = "8120859286:AAFKrigrQnt9UEgOg-mewE2D18fT6KuKwus" 
-# SUPER_ADMIN_ID = -4710110042
-POLL_INTERVAL = 60  # seconds
+# BOT_TOKEN = "8120859286:AAFKrigrQnt9UEgOg-mewE2D18fT6KuKwus" 
+# # SUPER_ADMIN_ID = -4710110042
+# POLL_INTERVAL = 60  # seconds
 
 
 SUPER_ADMIN_ID = 965551493
@@ -61,7 +61,7 @@ TIERS_FILE = f"{DATA_DIR}user_tiers.json"
 USER_THRESHOLDS_FILE = f"{DATA_DIR}user_threshold.json"
 USER_EXPIRY_FILE = f"{DATA_DIR}user_expiry.json"
 
-REFERRALS_FILE = f"{DATA_DIR}test_referrals.json"
+REFERRALS_FILE = f"{DATA_DIR}user_referral.json"
 NOTIFY_DATA_FILE = f"{DATA_DIR}user_notify_data.json"
 
 # Wallet list for users to make payment to

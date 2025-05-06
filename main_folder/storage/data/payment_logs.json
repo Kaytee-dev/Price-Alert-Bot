@@ -40,109 +40,6 @@
       "tx_sig": "2KMvie4LGtjU23nF3Th4iXx1Sg3tXTiWWjuwxsrYxNjsycf1J88wgvbDyAEN2uPdLDLNaveATSGrEoGEsDfWtdBg",
       "logged_at": "2025-04-30T00:23:41.428074"
     },
-<<<<<<< Updated upstream
-    "HPXpltrsNjo": {
-      "tier": "overlord",
-      "duration_months": "1",
-      "payment_wallet": "C6RZwXDKxKDHfTMS22dtG3KbHL1cAxVZ1ZX8qYphsuiN",
-      "amount_in_usdc": 5,
-      "amount_in_sol": 0.03,
-      "start_time": "2025-05-03T00:17:03.223561",
-      "tx_sig": "2895QqLVGU9NKfCShgNXqQg5sSK1MP7GfzZuGfFKmkCQgBu8aGHfzr6WDLGDd5tpeh87QvWZHD42Nh79wPS9vdAE",
-      "logged_at": "2025-05-03T00:18:36.730720"
-    },
-    "moeB_oEDhsA": {
-      "tier": "chieftain",
-      "duration_months": "1",
-      "payment_wallet": "27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM",
-      "amount_in_usdc": 5,
-      "amount_in_sol": 0.03,
-      "start_time": "2025-05-03T00:29:13.622058",
-      "tx_sig": "29BW3X9GCSh4WMUs89tyianALLTFBeu8VNxU44MszEdzFcnts7HsWHjfo1TwdQXX2qknc64Bft1mD4qA18JafXZk",
-      "logged_at": "2025-05-03T00:30:26.536498"
-    },
-    "kZ1cx2Ejmh4": {
-      "tier": "overlord",
-      "duration_months": "1",
-      "payment_wallet": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
-      "amount_in_usdc": 5,
-      "amount_in_sol": 0.03,
-      "start_time": "2025-05-03T00:42:22.595719",
-      "tx_sig": "4JEJWiDHZHUiSVrVc1QemhbHeSWXVA2RhhD6Pp4EfZ9r26QBqKSGBfkyXsJme8TpcRQ4HytkALbYdAZAbgfUsJf3",
-      "logged_at": "2025-05-03T00:43:26.600331"
-    },
-    "cmtnIkkU-wM": {
-      "tier": "chieftain",
-      "duration_months": "1",
-      "payment_wallet": "Hi411Qp26KNyA52iX6jHFxeMqnep6tzrk6EbADhGPdq8",
-      "amount_in_usdc": 5,
-      "amount_in_sol": 0.03,
-      "start_time": "2025-05-03T01:04:53.519416",
-      "tx_sig": "tQ5zMTvQvgzbhLvXVvxZmcNCwWTrhm46JcuTQRSainMBVKJWh2tdb4rG7Syu3bSAEQdwXHwhreqdedbWYAU18iu",
-      "logged_at": "2025-05-03T01:05:58.160686"
-    },
-    "BmymVeNBWUU": {
-      "tier": "overlord",
-      "duration_months": "1",
-      "payment_wallet": "N3ve9zJ71CGT6EmzY8qXBLjupiqW8kzRzWP33jSeMyh",
-      "amount_in_usdc": 5,
-      "amount_in_sol": 0.03,
-      "start_time": "2025-05-03T01:14:24.280296",
-      "tx_sig": "4dM4JFrEVZsssgzxmqFT8qsTDurPvuWAfAuMsJVuPCEgkptF2jtFb7fAPKXtgg4RmyTp8wPkFuAJTnCXi6cBhDpp",
-      "logged_at": "2025-05-03T01:15:27.573233"
-    },
-    "8Bv6nQNnlro": {
-      "tier": "chieftain",
-      "duration_months": "1",
-      "payment_wallet": "Hi411Qp26KNyA52iX6jHFxeMqnep6tzrk6EbADhGPdq8",
-      "amount_in_usdc": 5,
-      "amount_in_sol": 0.03,
-      "start_time": "2025-05-03T10:07:21.832933",
-      "tx_sig": "4KPn9SQpo77XqukaVwZXEWYTWipFCk67u6jktikF7oCzEL7CCjQfepvRHxQhT9n4vPKtn6bsnxNThyYxDcyiipb1",
-      "logged_at": "2025-05-03T10:08:40.792617"
-    },
-    "XDG0ezyqSCA": {
-      "tier": "overlord",
-      "duration_months": "1",
-      "payment_wallet": "27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM",
-      "amount_in_usdc": 5,
-      "amount_in_sol": 0.03,
-      "start_time": "2025-05-03T10:10:40.579609",
-      "tx_sig": "56F7kadTMWTFNJHMqez4tymmvv2kv77ykoZsmKD4rbhmJZweZWKfHgeLLWsj4f3veiCNCCdbtN22rM9mQJrpJBtW",
-      "logged_at": "2025-05-03T10:11:49.402861"
-    },
-    "ZWCss4nFfWA": {
-      "tier": "chieftain",
-      "duration_months": "1",
-      "payment_wallet": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
-      "amount_in_usdc": 5,
-      "amount_in_sol": 0.03,
-      "start_time": "2025-05-03T14:31:42.059398",
-      "tx_sig": "2xmrZdSzjvCPhskdsqrR8gmzVApNrDi5Bntt4iFgJwqHorrk858HAAZkcJNRxD942QffY5RhsPYNtViBu9EBbtu3",
-      "logged_at": "2025-05-03T14:33:16.923743"
-    },
-    "pztdQBEk1GA": {
-      "action": "renewal",
-      "tier": "chieftain",
-      "duration_months": "6",
-      "payment_wallet": "N3ve9zJ71CGT6EmzY8qXBLjupiqW8kzRzWP33jSeMyh",
-      "amount_in_sol": 0.05,
-      "amount_in_usd": 8,
-      "start_time": "2025-05-03T14:34:19.811613",
-      "tx_sig": "4KcGRLyu4h3NqxH3P6Q8YmesvHxG2A1Ed7Fg31xQHe6NaYBmVaV66E19oivzUzpihz2kexf6e7KBDKQSZHvqzTZH",
-      "logged_at": "2025-05-03T14:35:27.484229"
-    },
-    "6Y9aNGat0zw": {
-      "action": "renewal",
-      "tier": "chieftain",
-      "duration_months": "12",
-      "payment_wallet": "C6RZwXDKxKDHfTMS22dtG3KbHL1cAxVZ1ZX8qYphsuiN",
-      "amount_in_sol": 0.13,
-      "amount_in_usd": 20,
-      "start_time": "2025-05-03T14:53:48.581165",
-      "tx_sig": "KgnqGrnSjNjnGAQxB3atWydCE5DbiKjMXAS61Xh2ahNFTXhZ5joQ9LHG18H6GZ8Z7UpiZcvB1SoyBSg4h212Aa1",
-      "logged_at": "2025-05-03T14:55:09.472789"
-=======
     "8VzDoy7BiPQ": {
       "tier": "overlord",
       "duration_months": "1",
@@ -182,7 +79,6 @@
       "start_time": "2025-04-30T08:34:25.765929",
       "tx_sig": null,
       "logged_at": "2025-04-30T08:34:25.766003"
->>>>>>> Stashed changes
     }
   },
   "6015881080": {
