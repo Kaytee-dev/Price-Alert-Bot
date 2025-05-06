@@ -1,9 +1,36 @@
 {
-    "wallets": [
-      "7eERmVPXxkdy3eE9bgDPAv7oVKmYuqwne7trKvUwrWAX",
-      "CLbzh8RphEKD6NqQL8G7p8GQu1KibLU7RhAXnHftkENB",
-      "5xJ2qJLjq7Mp6dR2vZby8rgFTKmBWqcoEa1xxgA3LKZT",
-      "68EEXEFsMb61gMqD4hvzWrPa5SGrULQqz6NRxSG3yF6b"
-    ]
-  }
-  
+  "wallets": [
+    {
+      "address": "GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj",
+      "status": "in-use"
+    },
+    {
+      "address": "HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5",
+      "status": "in-use"
+    },
+    {
+      "address": "27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM",
+      "status": "available"
+    },
+    {
+      "address": "GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4",
+      "status": "available"
+    },
+    {
+      "address": "N3ve9zJ71CGT6EmzY8qXBLjupiqW8kzRzWP33jSeMyh",
+      "status": "available"
+    },
+    {
+      "address": "C6RZwXDKxKDHfTMS22dtG3KbHL1cAxVZ1ZX8qYphsuiN",
+      "status": "in-use"
+    },
+    {
+      "address": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
+      "status": "available"
+    },
+    {
+      "address": "Hi411Qp26KNyA52iX6jHFxeMqnep6tzrk6EbADhGPdq8",
+      "status": "in-use"
+    }
+  ]
+}

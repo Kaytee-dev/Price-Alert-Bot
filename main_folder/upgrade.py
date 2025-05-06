@@ -1,7 +1,5 @@
 import asyncio
 import aiohttp
-import json
-import random
 import qrcode
 import io
 import secrets
@@ -18,24 +16,21 @@ import storage.tiers as tiers
 
 from storage import wallets
 from storage import payment_logs
+from withdrawal import forward_user_payment
 
 from datetime import datetime, timedelta
-import urllib.parse
 
-from utils import CustomUpdate, CustomEffectiveChat, CustomMessage, build_custom_update_from_query, send_message
-from config import SUPER_ADMIN_ID, BOT_LOGS_ID, DIVIDER_LINE, BOT_TG_GROUP
+from util.utils import build_custom_update_from_query, send_message
+from config import (SUPER_ADMIN_ID, BOT_ERROR_LOGS_ID, DIVIDER_LINE, BOT_TG_GROUP,
+                    SOLANA_RPC, SOL_DECIMALS, SOL_PAYMENT_TOLERANCE,
+                    BOT_INFO_LOGS_ID, BOT_REFERRAL_LOGS_ID
+                    )
 
 from referral import on_upgrade_completed
 
 
 # === STATE CONSTANTS ===
 SELECTING_TIER, SELECTING_DURATION, PAYMENT, ASK_TRANSACTION_HASH, VERIFICATION = range(5)
-
-# === SOLANA CONFIG ===
-SOLANA_MAINNET_RPC = "https://api.mainnet-beta.solana.com"
-SOLANA_DEVNET_RPC = "https://api.devnet.solana.com"
-SOL_DECIMALS = 9
-SOL_PAYMENT_TOLERANCE = 0.001  # 0.001 SOL tolerance for minor mismatches
 
 
 async def fetch_sol_price_usd() -> float:
@@ -220,11 +215,11 @@ async def select_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
     f"⭐ <b>{selected_tier.capitalize()} Tier</b>\n\n"
     f"Choose your subscription plan:\n\n"
-    f"🗓️ 1 Month: <b>{one_month_price} SOL</b>\n\n"
+    f"🗓️ 1 Month: <b>{one_month_price} USD</b>\n\n"
     f"⭐ 6 Months:\n"
-    f"<s>{six_months_original} SOL</s> ➔ <b>{six_months_price} SOL</b>  🏷️ <b>Save {six_months_saved} SOL (10%)</b>\n\n"
+    f"<s>{six_months_original} USD</s> ➔ <b>{six_months_price} USD</b>  🏷️ <b>Save {six_months_saved} USD (10%)</b>\n\n"
     f"🔥 1 Year:\n"
-    f"<s>{twelve_months_original} SOL</s> ➔ <b>{twelve_months_price} SOL</b>  🏷️ <b>Save {twelve_months_saved} SOL (15%)</b>\n"
+    f"<s>{twelve_months_original} USD</s> ➔ <b>{twelve_months_price} USD</b>  🏷️ <b>Save {twelve_months_saved} USD (15%)</b>\n"
     )
 
     await query.message.edit_text(msg, parse_mode="HTML", reply_markup=duration_keyboard)
@@ -248,6 +243,12 @@ async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     chosen_wallet = wallets.get_random_wallet()
+    if not chosen_wallet:
+        await query.message.edit_text("❌ No wallets available for payment at this time. Please try again later.")
+        return ConversationHandler.END
+
+    # Mark wallet as in-use
+    wallets.set_wallet_status(chosen_wallet, "in-use")
 
 
     # Set price in USDC based on duration (you can customize this mapping)
@@ -256,7 +257,7 @@ async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # "chieftain": {"1": 20, "6": 108, "12": 204},
         # "overlord": {"1": 40, "6": 216, "12": 408}
         "disciple": {"1": 5, "6": 8, "12": 10},
-        "chieftain": {"1": 5, "6": 8, "12": 10},
+        "chieftain": {"1": 5, "6": 20, "12": 10},
         "overlord": {"1": 5, "6": 8, "12": 10}
     }
 
@@ -278,18 +279,6 @@ async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "payment_amount_sol": amount_in_sol,
         "payment_reference": payment_id,
         "payment_start_time": datetime.now()
-    })
-
-
-    # ✅ Log payment attempt per-user
-    payment_logs.log_user_payment(user_id, payment_id, {
-        "tier": selected_tier,
-        "duration_months": duration_months,
-        "payment_wallet": chosen_wallet,
-        "amount_in_usdc": price_usdc,
-        "amount_in_sol": amount_in_sol,
-        "start_time": datetime.now().isoformat(),
-        "tx_sig": None
     })
 
 
@@ -338,6 +327,8 @@ async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown",
         reply_markup=payment_keyboard
     )
+    context.user_data["from_payment"] = True
+
 
     return PAYMENT
 
@@ -366,12 +357,17 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
 
     tx_sig = user_input.strip()
     
+    # ✅ Log new payment only after hash is submitted
+    payment_logs.log_user_payment(user_id, payment_reference, {
+    "tier": selected_tier,
+    "duration_months": duration_months,
+    "payment_wallet": wallet_address,
+    "amount_in_usdc": upgrade_fee,
+    "amount_in_sol": amount_expected,
+    "start_time": start_time.isoformat(),
+    "tx_sig": tx_sig
+    })
 
-    # ✅ Store tx_sig in memory for fallback/manual recovery
-    if payment_reference and str(user_id) in payment_logs.PAYMENT_LOGS:
-        if payment_reference in payment_logs.PAYMENT_LOGS[str(user_id)]:
-            payment_logs.PAYMENT_LOGS[str(user_id)][payment_reference]["tx_sig"] = tx_sig
-            payment_logs.save_payment_logs()
 
     # === Call Solana RPC to get transaction info ===
     headers = {"Content-Type": "application/json"}
@@ -383,7 +379,7 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(SOLANA_DEVNET_RPC, headers=headers, json=payload) as resp:
+        async with session.post(SOLANA_RPC, headers=headers, json=payload) as resp:
             data = await resp.json()
 
     transaction = data.get("result")
@@ -419,28 +415,35 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
                 expiry_date = datetime.now() + timedelta(days=int(duration_months) * 30)
                 tiers.set_user_expiry(user_id, expiry_date)
 
+                wallets.mark_wallet_as_available(wallet_address)
+
                 success, commission, referrer_id = on_upgrade_completed(user_id, upgrade_fee, int(duration_months))
 
+                # Process referral commission if applicable (for 6+ month upgrade)
                 if success and referrer_id:
+                    # Get referrer and referred user info
                     referrer = await context.bot.get_chat(referrer_id)
                     referred = await context.bot.get_chat(user_id)
 
                     referrer_name = referrer.full_name or f"User {referrer_id}"
                     referred_name = referred.full_name or f"User {user_id}"
 
+                    # Notify referrer about their commission
                     await send_message(
                         context.bot,
                         f"🎉 Hey {referrer_name},\n\nYou just earned ${commission:.2f} commission from referring {referred_name}!",
                         chat_id=referrer_id
                     )
 
+                    # Log referral commission for admin
                     await send_message(
                         context.bot,
                         f"📣 Referral bonus:\n\nReferrer {referrer_name} (ID: `{referrer_id}`) earned ${commission:.2f} commission from referring {referred_name} (ID: `{user_id}`) after upgrading to {selected_tier.capitalize()} for {duration_months} month(s).",
-                        chat_id=BOT_LOGS_ID,
+                        chat_id=BOT_REFERRAL_LOGS_ID,
                         super_admin=SUPER_ADMIN_ID
                     )
                 else:
+                    # Handle if user was not referred by another user
                     referred = await context.bot.get_chat(user_id)
                     referred_name = referred.full_name or f"User {user_id}"
 
@@ -448,7 +451,7 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
                     context.bot,
                     f"📢 User {referred_name} (ID: `{user_id}`) has successfully upgraded to *{selected_tier.capitalize()}* tier for {duration_months} month(s).\n\n"
                     f"⏳ Expiry: {expiry_date.strftime('%d %b %Y')} | Ref: `{payment_reference}`",
-                    chat_id=BOT_LOGS_ID
+                    chat_id=BOT_INFO_LOGS_ID
                 )
 
                 complete_keyboard = InlineKeyboardMarkup([
@@ -463,6 +466,17 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
                 )
 
                 await update.message.reply_text(success_msg, parse_mode="Markdown", reply_markup=complete_keyboard)
+
+                # Auto-forward funds
+                success_forward, result = await forward_user_payment(wallet_address, context)
+
+                if not success_forward:
+                    #await update.message.reply_text(f"⚠️ Upgrade successful, but auto-forward failed:\n{result}")
+                    await send_message(
+                        context.bot,
+                        f"⚠️ Auto-forward failed for {user_id} ({wallet_address}) — Error: {result}",
+                        chat_id=BOT_ERROR_LOGS_ID
+                    )
                 return VERIFICATION
 
     
@@ -524,6 +538,10 @@ async def back_to_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
+    # Used to revert the status of the assigned wallet from
+    # in-use to available
+    wallets.revert_wallet_status_from_context(context)
+
     if "selected_tier" not in context.user_data or "duration" not in context.user_data:
         await update.callback_query.message.edit_text("⚠️ Session expired. Please restart with /upgrade.")
         return ConversationHandler.END
@@ -575,11 +593,11 @@ async def back_to_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
     f"⭐ <b>{selected_tier.capitalize()} Tier</b>\n\n"
     f"Choose your subscription plan:\n\n"
-    f"🗓️ 1 Month: <b>{one_month_price} SOL</b>\n\n"
+    f"🗓️ 1 Month: <b>{one_month_price} USD</b>\n\n"
     f"⭐ 6 Months:\n"
-    f"<s>{six_months_original} SOL</s> ➔ <b>{six_months_price} SOL</b>  🏷️ <b>Save {six_months_saved} SOL (10%)</b>\n\n"
+    f"<s>{six_months_original} USD</s> ➔ <b>{six_months_price} USD</b>  🏷️ <b>Save {six_months_saved} USD (10%)</b>\n\n"
     f"🔥 1 Year:\n"
-    f"<s>{twelve_months_original} SOL</s> ➔ <b>{twelve_months_price} SOL</b>  🏷️ <b>Save {twelve_months_saved} SOL (15%)</b>\n"
+    f"<s>{twelve_months_original} USD</s> ➔ <b>{twelve_months_price} USD</b>  🏷️ <b>Save {twelve_months_saved} USD (15%)</b>\n"
     )
     
     # Send a new message instead of editing
@@ -588,26 +606,36 @@ async def back_to_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML", 
         reply_markup=duration_keyboard
     )
-    
+    context.user_data["from_payment"] = False
+
     return SELECTING_DURATION
 
 
 
 async def cancel_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel the upgrade process and return to dashboard."""
+    wallets.revert_wallet_status_from_context(context)
+
     if update.callback_query:
         await update.callback_query.answer()
-        context.user_data.clear()
         try:
             await go_back_to_dashboard(update, context)
+
+            if context.user_data.get("from_payment"):
+                await asyncio.sleep(2)
+                await update.callback_query.message.delete()
+                
         except Exception as e:
             await update.effective_chat.send_message("⚠️ Failed to return to dashboard.")
             raise e
+        finally:
+            context.user_data.clear()
     else:
         await update.message.reply_text("Upgrade canceled. Use /lc to return to main menu.")
         context.user_data.clear()
 
     return ConversationHandler.END
+
 
 
 # === UPGRADE CONVERSATION HANDLER ===

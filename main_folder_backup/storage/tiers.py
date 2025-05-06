@@ -1,8 +1,9 @@
 # storage/tiers.py
 
 import logging
+import asyncio
 from config import TIERS_FILE, SUPER_ADMIN_ID
-from utils import load_json, save_json, send_message
+from util.utils import load_json, save_json, send_message
 from typing import Optional
 from telegram import Bot
 
@@ -120,3 +121,94 @@ def set_user_expiry(user_id: int, expiry_date: datetime):
     user_id_str = str(user_id)
     expiry.USER_EXPIRY[user_id_str] = expiry_date.isoformat()
     expiry.save_user_expiry()
+
+
+def get_user_expiry(user_id: int) -> datetime | None:
+    user_id_str = str(user_id)
+    expiry_str = expiry.USER_EXPIRY.get(user_id_str)
+    if expiry_str:
+        try:
+            return datetime.fromisoformat(expiry_str)
+        except ValueError:
+            return None
+    return None
+
+async def check_and_process_tier_expiry(bot: Bot):
+    """
+    Check for users with expiring tiers and process accordingly:
+    - Send reminder 3 days before expiry
+    - Send notice on expiry day
+    - Downgrade after 3-day grace period
+    """
+    current_date = datetime.now()
+    
+    # Ensure expiry data is loaded
+    expiry.load_user_expiry()
+    
+    for user_id_str, expiry_str in expiry.USER_EXPIRY.items():
+        try:
+            user_id = int(user_id_str)
+            expiry_date = datetime.fromisoformat(expiry_str)
+            
+            # Calculate days until expiry
+            days_until_expiry = (expiry_date - current_date).days
+            
+            # Check if tier is not free already
+            user_tier = get_user_tier(user_id)
+            if user_tier == "apprentice":
+                continue
+                
+            # Send reminder 3 days before expiry
+            if days_until_expiry <= 3:
+                await send_message(
+                    bot,
+                    f"⚠️ Your {user_tier.capitalize()} tier will expire in {days_until_expiry} days. " 
+                    f"Please renew your tier using /renew to keep your current benefits.",
+                    chat_id=user_id
+                )
+                logging.info(f"Sent {days_until_expiry}-day expiry reminder to user {user_id}")
+                
+            # Send notice on expiry day
+            elif days_until_expiry == 0:
+                await send_message(
+                    bot,
+                    f"🔔 Your {user_tier.capitalize()} tier has expired today. "
+                    f"You have a 3-day grace period before being automatically *downgraded* to Apprentice tier.",
+                    chat_id=user_id
+                )
+                logging.info(f"Sent expiry notice to user {user_id}")
+                
+            # Process downgrade after grace period (3 days)
+            elif days_until_expiry < -3:
+                # Downgrade to free tier
+                await set_user_tier(user_id, "apprentice", bot=bot)
+                
+                # Clean up expiry record
+                del expiry.USER_EXPIRY[user_id_str]
+                expiry.save_user_expiry()
+                
+                logging.info(f"Downgraded user {user_id} to apprentice tier after grace period")
+                
+        except (ValueError, TypeError) as e:
+            logging.error(f"Error processing expiry for user {user_id_str}: {str(e)}")
+
+
+async def check_and_process_tier_expiry_scheduler(app):
+    """
+    Scheduled task to run every 2 days to check user tier expiry
+    and send reminders or downgrade users as needed
+    """
+    bot = app.bot
+    while True:
+        try:
+            logging.info("🕒 Running scheduled tier expiry check")
+            await check_and_process_tier_expiry(bot)
+            # Sleep for 2 days (in seconds)
+            await asyncio.sleep(2 * 24 * 60 * 60)  # 2 days
+        except asyncio.CancelledError:
+            logging.info("❌ Tier expiry check scheduler cancelled")
+            break
+        except Exception as e:
+            logging.error(f"Error in tier expiry check scheduler: {str(e)}")
+            # Still sleep before retry, but shorter time
+            await asyncio.sleep(1 * 60 * 60)  # 1 hour

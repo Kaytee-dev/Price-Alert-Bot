@@ -4,7 +4,7 @@ import hashlib
 import logging
 from datetime import datetime
 
-from config import POLL_INTERVAL, SUPER_ADMIN_ID, BOT_LOGS_ID
+from config import POLL_INTERVAL, SUPER_ADMIN_ID, BOT_SPIKE_LOGS_ID
 from admin import ADMINS
 
 import storage.users as users
@@ -14,11 +14,11 @@ import storage.history as history
 import storage.thresholds as thresholds
 
 from api import fetch_prices_for_tokens
-from utils import chunked, send_message
+from util.utils import chunked, send_message
 
 from storage.notify import build_normal_spike_message, build_first_spike_message
 
-
+logger = logging.getLogger(__name__)
 
 def background_price_monitor(app):
     async def monitor():
@@ -37,7 +37,7 @@ def background_price_monitor(app):
                         token_data_list = fetch_prices_for_tokens(chunk)
 
                         if not token_data_list:
-                            logging.warning("⚠️ No token data returned from API — skipping chunk.")
+                            logger.warning("⚠️ No token data returned from API — skipping chunk.")
                             continue  # Skip processing
                         
                         for data in token_data_list:
@@ -63,18 +63,6 @@ def background_price_monitor(app):
                                 "marketCap": data.get("marketCap")
                             }
 
-                            if address not in history.TOKEN_DATA_HISTORY:
-                                history.TOKEN_DATA_HISTORY[address] = []
-                            history.TOKEN_DATA_HISTORY[address].insert(0, cleaned_data)
-                            hist_data = history.TOKEN_DATA_HISTORY[address]
-                            
-                            logging.debug("📊 First 3 history entries:\n%s", json.dumps(hist_data[:3], indent=2)[:500])
-                            history.TOKEN_DATA_HISTORY[address] = history.TOKEN_DATA_HISTORY[address][:3]
-
-                            tokens.ACTIVE_TOKEN_DATA[address] = tokens.ACTIVE_TOKEN_DATA.get(address, [])
-                            tokens.ACTIVE_TOKEN_DATA[address].insert(0, cleaned_data)
-                            tokens.ACTIVE_TOKEN_DATA[address] = tokens.ACTIVE_TOKEN_DATA[address][:3]
-
                             hash_base = {
                                 "address": cleaned_data["address"],
                                 "symbol": cleaned_data["symbol"],
@@ -88,7 +76,36 @@ def background_price_monitor(app):
 
                             if history.LAST_SAVED_HASHES.get(address) != hash_val:
                                 history.LAST_SAVED_HASHES[address] = hash_val
+                                # save_needed = True
+
+                                if address not in history.TOKEN_DATA_HISTORY:
+                                    history.TOKEN_DATA_HISTORY[address] = []
+                                history.TOKEN_DATA_HISTORY[address].insert(0, cleaned_data)
+                                hist_data = history.TOKEN_DATA_HISTORY[address]
+                                
+                                logger.debug("📊 First 3 history entries:\n%s", json.dumps(hist_data[:3], indent=2)[:500])
+                                history.TOKEN_DATA_HISTORY[address] = history.TOKEN_DATA_HISTORY[address][:3]
+
+                                tokens.ACTIVE_TOKEN_DATA[address] = tokens.ACTIVE_TOKEN_DATA.get(address, [])
+                                tokens.ACTIVE_TOKEN_DATA[address].insert(0, cleaned_data)
+                                tokens.ACTIVE_TOKEN_DATA[address] = tokens.ACTIVE_TOKEN_DATA[address][:3]
+
                                 save_needed = True
+
+                            # hash_base = {
+                            #     "address": cleaned_data["address"],
+                            #     "symbol": cleaned_data["symbol"],
+                            #     "priceChange_m5": cleaned_data["priceChange_m5"],
+                            #     "volume_m5": cleaned_data["volume_m5"],
+                            #     "marketCap": cleaned_data["marketCap"]
+                            # }
+
+                            # snapshot_json = json.dumps(hash_base, sort_keys=True)
+                            # hash_val = hashlib.md5(snapshot_json.encode()).hexdigest()
+
+                            # if history.LAST_SAVED_HASHES.get(address) != hash_val:
+                            #     history.LAST_SAVED_HASHES[address] = hash_val
+                            #     save_needed = True
 
                             history_data = history.TOKEN_DATA_HISTORY[address][:3]
                             recent_changes = [
@@ -152,7 +169,7 @@ def background_price_monitor(app):
                                 await send_message(
                                     app.bot,
                                     admin_msg,
-                                    chat_id=BOT_LOGS_ID,
+                                    chat_id=BOT_SPIKE_LOGS_ID,
                                     parse_mode="Markdown",
                                     admins=ADMINS,
                                     super_admin=SUPER_ADMIN_ID
@@ -176,13 +193,16 @@ def background_price_monitor(app):
                         tokens.ACTIVE_TOKEN_DATA.pop(token, None)
 
                 if save_needed:
-                    logging.debug("[MONITOR] Changes detected. Saving token history and active tokens...")
+                    logger.debug("[MONITOR] Changes detected. Saving token history and active tokens...")
                     await asyncio.to_thread(tokens.save_active_token_data)
                     await asyncio.to_thread(history.save_token_history)
+                else:
+                    logger.debug("[MONITOR] No changes detected. Skipping save operations.")
+
 
                 await asyncio.sleep(POLL_INTERVAL)
 
         except asyncio.CancelledError:
-            logging.info("🛑 Monitor task cancelled cleanly.")
+            logger.info("🛑 Monitor task cancelled cleanly.")
 
     return monitor()

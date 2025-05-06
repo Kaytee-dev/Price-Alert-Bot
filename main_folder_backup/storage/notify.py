@@ -1,7 +1,7 @@
-import json
+
 import asyncio
 from datetime import datetime
-from utils import load_json, save_json, send_message
+from util.utils import load_json, save_json, send_message
 from storage import users
 
 from config import NOTIFY_DATA_FILE, BASE_URL

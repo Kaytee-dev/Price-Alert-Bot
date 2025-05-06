@@ -1,4 +1,4 @@
-from utils import load_json, save_json
+from util.utils import load_json, save_json
 from config import TRACKED_TOKENS_FILE, ACTIVE_TOKENS_FILE
 from typing import List
 

@@ -1,4 +1,4 @@
-from utils import load_json, save_json
+from util.utils import load_json, save_json
 from config import USER_TRACKING_FILE, USER_STATUS_FILE
 import logging
 

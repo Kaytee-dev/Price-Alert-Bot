@@ -1,12 +1,34 @@
 import logging
 from typing import Callable
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import ContextTypes
-from utils import load_json, save_json, refresh_user_commands
-from config import ADMINS_FILE, SUPER_ADMIN_ID, BOT_LOGS_ID
+from telegram.ext import ContextTypes, ConversationHandler, CommandHandler, MessageHandler, filters
+from util.utils import load_json, save_json, refresh_user_commands
+from config import ADMINS_FILE, SUPER_ADMIN_ID, WALLET_SECRETS_FILE, SOLSCAN_BASE
 
 import storage.tiers as tiers
 
+from base58 import b58decode
+from solders.keypair import Keypair # type: ignore
+from solders.pubkey import Pubkey # type: ignore
+from solana.rpc.api import Client
+
+from pwd_loader.env_loader import get_wallet_password
+from secrets_key import encrypt_key
+from storage.payout import add_wallet_to_payout_list
+import secrets_key as secrets_key
+import util.wallet_sync as wallet_sync
+import util.manual_upgrade as manual_upgrade
+import storage.payment_logs as payment_logs
+
+import json
+import os
+import requests
+
+# Manual upgrade conversation states
+MANUAL_USER_ID, MANUAL_PAYMENT_ID = range(2)
+
+# User payment log query conversation states 
+ASK_USER_ID, ASK_PAYMENT_ID = range(2)
 ADMINS = set()
 
 # --- Super Admin ID ---
@@ -132,3 +154,197 @@ async def handle_removeadmin_callback(update: Update, context: ContextTypes.DEFA
 
     elif query.data == "cancel_removeadmin":
         await query.edit_message_text("❌ Admin removal cancelled.")
+
+
+# --- Super Admin Command: Add wallet secret ---
+@restricted_to_super_admin
+async def addwallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text("Usage: /aw <base58_secret_key1>,<base58_secret_key2>,...")
+        return
+
+    addresses_raw = " ".join(context.args)
+    base58_keys = [key.strip() for key in addresses_raw.split(",") if key.strip()]
+
+    if not base58_keys:
+        await update.message.reply_text("❌ No valid secret keys provided.")
+        return
+
+    if os.path.exists(WALLET_SECRETS_FILE):
+        with open(WALLET_SECRETS_FILE, "r") as f:
+            secret_data = json.load(f)
+    else:
+        secret_data = {}
+
+    added = []
+    failed = []
+    password = get_wallet_password()
+
+    for base58_secret in base58_keys:
+        try:
+            secret_bytes = b58decode(base58_secret)
+            keypair = Keypair.from_bytes(secret_bytes)
+            address = str(keypair.pubkey())
+
+            if address in secret_data:
+                failed.append((address, "Already exists"))
+                continue
+
+            encrypted_key = encrypt_key(base58_secret, password)
+            secret_data[address] = encrypted_key
+            secrets_key.DECRYPTED_WALLETS[address] = base58_secret
+            added.append(address)
+
+        except Exception as e:
+            failed.append((base58_secret[:6] + "...", str(e)))
+
+    secrets_key.persist_encrypted_keys(secret_data)
+    wallet_sync.sync_wallets_from_secrets()
+    wallet_sync.purge_orphan_wallets()
+
+    msg = ""
+    if added:
+        msg += "✅ Wallet(s) added successfully:\n" + "\n".join(added) + "\n\n"
+    if failed:
+        msg += "⚠️ Failed to add:\n" + "\n".join(f"{a} ({r})" for a, r in failed)
+
+    await update.message.reply_text(msg.strip())
+
+@restricted_to_super_admin
+async def addpayout(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text("Usage: /addpayout wallet1,wallet2,...")
+        return
+
+    addresses_raw = " ".join(context.args)
+    addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
+
+    if not addresses:
+        await update.message.reply_text("❌ No valid wallet addresses provided.")
+        return
+
+    await update.message.reply_text("⏳ Validating wallet addresses, please wait...")
+
+    added, failed = [], []
+
+    for addr in addresses:
+        # format check
+        if not (32 <= len(addr) <= 44):
+            failed.append((addr, "Invalid format or base58 length"))
+            continue
+
+        try:
+            _ = Pubkey.from_string(addr)
+        except Exception:
+            failed.append((addr, "Invalid base58 public key"))
+            continue
+
+        try:
+            url = SOLSCAN_BASE.format(addr)
+            resp = requests.get(url, timeout=5)
+            if resp.status_code != 404:
+                if add_wallet_to_payout_list(addr):
+                    added.append(addr)
+                else:
+                    failed.append((addr, "Already exists"))
+            else:
+                failed.append((addr, "Not indexed on Solscan"))
+        except Exception as e:
+            failed.append((addr, str(e)))
+
+    result_msg = ""
+    if added:
+        result_msg += f"✅ Added payout wallets:\n" + "\n".join(added) + "\n\n"
+    if failed:
+        result_msg += f"⚠️ Failed to add:\n" + "\n".join(f"{a} ({r})" for a, r in failed)
+
+    await update.message.reply_text(result_msg.strip())
+
+
+@restricted_to_admin
+async def checkpayment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🧍 Please enter the User ID of the user.")
+    return ASK_USER_ID
+
+
+async def receive_user_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["query_user_id"] = update.message.text.strip()
+    await update.message.reply_text("📎 Now enter the Payment Reference ID.")
+    return ASK_PAYMENT_ID
+
+
+async def receive_payment_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    payment_id = update.message.text.strip()
+    user_id = context.user_data.get("query_user_id")
+    logs = payment_logs.PAYMENT_LOGS.get(str(user_id), {})
+    entry = logs.get(payment_id)
+    action = entry.get('action') if entry.get('action') else "Upgrade"
+
+    if not entry:
+        await update.message.reply_text("❌ No matching payment log found.")
+        return ConversationHandler.END
+
+    msg = (
+        f"📄 *Payment Log Found:*\n\n"
+        f"📄 Action: {action}\n"
+        f"👤 User ID: `{user_id}`\n"
+        f"🆔 Payment ID: `{payment_id}`\n\n"
+        f"💎 Tier: {entry.get('tier')}\n"
+        f"⏳ Duration: {entry.get('duration_months')} month(s)\n\n"
+        f"💰 Amount: {entry.get('amount_in_usdc')} USDC ≈ {entry.get('amount_in_sol')} SOL\n"
+        f"🏦 Wallet: `{entry.get('payment_wallet')}`\n\n"
+        f"🕓 Timestamp: {entry.get('start_time')}\n"
+        f"🔗 TX Signature: `{entry.get('tx_sig', 'Not submitted')}`"
+    )
+
+    await update.message.reply_text(msg, parse_mode="Markdown")
+    return ConversationHandler.END
+
+check_payment_conv = ConversationHandler(
+    entry_points=[
+    CommandHandler("checkpayment", checkpayment),
+    CommandHandler("cp", checkpayment)
+    ],
+    states={
+        ASK_USER_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_user_id)],
+        ASK_PAYMENT_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_payment_id)],
+    },
+    fallbacks=[],
+)
+
+@restricted_to_admin
+async def manualupgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🧍 Enter User ID for manual upgrade:")
+    return MANUAL_USER_ID
+
+
+async def manual_receive_user_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["manual_user_id"] = update.message.text.strip()
+    await update.message.reply_text("📎 Now enter the Payment Reference ID:")
+    return MANUAL_PAYMENT_ID
+
+
+async def manual_receive_payment_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    payment_id = update.message.text.strip()
+    user_id = context.user_data.get("manual_user_id")
+    logs = payment_logs.PAYMENT_LOGS.get(str(user_id), {})
+    payment = logs.get(payment_id)
+
+    if not payment: 
+        await update.message.reply_text("❌ Payment entry not found for the given user and reference.")
+        return ConversationHandler.END
+
+    await manual_upgrade.complete_verified_upgrade(int(user_id), payment, context)
+    await update.message.reply_text("✅ Manual upgrade completed and payment forwarded.")
+    return ConversationHandler.END
+
+manual_upgrade_conv = ConversationHandler(
+    entry_points=[CommandHandler("manualupgrade", manualupgrade),
+                  CommandHandler("mu", manualupgrade)],
+    states={
+        MANUAL_USER_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, manual_receive_user_id)],
+        MANUAL_PAYMENT_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, manual_receive_payment_id)],
+    },
+    fallbacks=[],
+)
+

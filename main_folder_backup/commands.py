@@ -7,8 +7,8 @@ from telegram.constants import ChatAction
 
 from admin import restricted_to_admin, ADMINS
 from config import (BASE_URL, SUPER_ADMIN_ID, BOT_NAME,
-                    PAGE_SIZE, PAGE_SIZE_ALL, BOT_LOGS_ID,
-                    BOT_TG_GROUP
+                    PAGE_SIZE, PAGE_SIZE_ALL,
+                    BOT_TG_GROUP, DIVIDER_LINE, BOT_INFO_LOGS_ID
                     )
 
 import storage.users as users
@@ -19,11 +19,13 @@ import storage.tiers as tiers
 import storage.thresholds as thresholds
 
 from monitor import background_price_monitor
-from utils import (send_message, refresh_user_commands, load_admins,
+from util.utils import (send_message, refresh_user_commands, load_admins,
                    build_custom_update_from_query, confirm_action)
 
 from upgrade import start_upgrade
 from referral import show_referral_page, start_with_referral
+from renewal import start_renewal
+from datetime import datetime
 
 
 # --- Telegram Bot Commands ---
@@ -31,8 +33,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await start_with_referral(update, context)
 
 
-    chat_id = str(update.effective_chat.id)
-    user_id = int(chat_id)
+    user_id = update.effective_chat.id
+    chat_id = str(user_id)
     is_admin = user_id in ADMINS
 
     users.USER_STATUS[chat_id] = True
@@ -94,7 +96,9 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
+    user_id = update.effective_chat.id
+    chat_id = str(user_id)
+    
 
     if not context.args:
         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ... or /a <token_address1>, <token_address2>, ...")
@@ -115,6 +119,7 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     already_tracking = len(current_tokens)
     available_slots = tier_limit - already_tracking
 
+    # Comibining user input if they are comma-separated
     addresses_raw = " ".join(context.args)
     addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
 
@@ -122,6 +127,7 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
         return
     
+    # Checking user tracking list to know new and already tracking tokens
     already_present = [addr for addr in addresses if addr in current_tokens]
     tokens_to_add = [addr for addr in addresses if addr not in current_tokens]
     tokens_allowed = tokens_to_add[:available_slots]
@@ -135,17 +141,22 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     users.save_user_tracking()
     tokens.save_tracked_tokens()
+    
 
     # Auto-start the user if they haven't started yet
     if users.USER_STATUS.get(chat_id, False) is False:
         users.USER_STATUS[chat_id] = True  # Mark as started
         
+        # Getting user info
+        user_chat = await context.bot.get_chat(user_id)
+        user_name = user_chat.full_name or f"User {user_id}"
+
         # Log and notify the super admin
-        logging.info(f"🤖 User {chat_id} auto-started monitoring.")
+        logging.info(f"🤖 {user_name} auto-started monitoring.")
         await send_message(
             context.bot,
-            f"🧹 User {chat_id} auto-started monitoring.",
-            chat_id=BOT_LOGS_ID,
+            f"🧹 {user_name} auto-started monitoring.",
+            chat_id=BOT_INFO_LOGS_ID,
             super_admin=SUPER_ADMIN_ID
         )
 
@@ -166,12 +177,14 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
+    user_id = update.effective_chat.id
+    chat_id = str(user_id)
 
     if not context.args:
         await update.message.reply_text("Usage: /remove <token_address1>, <token_address2>, ... or /rm <token_address1>, <token_address2>, ...")
         return
 
+    # Processing user token input if they are multiple and comma-separated
     addresses_raw = " ".join(context.args)
     addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
 
@@ -218,7 +231,7 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_message(
             context.bot,
             msg,
-            chat_id=BOT_LOGS_ID,
+            chat_id=BOT_INFO_LOGS_ID,
             super_admin=SUPER_ADMIN_ID
         )
     
@@ -228,11 +241,16 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         users.USER_STATUS.pop(chat_id, None)
         users.save_user_tracking()
         users.save_user_status()
-        logging.info(f"🧹 Removed user {chat_id} from tracking (no tokens left).")
+
+        # Getting user info
+        user_chat = await context.bot.get_chat(user_id)
+        user_name = user_chat.full_name or f"User {user_id}"
+
+        logging.info(f"🧹 Removed {user_name} from tracking (no tokens left).")
         await send_message(
             context.bot,
-            f"🧹 Removed user {chat_id} from tracking (no tokens left).",
-            chat_id=BOT_LOGS_ID,
+            f"🧹 Removed {user_name} from tracking (no tokens left).",
+            chat_id=BOT_INFO_LOGS_ID,
             super_admin=SUPER_ADMIN_ID
         )
 
@@ -288,7 +306,6 @@ async def show_token_dashboard(update: Update, context: ContextTypes.DEFAULT_TYP
     total_pages = (len(tokens_list) - 1) // PAGE_SIZE + 1
 
     msg = f"\n\n📈 *{title}* (Page {page + 1}/{total_pages})\n\n"
-    divider = "-" * 37
 
     for addr in current_tokens:
         symbol = symbols.ADDRESS_TO_SYMBOL.get(addr, addr[:6] + "...")
@@ -313,8 +330,8 @@ async def show_token_dashboard(update: Update, context: ContextTypes.DEFAULT_TYP
             f"{mc_text}\n"
             f"{vol_text}\n"
             f"{change_text}\n\n"
-            f"{divider}\n"
-            f"{divider}\n\n"
+            f"{DIVIDER_LINE}\n"
+            f"{DIVIDER_LINE}\n\n"
         )
 
     buttons = []
@@ -352,6 +369,14 @@ async def handle_list_navigation(update: Update, context: ContextTypes.DEFAULT_T
     query = update.callback_query
     tokens_list = context.user_data.get('tokens_list', [])
 
+    if query.data == "back_to_dashboard":
+        await query.answer()
+        # Delete the current message containing the token list
+        await query.message.delete()
+        # Directly call the launch function after deletion
+        await launch(update, context)
+        return
+
     if not tokens_list:
         await query.answer("No tokens to navigate.")
         return
@@ -385,7 +410,8 @@ async def callback_reset_confirmation(update: Update, context: ContextTypes.DEFA
         await query.edit_message_text("❌ Reset canceled.")
 
 async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
+    user_id = update.effective_chat.id
+    chat_id = str(user_id)
 
     # Step 1: Deactivate user if they were active
     if users.USER_STATUS.get(chat_id):
@@ -399,11 +425,16 @@ async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # removing chat id of users who invoked /reset command but saved users tokens
     if chat_id in users.USER_TRACKING:
         users.USER_TRACKING.pop(chat_id, None)
-        logging.info(f"🧹 Removed user {chat_id} from tracking.")
+
+        # Getting user info
+        user_chat = await context.bot.get_chat(user_id)
+        user_name = user_chat.full_name or f"User {user_id}"
+
+        logging.info(f"🧹 Removed {user_name} from tracking.")
         await send_message(
             context.bot,
-            f"🧹 Removed user {chat_id} from tracking.",
-            chat_id=BOT_LOGS_ID,
+            f"🧹 Removed {user_name} (ID: {user_id}) from tracking.",
+            chat_id=BOT_INFO_LOGS_ID,
             super_admin=SUPER_ADMIN_ID
         )
 
@@ -427,7 +458,7 @@ async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await send_message(
             context.bot,
             msg,
-            chat_id=BOT_LOGS_ID,
+            chat_id=BOT_INFO_LOGS_ID,
             super_admin=SUPER_ADMIN_ID
         )
 
@@ -435,8 +466,7 @@ async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = str(update.effective_chat.id)
-    user_id = int(chat_id)
+    user_id = update.effective_chat.id
 
     admin = load_admins()
     is_admin = user_id in admin
@@ -463,6 +493,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "\n*🔧 Admin Commands:*",
             "/restart or /rs — Restart the bot",
             "/alltokens or /at — List all tracked tokens\n",
+            "/checkpayment or /cp — Retrieve user payment log",
+            "/manualupgrade or /mu — Manually upgrade user tier\n",
+
         ]
 
     if is_super_admin:
@@ -591,8 +624,8 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.warning("❌ No target message found in update.")
         return
     
-    chat_id = str(update.effective_chat.id)
-    user_id = int(chat_id)
+    user_id = update.effective_chat.id
+    chat_id = str(user_id)
 
     user_tokens = users.USER_TRACKING.get(chat_id, [])
     all_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
@@ -614,8 +647,7 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_tier = tiers.get_user_tier(user_id)
     user_limit = tiers.get_user_limit(user_id)
 
-    user = update.effective_user
-    username = f"@{user.username}" if user.username else user.full_name
+    username = context.bot_data.get("usernames", {}).get(chat_id, f"User {chat_id}")
 
 
     footer_text = (
@@ -629,10 +661,24 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"👤 You are tracking {len(user_tokens)} token(s).\n"
         f"🌐 Total unique tokens tracked: {len(all_tokens)}\n\n"
         f"💥 Active spikes (≥15%): {spike_count}\n"
-        f"🕓 Last update: {last_update if last_update else 'N/A'}\n\n\n"
-        f"{footer_text}"
     )
 
+    # Add expiry info
+    expiry_date = tiers.get_user_expiry(user_id)
+    if expiry_date:
+        days_left = (expiry_date - datetime.now()).days
+        if days_left <= 7:
+            msg += f"\n⏰ Your {user_tier.capitalize()} tier expires in *{days_left} days*\n"
+        elif days_left >= -3:
+            msg += f"\n⚠️ Your {user_tier.capitalize()} tier has expired! " \
+                             f"You have {abs(days_left)}/3 days of grace period remaining\n"
+    
+    msg += (
+        f"🕓 Last update: {last_update if last_update else 'N/A'}\n\n\n"
+        f"{DIVIDER_LINE}\n"
+        f"{footer_text}\n"
+        f"{DIVIDER_LINE}"
+    )
 
     keyboard = InlineKeyboardMarkup([
     [
@@ -653,9 +699,11 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
     [
         InlineKeyboardButton("⭐ Upgrade", callback_data="cmd_upgrade")
     ],
+    [
+        InlineKeyboardButton("🔄 Renew Tier", callback_data="cmd_renew")
+    ],
     ])
 
-    #await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=keyboard)
     await target_message.reply_text(msg, parse_mode="Markdown", disable_web_page_preview=True, reply_markup=keyboard)
 
 
@@ -671,6 +719,10 @@ async def handle_dashboard_button(update: Update, context: ContextTypes.DEFAULT_
     if callback_data == "cmd_upgrade":
         # This will redirect to the ConversationHandler
         return await start_upgrade(update, context)
+    elif callback_data == "cmd_renew":
+        # This will redirect to the renewal ConversationHandler
+        return await start_renewal(update, context)
+    
 
     custom_update = build_custom_update_from_query(query)
 

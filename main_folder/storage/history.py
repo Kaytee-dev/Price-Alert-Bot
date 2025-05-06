@@ -1,6 +1,5 @@
 import hashlib, json
-import logging
-from utils import load_json, save_json
+from util.utils import load_json, save_json
 from config import TOKEN_HISTORY_FILE
 import storage.users as users
 from typing import List, Dict

@@ -3,7 +3,7 @@ import json
 import logging
 from telegram import Update, BotCommand, BotCommandScopeChat, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from config import SUPER_ADMIN_ID, ADMINS_FILE, BOT_LOGS_ID
+from config import SUPER_ADMIN_ID, ADMINS_FILE, BOT_ERROR_LOGS_ID
 from telegram.error import BadRequest
 
 
@@ -60,7 +60,7 @@ async def send_message(bot, text: str, chat_id, parse_mode="Markdown", admins=No
                 except Exception as inner:
                     logging.error(f"❌ Also failed to notify admin {admin_id}: {inner}")
         try:
-            await bot.send_message(chat_id=BOT_LOGS_ID, text=f"❌ [Fallback] Failed to send message to {chat_id}: {e}")
+            await bot.send_message(chat_id=BOT_ERROR_LOGS_ID, text=f"❌ [Fallback] Failed to send message to {chat_id}: {e}")
         except Exception as super_err:
             logging.error(f"❌ Also failed to notify BOT_LOGS_ID fallback: {super_err}")
 
@@ -93,12 +93,19 @@ async def refresh_user_commands(user_id: int, bot):
     admin_cmds = [
         BotCommand("restart", "Restart the bot -- /rs"),
         BotCommand("alltokens", "List all tracked tokens -- /at"),
+        BotCommand("checkpayment", "Retrieve user payment log -- /cp"),
+        BotCommand("manualupgrade", "Manually upgrade user tier -- /mu"),
+        BotCommand("processpayouts", "Process referral commission -- /pp"),
+
     ]
 
     super_admin_cmds = [
         BotCommand("addadmin", "Add a new admin -- /aa"),
         BotCommand("removeadmin", "Remove an admin -- /ra"),
         BotCommand("listadmins", "List all admins -- /la"),
+        BotCommand("addwallet", "Add new wallet -- /aw"),
+        BotCommand("addwpayout", "Add payout wallet -- /ap"),
+        
     ]
 
     if user_id == SUPER_ADMIN_ID:

@@ -1,6 +1,6 @@
 import logging
-from config import REFERRALS_FILE, BOT_NAME, BOT_LOGS_ID, REFERRAL_PERCENTAGE
-from utils import load_json, save_json, build_custom_update_from_query, send_message
+from config import REFERRALS_FILE, BOT_NAME, REFERRAL_PERCENTAGE
+from util.utils import load_json, save_json, build_custom_update_from_query, send_message
 from typing import Dict, List, Optional
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -94,32 +94,37 @@ async def show_referral_page(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # Calculate unpaid commission
     unpaid_commission = user_data["total_commission"] - user_data["total_paid"]
     
+    # Calculate total referred users (historical) - this is successful_referrals + current pending referrals
+    total_historical_referrals = user_data["successful_referrals"] + len(user_data["referred_users"])
+
     referral_page_para_1 = (
-        "💰 Invite your friends to save 10% on fees. "
-        "If you've traded more than $10k volume in a week you'll receive a 35% share of the fees paid by your referrees! "
-        "Otherwise, you'll receive a 25% share."
+        "💰 Invite your friends and get a 5% referral commision when they upgrade their " 
+        "tier to any package with a minimum of 6 months duration. There is no maximum "
+        "amount of referral, the more you refer the more your rewards."
     )
 
     referral_page_para_2 = (
-        "Rewards are paid daily and airdropped directly to your chosen Rewards Wallet. "
-        "You must have accrued at least 0.005 SOL in unpaid fees to be eligible for a payout. \n\n"
-        "We've established a tiered referral system, ensuring that as more individuals come onboard, rewards extend through five different layers of users. "
-        "This structure not only benefits community growth but also significantly "
-        "increases the percentage share of fees for everyone.\n\n"
-        "Stay tuned for more details on how we'll reward active users and happy trading!"
+        "Rewards are paid once in a month and to be qualified for referral commission "
+        "payout you must have *5 successful referrals* and must have linked your " \
+        "*USDC wallet address on Solana network*.\n\nFailure to link your wallet " \
+        "address means you will have to wait till the next payout round to receive" \
+        "your commission.\n\n" \
+        "Also if we need to create a token account for your provided wallet then the fee to create it will " \
+        "be deducted from your payout *(~0.3$)*."
     )
     # Create the message
     message = (
         f"\n\n🔗 *{BOT_NAME} Referral Program*\n\n"
         f"{referral_page_para_1}\n\n"
         f"📊 *Your Referral Statistics*\n\n"
-        f"👤 Total Referrals: {len(user_data['referred_users'])}\n"
-        f"✅ Successful Referrals: {user_data['successful_referrals']}\n"
+        f"👤 Total Referrals (All-time): {total_historical_referrals}\n"
+        f"👤 Current Pending Referrals: {len(user_data['referred_users'])}\n"
+        f"✅ Successful Referrals: {user_data['successful_referrals']}\n\n"
         f"💵 Total Commission: ${user_data['total_commission']:.2f}\n"
         f"💵 Paid: ${user_data['total_paid']:.2f}\n"
         f"💵 Unpaid: ${unpaid_commission:.2f}\n\n"
         f"{referral_page_para_2}\n\n"
-        f"Your referral link:\n`{referral_link}`\n\n"
+        f"*Your referral link:*\n`{referral_link}`\n\n"
     )
     
     # Add wallet info if available
@@ -167,7 +172,9 @@ async def prompt_for_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     message = (
         "💼 *Set Your Payout Wallet*\n\n"
-        "Please enter your preffered wallet address for receiving referral payouts.\n\n"
+        "Please enter your *USDC wallet address on Solana network* "
+        "preferrably from non-custodial platform like Phantom "
+        "for receiving referral payouts.\n\n"
         "Type your wallet address in the next message:"
     )
     
@@ -228,7 +235,10 @@ async def request_payout(update: Update, context: ContextTypes.DEFAULT_TYPE):
         message = (
             "✅ Your payout request has been submitted!\n\n"
             f"Amount: ${unpaid_commission:.2f}\n"
-            "Our team will process your request within 48 hours."
+            "Thanks for submitting your payout request, it " \
+            "has been recorded and will be processed along with other payouts " \
+            "as at when due.\n\n" \
+            f"Thanks for being a part of *{BOT_NAME}* valuable community."
         )
         
         # Here you could add admin notification logic or automatic payouts
@@ -306,9 +316,16 @@ def on_upgrade_completed(user_id: int, upgrade_fee: float, duration_months: int)
     if referred_by and duration_months >= 6:
         # Process commission for the referrer
         commission = handle_successful_referral_upgrade(referred_by, upgrade_fee)
-        return True, commission
+
+        # Remove referred user from referrer's list to prevent future commissions
+        referred_by_str = str(referred_by)
+        if user_id_str in REFERRAL_DATA[referred_by_str]["referred_users"]:
+            REFERRAL_DATA[referred_by_str]["referred_users"].remove(user_id_str)
+        
+        save_referral_data()
+        return True, commission, referred_by
     
-    return False, 0
+    return False, 0, None
 
 # Modify handle_back_to_dashboard to work with referral module
 async def handle_back_to_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):

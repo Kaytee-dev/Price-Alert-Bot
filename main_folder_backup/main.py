@@ -7,11 +7,12 @@ import sys
 
 from telegram import Update, BotCommand, BotCommandScopeDefault
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes,
+    ApplicationBuilder, CommandHandler, CallbackQueryHandler,
+    ContextTypes, TypeHandler
 )
 
 from config import (
-    BOT_TOKEN, RESTART_FLAG_FILE, ACTIVE_RESTART_USERS_FILE, SUPER_ADMIN_ID, BOT_LOGS_ID
+    BOT_TOKEN, RESTART_FLAG_FILE, ACTIVE_RESTART_USERS_FILE, SUPER_ADMIN_ID
 )
 
 from commands import (
@@ -23,28 +24,40 @@ from commands import (
 
 import storage.tokens
 import storage.users
-from storage.tiers import load_user_tiers
+from storage.tiers import load_user_tiers, check_and_process_tier_expiry_scheduler
 import storage.tiers as tiers
 import storage.thresholds as thresholds
 
-from storage.tokens import load_tracked_tokens, save_tracked_tokens, load_active_token_data
+
+from storage.tokens import load_tracked_tokens, load_active_token_data
 from storage.symbols import load_symbols_from_file
 from storage.users import load_user_tracking, load_user_status, save_user_status
 from storage.history import load_token_history
-from storage.thresholds import load_user_thresholds, save_user_thresholds
+
 from storage.expiry import load_user_expiry
 from storage.notify import remind_inactive_users
+from storage.payment_logs import load_payment_logs
+from storage.wallets import load_wallets
+from storage.payout import load_payout_wallets
+
+from util.wallet_sync import sync_wallets_from_secrets, purge_orphan_wallets
+from secrets_key import load_encrypted_keys
 
 
 from admin import (
     addadmin, removeadmin, listadmins,
-    handle_removeadmin_callback, load_admins, ADMINS
+    handle_removeadmin_callback, load_admins, ADMINS, addwallet, addpayout,
+    check_payment_conv, manual_upgrade_conv
 )
-from utils import load_json, save_json, send_message, refresh_user_commands
+from util.utils import (load_json, save_json, send_message,
+                   refresh_user_commands
+                   )
 from monitor import background_price_monitor
 
 from upgrade import upgrade_conv_handler
 from referral import register_referral_handlers
+from renewal import renewal_conv_handler
+from referral_payout import register_payout_handlers
 
 
 
@@ -91,6 +104,26 @@ async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 else:
                     logging.warning("⚠️ Monitor task reference missing despite start flag — possible inconsistency.")
 
+                # Cancelling expiry task scheduler
+                if hasattr(context.application, "_expiry_task"):
+                    task = context.application._expiry_task
+                    if task and not task.done():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+                
+                # Cancelling inactive users reminder task scheduler
+                if hasattr(context.application, "_reminder_task"):
+                    task = context.application._reminder_task
+                    if task and not task.done():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+
                 await context.application.stop()
                 await asyncio.sleep(1)
 
@@ -135,6 +168,26 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             await task
                         except asyncio.CancelledError:
                             pass
+                
+                # Cancelling expiry task scheduler
+                if hasattr(context.application, "_expiry_task"):
+                    task = context.application._expiry_task
+                    if task and not task.done():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+                
+                # Cancelling inactive users reminder task scheduler
+                if hasattr(context.application, "_reminder_task"):
+                    task = context.application._reminder_task
+                    if task and not task.done():
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
 
                 await context.application.stop()
 
@@ -174,6 +227,11 @@ async def on_startup(app):
     app._reminder_task = reminder_task
     logging.info("🔔 Inactive user reminder loop started.")
 
+    # 🕒 Start the tier expiry check scheduler
+    expiry_task = app.create_task(check_and_process_tier_expiry_scheduler(app))
+    app._expiry_task = expiry_task
+    logging.info("🔄 Tier expiry check scheduler started (2-day interval)")
+
 
     # 🔧 Set fallback default commands
     default_cmds = [
@@ -197,8 +255,20 @@ async def on_startup(app):
     # 🔧 Also refresh super admin's scoped menu
     await refresh_user_commands(SUPER_ADMIN_ID, app.bot)
 
-def main():
+async def extract_username(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Middleware: Save username globally into context.bot_data."""
+    if update.effective_user:
+        user = update.effective_user
+        username = f"@{user.username}" if user.username else user.full_name
+        chat_id = str(update.effective_user.id)
 
+        if "usernames" not in context.bot_data:
+            context.bot_data["usernames"] = {}
+        context.bot_data["usernames"][chat_id] = username
+
+
+def main():
+    # 🚀 Core Launch Commands
     load_admins()
     load_user_tracking()
     load_user_status()
@@ -210,6 +280,12 @@ def main():
     load_active_token_data()
     load_user_tiers()
     load_user_expiry()
+    load_payment_logs()
+    load_payout_wallets()
+    load_wallets()
+    load_encrypted_keys()
+    sync_wallets_from_secrets()
+    purge_orphan_wallets()
 
     # 🔒 Enforce token limits based on user tiers
     for user_id_str in list(storage.users.USER_TRACKING.keys()):
@@ -231,6 +307,7 @@ def main():
         except Exception as e:
             logging.warning(f"⚠️ Failed to clean restart state files: {e}")
 
+    # 🧮 Token Tracking
     # Rebuild from loaded data
     all_tokens = set()
     for token_list in storage.users.USER_TRACKING.values():
@@ -258,7 +335,8 @@ def main():
 
     app.bot_data["launch_dashboard"] = launch
 
-    
+    app.add_handler(TypeHandler(Update, extract_username), group=-999)
+
     app.add_handler(CommandHandler("lc", launch))
 
 
@@ -298,21 +376,34 @@ def main():
     app.add_handler(CommandHandler("listadmins", listadmins))
     app.add_handler(CommandHandler("la", listadmins))
 
+    app.add_handler(CommandHandler("aw", addwallet))
+    app.add_handler(CommandHandler("ap", addpayout))
+
+
     app.add_handler(CommandHandler("threshold", threshold))
     app.add_handler(CommandHandler("t", threshold))
+
+    
 
     app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
     app.add_handler(CallbackQueryHandler(callback_reset_confirmation, pattern="^confirm_reset$|^cancel_reset$"))
     app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
 
-    app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$"))
-    app.add_handler(CallbackQueryHandler(launch, pattern="^back_to_dashboard$"))
+    # app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$"))
+    # app.add_handler(CallbackQueryHandler(launch, pattern="^back_to_dashboard$"))
+
+    app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$|^back_to_dashboard$"))
 
     app.add_handler(upgrade_conv_handler)
+    app.add_handler(renewal_conv_handler)
     app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))
 
     register_referral_handlers(app)
+
+    app.add_handler(check_payment_conv)
+    app.add_handler(manual_upgrade_conv)
+    register_payout_handlers(app)
 
 
 
