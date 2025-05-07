@@ -678,7 +678,7 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 spike_count += 1
 
     last_update = None
-    timestamps = [entry[2].get("timestamp") for entry in history.TOKEN_DATA_HISTORY.values() if entry]
+    timestamps = [entry[0].get("timestamp") for entry in history.TOKEN_DATA_HISTORY.values() if entry]
     if timestamps:
         last_update = max(timestamps)
 
