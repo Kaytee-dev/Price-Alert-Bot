@@ -1,0 +1,38 @@
+{
+  "-4710110042": {
+    "referred_users": [],
+    "total_commission": 0.0,
+    "total_paid": 0.0,
+    "wallet_address": "",
+    "successful_referrals": 0
+  },
+  "965551493": {
+    "referred_users": [
+      "723161032",
+      "773521138",
+      "5775627206",
+      "6914164320",
+      "963037462"
+    ],
+    "total_commission": 14,
+    "total_paid": 12.0,
+    "wallet_address": "0x187AC72F6E35be221F0dB63269F73E3f4a5fCD76",
+    "successful_referrals": 5,
+    "tx_sig": "5ivoUSPvEdCggwEkoUqAkwuBURXD7wPZiEMDxdMRikQom9dx1NYex4zw4eFZhXFbd3nFmwptDeJPxJY88Mg4kA14"
+  },
+  "7129984365": {
+    "referred_users": [],
+    "total_commission": 5,
+    "total_paid": 0.0,
+    "wallet_address": "9S7LF9xHFRJQKY8X5gzsGGYjfLRQDFnM8KFJ6wQTpump",
+    "successful_referrals": 5
+  },
+  "6015881080": {
+    "referred_users": [],
+    "total_commission": 6,
+    "total_paid": 4.0,
+    "wallet_address": "0x371aB21bF13Fe57cf9308011e6134D0670A92294",
+    "successful_referrals": 5,
+    "tx_sig": "4nj1C97NBt5U3g49kedzYJKwWYCWHXEsRmHcQApWsvgPvWDu6rfoD9HGbyYtHPnm7byTgiNB9BRBLaZg5j94a2Jm"
+  }
+}

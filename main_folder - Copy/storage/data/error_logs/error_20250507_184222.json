@@ -1,0 +1,40 @@
+{
+  "error_id": "error_20250507_184222",
+  "timestamp": "2025-05-07T18:42:22.820669",
+  "error_message": "cannot unpack non-iterable NoneType object",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_application.py\", line 1264, in process_update\n    await coroutine\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\conversationhandler.py\", line 857, in handle_update\n    new_state: object = await handler.handle_update(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\basehandler.py\", line 157, in handle_update\n    return await self.callback(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\admin.py\", line 52, in wrapper\n    return await func(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\referral_payout.py\", line 339, in process_referral_payouts\n    valid_users, invalid_users = await validate_wallet_addresses(eligible_users)\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\referral_payout.py\", line 121, in validate_wallet_addresses\n    for invalid_result, valid_result in results:\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: cannot unpack non-iterable NoneType object\n",
+  "update": {
+    "message": {
+      "channel_chat_created": false,
+      "delete_chat_photo": false,
+      "entities": [
+        {
+          "length": 15,
+          "offset": 0,
+          "type": "bot_command"
+        }
+      ],
+      "group_chat_created": false,
+      "supergroup_chat_created": false,
+      "text": "/processpayouts",
+      "chat": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "type": "private",
+        "username": "toheeb6538"
+      },
+      "date": 1746639742,
+      "message_id": 2368,
+      "from": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "is_bot": false,
+        "language_code": "en",
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "username": "toheeb6538"
+      }
+    },
+    "update_id": 223394586
+  }
+}

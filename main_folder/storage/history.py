@@ -18,9 +18,14 @@ def load_token_history():
             LAST_SAVED_HASHES[addr] = hash_val
 
 def save_token_history():
-    all_tracked_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
+    all_tracked_addresses = set()
+    for user_chains in users.USER_TRACKING.values():
+            for chain_id, addresses in user_chains.items():
+                if isinstance(addresses, list):
+                    all_tracked_addresses.update(addresses)
+    
     for addr in list(TOKEN_DATA_HISTORY.keys()):
-        if addr not in all_tracked_tokens:
+        if addr not in all_tracked_addresses:
             del TOKEN_DATA_HISTORY[addr]
             LAST_SAVED_HASHES.pop(addr, None)
 

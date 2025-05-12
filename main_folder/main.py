@@ -47,7 +47,7 @@ from secrets_key import load_encrypted_keys
 from admin import (
     addadmin, removeadmin, listadmins,
     handle_removeadmin_callback, load_admins, ADMINS, addwallet, addpayout,
-    check_payment_conv, manual_upgrade_conv, list_referrals
+    check_payment_conv, manual_upgrade_conv, list_referrals, register_wallet_commands
 )
 from util.utils import (load_json, save_json, send_message,
                    refresh_user_commands
@@ -314,14 +314,18 @@ def main():
         except Exception as e:
             logger.warning(f"⚠️ Failed to clean restart state files: {e}")
 
-    # 🧮 Token Tracking
-    # Rebuild from loaded data
-    all_tokens = set()
-    for token_list in storage.users.USER_TRACKING.values():
-        all_tokens.update(token_list)
-    storage.tokens.TRACKED_TOKENS = sorted(all_tokens)
+    # 🧮 Token Tracking — Rebuild from loaded structured USER_TRACKING
+    grouped_tokens = {}
+    for token_dict in storage.users.USER_TRACKING.values():
+        for chain_id, addresses in token_dict.items():
+            grouped_tokens.setdefault(chain_id, set()).update(addresses)
+
+    # Convert sets to sorted lists
+    grouped_tokens = {k: sorted(v) for k, v in grouped_tokens.items()}
+
+    storage.tokens.TRACKED_TOKENS = grouped_tokens
     storage.tokens.save_tracked_tokens()
-    logger.info(f"🔁 Rebuilt tracked tokens list: {len(storage.tokens.TRACKED_TOKENS)} tokens.")
+    logger.info(f"🔁 Rebuilt tracked tokens list across {len(grouped_tokens)} chains.")
 
     # Adding threshold on startup
     thresholds.load_user_thresholds()
@@ -390,6 +394,7 @@ def main():
     app.add_handler(check_payment_conv)
     app.add_handler(manual_upgrade_conv)
 
+    register_wallet_commands(app)
     register_payout_handlers(app)
     app.run_polling()
 

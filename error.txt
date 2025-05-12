@@ -1,0 +1,147 @@
+2025-05-07 22:33:33,314 - referral_payout - INFO - Processing batch 1/1 with 9 wallets
+2025-05-07 22:33:33,315 - referral_payout - DEBUG - Validating wallet for user 965551493: GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj
+2025-05-07 22:33:33,315 - referral_payout - DEBUG - Fetching account info for: GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj
+2025-05-07 22:33:33,316 - httpcore.connection - DEBUG - connect_tcp.started host='api.devnet.solana.com' port=443 local_address=None timeout=10 socket_options=None
+2025-05-07 22:33:34,642 - httpcore.connection - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000026C57003E00>
+2025-05-07 22:33:34,643 - httpcore.connection - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x0000026C570CC8D0> server_hostname='api.devnet.solana.com' timeout=10
+2025-05-07 22:33:34,922 - httpcore.connection - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000026C57003CE0>
+2025-05-07 22:33:34,923 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:34,924 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-05-07 22:33:34,925 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-07 22:33:34,926 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-05-07 22:33:34,927 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:35,207 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'content-type', b'application/json; charset=utf-8'), (b'date', b'Wed, 07 May 2025 21:33:35 GMT'), (b'x-rpc-node', b'pit44'), (b'x-ratelimit-airdrop-limit', b'1'), (b'x-ratelimit-airdrop-remaining', b'1'), (b'x-ratelimit-tier', b'free'), (b'x-ratelimit-method-limit', b'200'), (b'x-ratelimit-method-remaining', b'199'), (b'x-ratelimit-rps-limit', b'300'), (b'x-ratelimit-rps-remaining', b'299'), (b'x-ratelimit-endpoint-limit', b'unlimited'), (b'x-ratelimit-endpoint-remaining', b'-1822'), (b'x-ratelimit-conn-limit', b'200'), (b'x-ratelimit-conn-remaining', b'199'), (b'x-ratelimit-connrate-limit', b'200'), (b'x-ratelimit-connrate-remaining', b'199'), (b'x-ratelimit-pubsub-limit', b'50'), (b'x-ratelimit-pubsub-remaining', b'50'), (b'access-control-allow-origin', b'*'), (b'access-control-allow-methods', b'OPTIONS, POST, GET'), (b'access-control-allow-headers', b'authorization, *'), (b'access-control-max-age', b'86400'), (b'allow', b'OPTIONS, POST, GET'), (b'transfer-encoding', b'chunked'), (b'vary', b'Accept-Encoding'), (b'content-encoding', b'gzip')])  
+2025-05-07 22:33:35,212 - httpx - INFO - HTTP Request: POST https://api.devnet.solana.com "HTTP/1.1 200 OK"
+2025-05-07 22:33:35,213 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-07 22:33:35,215 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-05-07 22:33:35,215 - httpcore.http11 - DEBUG - response_closed.started
+2025-05-07 22:33:35,220 - httpcore.http11 - DEBUG - response_closed.complete
+2025-05-07 22:33:35,222 - referral_payout - DEBUG - RPC response for GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj: GetAccountInfoResp { context: RpcResponseContext { slot: 379357861, api_version: Some("2.2.12") }, value: Some(Account { lamports: 8133585040, data: [], owner: Pubkey(11111111111111111111111111111111), executable: false, rent_epoch: 18446744073709551615 }) }
+2025-05-07 22:33:35,225 - referral_payout - DEBUG - Wallet GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj details: System owned: True, Token owned: False, Data len: 0, Executable: False
+2025-05-07 22:33:35,226 - referral_payout - INFO - Valid initialized user wallet for user 965551493: GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj
+2025-05-07 22:33:35,226 - referral_payout - DEBUG - Validating wallet for user 7129984365: 9S7LF9xHFRJQKY8X5gzsGGYjfLRQDFnM8KFJ6wQTpump
+2025-05-07 22:33:35,230 - referral_payout - DEBUG - Fetching account info for: 9S7LF9xHFRJQKY8X5gzsGGYjfLRQDFnM8KFJ6wQTpump
+2025-05-07 22:33:35,233 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:35,235 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-05-07 22:33:35,236 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-07 22:33:35,238 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-05-07 22:33:35,241 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:35,467 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'content-type', b'application/json; charset=utf-8'), (b'date', b'Wed, 07 May 2025 21:33:35 GMT'), (b'x-rpc-node', b'pit44'), (b'x-ratelimit-airdrop-limit', b'1'), (b'x-ratelimit-airdrop-remaining', b'1'), (b'x-ratelimit-tier', b'free'), (b'x-ratelimit-method-limit', b'200'), (b'x-ratelimit-method-remaining', b'198'), (b'x-ratelimit-rps-limit', b'300'), (b'x-ratelimit-rps-remaining', b'298'), (b'x-ratelimit-endpoint-limit', b'unlimited'), (b'x-ratelimit-endpoint-remaining', b'-1804'), (b'x-ratelimit-conn-limit', b'200'), (b'x-ratelimit-conn-remaining', b'199'), (b'x-ratelimit-connrate-limit', b'200'), (b'x-ratelimit-connrate-remaining', b'199'), (b'x-ratelimit-pubsub-limit', b'50'), (b'x-ratelimit-pubsub-remaining', b'50'), (b'access-control-allow-origin', b'*'), (b'access-control-allow-methods', b'OPTIONS, POST, GET'), (b'access-control-allow-headers', b'authorization, *'), (b'access-control-max-age', b'86400'), (b'allow', b'OPTIONS, POST, GET'), (b'transfer-encoding', b'chunked'), (b'vary', b'Accept-Encoding'), (b'content-encoding', b'gzip')])  
+2025-05-07 22:33:35,470 - httpx - INFO - HTTP Request: POST https://api.devnet.solana.com "HTTP/1.1 200 OK"
+2025-05-07 22:33:35,471 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-07 22:33:35,472 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-05-07 22:33:35,472 - httpcore.http11 - DEBUG - response_closed.started
+2025-05-07 22:33:35,473 - httpcore.http11 - DEBUG - response_closed.complete
+2025-05-07 22:33:35,474 - referral_payout - DEBUG - RPC response for 9S7LF9xHFRJQKY8X5gzsGGYjfLRQDFnM8KFJ6wQTpump: GetAccountInfoResp { context: RpcResponseContext { slot: 379357862, api_version: Some("2.2.12") }, value: None }
+2025-05-07 22:33:35,474 - referral_payout - INFO - Uninitialized but valid user wallet candidate for user 7129984365: 9S7LF9xHFRJQKY8X5gzsGGYjfLRQDFnM8KFJ6wQTpump
+2025-05-07 22:33:35,476 - referral_payout - DEBUG - Validating wallet for user 6015881080: HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5
+2025-05-07 22:33:35,476 - referral_payout - DEBUG - Fetching account info for: HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5
+2025-05-07 22:33:35,478 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:35,479 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-05-07 22:33:35,482 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-07 22:33:35,486 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-05-07 22:33:35,487 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:35,742 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'content-type', b'application/json; charset=utf-8'), (b'date', b'Wed, 07 May 2025 21:33:36 GMT'), (b'x-rpc-node', b'pit44'), (b'x-ratelimit-airdrop-limit', b'1'), (b'x-ratelimit-airdrop-remaining', b'1'), (b'x-ratelimit-tier', b'free'), (b'x-ratelimit-method-limit', b'200'), (b'x-ratelimit-method-remaining', b'197'), (b'x-ratelimit-rps-limit', b'300'), (b'x-ratelimit-rps-remaining', b'297'), (b'x-ratelimit-endpoint-limit', b'unlimited'), (b'x-ratelimit-endpoint-remaining', b'-1807'), (b'x-ratelimit-conn-limit', b'200'), (b'x-ratelimit-conn-remaining', b'199'), (b'x-ratelimit-connrate-limit', b'200'), (b'x-ratelimit-connrate-remaining', b'199'), (b'x-ratelimit-pubsub-limit', b'50'), (b'x-ratelimit-pubsub-remaining', b'50'), (b'access-control-allow-origin', b'*'), (b'access-control-allow-methods', b'OPTIONS, POST, GET'), (b'access-control-allow-headers', b'authorization, *'), (b'access-control-max-age', b'86400'), (b'allow', b'OPTIONS, POST, GET'), (b'transfer-encoding', b'chunked'), (b'vary', b'Accept-Encoding'), (b'content-encoding', b'gzip')])  
+2025-05-07 22:33:35,745 - httpx - INFO - HTTP Request: POST https://api.devnet.solana.com "HTTP/1.1 200 OK"
+2025-05-07 22:33:35,746 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-07 22:33:35,748 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-05-07 22:33:35,748 - httpcore.http11 - DEBUG - response_closed.started
+2025-05-07 22:33:35,749 - httpcore.http11 - DEBUG - response_closed.complete
+2025-05-07 22:33:35,750 - referral_payout - DEBUG - RPC response for HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5: GetAccountInfoResp { context: RpcResponseContext { slot: 379357862, api_version: Some("2.2.12") }, value: Some(Account { lamports: 29920006, data: [], owner: Pubkey(11111111111111111111111111111111), executable: false, rent_epoch: 18446744073709551615 }) }
+2025-05-07 22:33:35,752 - referral_payout - DEBUG - Wallet HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5 details: System owned: True, Token owned: False, Data len: 0, Executable: False
+2025-05-07 22:33:35,753 - referral_payout - INFO - Valid initialized user wallet for user 6015881080: HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5
+2025-05-07 22:33:35,753 - referral_payout - DEBUG - Validating wallet for user 723161032: 27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM
+2025-05-07 22:33:35,754 - referral_payout - DEBUG - Fetching account info for: 27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM
+2025-05-07 22:33:35,761 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:35,764 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-05-07 22:33:35,768 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-07 22:33:35,774 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-05-07 22:33:35,776 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:36,008 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'content-type', b'application/json; charset=utf-8'), (b'date', b'Wed, 07 May 2025 21:33:36 GMT'), (b'x-rpc-node', b'pit44'), (b'x-ratelimit-airdrop-limit', b'1'), (b'x-ratelimit-airdrop-remaining', b'1'), (b'x-ratelimit-tier', b'free'), (b'x-ratelimit-method-limit', b'200'), (b'x-ratelimit-method-remaining', b'196'), (b'x-ratelimit-rps-limit', b'300'), (b'x-ratelimit-rps-remaining', b'296'), (b'x-ratelimit-endpoint-limit', b'unlimited'), (b'x-ratelimit-endpoint-remaining', b'-1800'), (b'x-ratelimit-conn-limit', b'200'), (b'x-ratelimit-conn-remaining', b'199'), (b'x-ratelimit-connrate-limit', b'200'), (b'x-ratelimit-connrate-remaining', b'199'), (b'x-ratelimit-pubsub-limit', b'50'), (b'x-ratelimit-pubsub-remaining', b'50'), (b'access-control-allow-origin', b'*'), (b'access-control-allow-methods', b'OPTIONS, POST, GET'), (b'access-control-allow-headers', b'authorization, *'), (b'access-control-max-age', b'86400'), (b'allow', b'OPTIONS, POST, GET'), (b'transfer-encoding', b'chunked'), (b'vary', b'Accept-Encoding'), (b'content-encoding', b'gzip')])  
+2025-05-07 22:33:36,011 - httpx - INFO - HTTP Request: POST https://api.devnet.solana.com "HTTP/1.1 200 OK"
+2025-05-07 22:33:36,011 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-07 22:33:36,012 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-05-07 22:33:36,012 - httpcore.http11 - DEBUG - response_closed.started
+2025-05-07 22:33:36,013 - httpcore.http11 - DEBUG - response_closed.complete
+2025-05-07 22:33:36,013 - referral_payout - DEBUG - RPC response for 27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM: GetAccountInfoResp { context: RpcResponseContext { slot: 379357863, api_version: Some("2.2.12") }, value: Some(Account { lamports: 5000815886, data: [], owner: Pubkey(11111111111111111111111111111111), executable: false, rent_epoch: 18446744073709551615 }) }
+2025-05-07 22:33:36,026 - referral_payout - DEBUG - Wallet 27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM details: System owned: True, Token owned: False, Data len: 0, Executable: False
+2025-05-07 22:33:36,027 - referral_payout - INFO - Valid initialized user wallet for user 723161032: 27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM
+2025-05-07 22:33:36,028 - referral_payout - DEBUG - Validating wallet for user 773521138: GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4
+2025-05-07 22:33:36,030 - referral_payout - DEBUG - Fetching account info for: GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4
+2025-05-07 22:33:36,031 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:36,033 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-05-07 22:33:36,034 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-07 22:33:36,036 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-05-07 22:33:36,036 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:36,271 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'content-type', b'application/json; charset=utf-8'), (b'date', b'Wed, 07 May 2025 21:33:36 GMT'), (b'x-rpc-node', b'pit44'), (b'x-ratelimit-airdrop-limit', b'1'), (b'x-ratelimit-airdrop-remaining', b'1'), (b'x-ratelimit-tier', b'free'), (b'x-ratelimit-method-limit', b'200'), (b'x-ratelimit-method-remaining', b'195'), (b'x-ratelimit-rps-limit', b'300'), (b'x-ratelimit-rps-remaining', b'295'), (b'x-ratelimit-endpoint-limit', b'unlimited'), (b'x-ratelimit-endpoint-remaining', b'-1802'), (b'x-ratelimit-conn-limit', b'200'), (b'x-ratelimit-conn-remaining', b'199'), (b'x-ratelimit-connrate-limit', b'200'), (b'x-ratelimit-connrate-remaining', b'199'), (b'x-ratelimit-pubsub-limit', b'50'), (b'x-ratelimit-pubsub-remaining', b'50'), (b'access-control-allow-origin', b'*'), (b'access-control-allow-methods', b'OPTIONS, POST, GET'), (b'access-control-allow-headers', b'authorization, *'), (b'access-control-max-age', b'86400'), (b'allow', b'OPTIONS, POST, GET'), (b'transfer-encoding', b'chunked'), (b'vary', b'Accept-Encoding'), (b'content-encoding', b'gzip')])  
+2025-05-07 22:33:36,273 - httpx - INFO - HTTP Request: POST https://api.devnet.solana.com "HTTP/1.1 200 OK"
+2025-05-07 22:33:36,274 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-07 22:33:36,274 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-05-07 22:33:36,275 - httpcore.http11 - DEBUG - response_closed.started
+2025-05-07 22:33:36,275 - httpcore.http11 - DEBUG - response_closed.complete
+2025-05-07 22:33:36,276 - referral_payout - DEBUG - RPC response for GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4: GetAccountInfoResp { context: RpcResponseContext { slot: 379357864, api_version: Some("2.2.12") }, value: Some(Account { lamports: 895880, data: [], owner: Pubkey(11111111111111111111111111111111), executable: false, rent_epoch: 18446744073709551615 }) }
+2025-05-07 22:33:36,276 - referral_payout - DEBUG - Wallet GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4 details: System owned: True, Token owned: False, Data len: 0, Executable: False
+2025-05-07 22:33:36,277 - referral_payout - INFO - Valid initialized user wallet for user 773521138: GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4
+2025-05-07 22:33:36,278 - referral_payout - DEBUG - Validating wallet for user 5775627206: HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK
+2025-05-07 22:33:36,278 - referral_payout - DEBUG - Fetching account info for: HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK
+2025-05-07 22:33:36,279 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:36,280 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-05-07 22:33:36,280 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-07 22:33:36,281 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-05-07 22:33:36,282 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:36,528 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'content-type', b'application/json; charset=utf-8'), (b'date', b'Wed, 07 May 2025 21:33:36 GMT'), (b'x-rpc-node', b'pit44'), (b'x-ratelimit-airdrop-limit', b'1'), (b'x-ratelimit-airdrop-remaining', b'1'), (b'x-ratelimit-tier', b'free'), (b'x-ratelimit-method-limit', b'200'), (b'x-ratelimit-method-remaining', b'194'), (b'x-ratelimit-rps-limit', b'300'), (b'x-ratelimit-rps-remaining', b'294'), (b'x-ratelimit-endpoint-limit', b'unlimited'), (b'x-ratelimit-endpoint-remaining', b'-1784'), (b'x-ratelimit-conn-limit', b'200'), (b'x-ratelimit-conn-remaining', b'199'), (b'x-ratelimit-connrate-limit', b'200'), (b'x-ratelimit-connrate-remaining', b'199'), (b'x-ratelimit-pubsub-limit', b'50'), (b'x-ratelimit-pubsub-remaining', b'50'), (b'access-control-allow-origin', b'*'), (b'access-control-allow-methods', b'OPTIONS, POST, GET'), (b'access-control-allow-headers', b'authorization, *'), (b'access-control-max-age', b'86400'), (b'allow', b'OPTIONS, POST, GET'), (b'transfer-encoding', b'chunked'), (b'vary', b'Accept-Encoding'), (b'content-encoding', b'gzip')])  
+2025-05-07 22:33:36,531 - httpx - INFO - HTTP Request: POST https://api.devnet.solana.com "HTTP/1.1 200 OK"
+2025-05-07 22:33:36,531 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-07 22:33:36,532 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-05-07 22:33:36,532 - httpcore.http11 - DEBUG - response_closed.started
+2025-05-07 22:33:36,533 - httpcore.http11 - DEBUG - response_closed.complete
+2025-05-07 22:33:36,534 - referral_payout - DEBUG - RPC response for HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK: GetAccountInfoResp { context: RpcResponseContext { slot: 379357865, api_version: Some("2.2.12") }, value: None }
+2025-05-07 22:33:36,534 - referral_payout - INFO - Uninitialized but valid user wallet candidate for user 5775627206: HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK
+2025-05-07 22:33:36,535 - referral_payout - DEBUG - Validating wallet for user 6914164320: BggN2aJagL95Lo7hSK6k8hgAuicaGV1LL1TTKfgPg9QT
+2025-05-07 22:33:36,536 - referral_payout - DEBUG - Fetching account info for: BggN2aJagL95Lo7hSK6k8hgAuicaGV1LL1TTKfgPg9QT
+2025-05-07 22:33:36,538 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:36,539 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-05-07 22:33:36,539 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-07 22:33:36,540 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-05-07 22:33:36,541 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:36,868 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'content-type', b'application/json; charset=utf-8'), (b'date', b'Wed, 07 May 2025 21:33:37 GMT'), (b'x-rpc-node', b'pit44'), (b'x-ratelimit-airdrop-limit', b'1'), (b'x-ratelimit-airdrop-remaining', b'1'), (b'x-ratelimit-tier', b'free'), (b'x-ratelimit-method-limit', b'200'), (b'x-ratelimit-method-remaining', b'193'), (b'x-ratelimit-rps-limit', b'300'), (b'x-ratelimit-rps-remaining', b'293'), (b'x-ratelimit-endpoint-limit', b'unlimited'), (b'x-ratelimit-endpoint-remaining', b'-1775'), (b'x-ratelimit-conn-limit', b'200'), (b'x-ratelimit-conn-remaining', b'199'), (b'x-ratelimit-connrate-limit', b'200'), (b'x-ratelimit-connrate-remaining', b'199'), (b'x-ratelimit-pubsub-limit', b'50'), (b'x-ratelimit-pubsub-remaining', b'50'), (b'access-control-allow-origin', b'*'), (b'access-control-allow-methods', b'OPTIONS, POST, GET'), (b'access-control-allow-headers', b'authorization, *'), (b'access-control-max-age', b'86400'), (b'allow', b'OPTIONS, POST, GET'), (b'transfer-encoding', b'chunked'), (b'vary', b'Accept-Encoding'), (b'content-encoding', b'gzip')])  
+2025-05-07 22:33:36,869 - httpx - INFO - HTTP Request: POST https://api.devnet.solana.com "HTTP/1.1 200 OK"
+2025-05-07 22:33:36,871 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-07 22:33:36,871 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-05-07 22:33:36,871 - httpcore.http11 - DEBUG - response_closed.started
+2025-05-07 22:33:36,871 - httpcore.http11 - DEBUG - response_closed.complete
+2025-05-07 22:33:36,872 - referral_payout - DEBUG - RPC response for BggN2aJagL95Lo7hSK6k8hgAuicaGV1LL1TTKfgPg9QT: GetAccountInfoResp { context: RpcResponseContext { slot: 379357865, api_version: Some("2.2.12") }, value: Some(Account { lamports: 218108246, data: [], owner: Pubkey(11111111111111111111111111111111), executable: false, rent_epoch: 18446744073709551615 }) }
+2025-05-07 22:33:36,872 - referral_payout - DEBUG - Wallet BggN2aJagL95Lo7hSK6k8hgAuicaGV1LL1TTKfgPg9QT details: System owned: True, Token owned: False, Data len: 0, Executable: False
+2025-05-07 22:33:36,873 - referral_payout - INFO - Valid initialized user wallet for user 6914164320: BggN2aJagL95Lo7hSK6k8hgAuicaGV1LL1TTKfgPg9QT
+2025-05-07 22:33:36,873 - referral_payout - DEBUG - Validating wallet for user 2102128217: Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump
+2025-05-07 22:33:36,874 - referral_payout - DEBUG - Fetching account info for: Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump
+2025-05-07 22:33:36,874 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:36,875 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-05-07 22:33:36,875 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-07 22:33:36,876 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-05-07 22:33:36,877 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:37,175 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'content-type', b'application/json; charset=utf-8'), (b'date', b'Wed, 07 May 2025 21:33:37 GMT'), (b'x-rpc-node', b'pit44'), (b'x-ratelimit-airdrop-limit', b'1'), (b'x-ratelimit-airdrop-remaining', b'1'), (b'x-ratelimit-tier', b'free'), (b'x-ratelimit-method-limit', b'200'), (b'x-ratelimit-method-remaining', b'192'), (b'x-ratelimit-rps-limit', b'300'), (b'x-ratelimit-rps-remaining', b'292'), (b'x-ratelimit-endpoint-limit', b'unlimited'), (b'x-ratelimit-endpoint-remaining', b'-1786'), (b'x-ratelimit-conn-limit', b'200'), (b'x-ratelimit-conn-remaining', b'199'), (b'x-ratelimit-connrate-limit', b'200'), (b'x-ratelimit-connrate-remaining', b'199'), (b'x-ratelimit-pubsub-limit', b'50'), (b'x-ratelimit-pubsub-remaining', b'50'), (b'access-control-allow-origin', b'*'), (b'access-control-allow-methods', b'OPTIONS, POST, GET'), (b'access-control-allow-headers', b'authorization, *'), (b'access-control-max-age', b'86400'), (b'allow', b'OPTIONS, POST, GET'), (b'transfer-encoding', b'chunked'), (b'vary', b'Accept-Encoding'), (b'content-encoding', b'gzip')])  
+2025-05-07 22:33:37,177 - httpx - INFO - HTTP Request: POST https://api.devnet.solana.com "HTTP/1.1 200 OK"
+2025-05-07 22:33:37,177 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-07 22:33:37,178 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-05-07 22:33:37,179 - httpcore.http11 - DEBUG - response_closed.started
+2025-05-07 22:33:37,179 - httpcore.http11 - DEBUG - response_closed.complete
+2025-05-07 22:33:37,180 - referral_payout - DEBUG - RPC response for Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump: GetAccountInfoResp { context: RpcResponseContext { slot: 379357866, api_version: Some("2.2.12") }, value: None }
+2025-05-07 22:33:37,180 - referral_payout - INFO - Uninitialized but valid user wallet candidate for user 2102128217: Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump
+2025-05-07 22:33:37,181 - referral_payout - DEBUG - Validating wallet for user 963037462: Arsg2eAULndN77ykNCr82Q6kV9MmvzdR5PZBHqUmN7r7
+2025-05-07 22:33:37,181 - referral_payout - DEBUG - Fetching account info for: Arsg2eAULndN77ykNCr82Q6kV9MmvzdR5PZBHqUmN7r7
+2025-05-07 22:33:37,183 - httpcore.http11 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:37,184 - httpcore.http11 - DEBUG - send_request_headers.complete
+2025-05-07 22:33:37,185 - httpcore.http11 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-07 22:33:37,186 - httpcore.http11 - DEBUG - send_request_body.complete
+2025-05-07 22:33:37,188 - httpcore.http11 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-07 22:33:37,482 - httpcore.http11 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'content-type', b'application/json; charset=utf-8'), (b'date', b'Wed, 07 May 2025 21:33:38 GMT'), (b'x-rpc-node', b'pit44'), (b'x-ratelimit-airdrop-limit', b'1'), (b'x-ratelimit-airdrop-remaining', b'1'), (b'x-ratelimit-tier', b'free'), (b'x-ratelimit-method-limit', b'200'), (b'x-ratelimit-method-remaining', b'191'), (b'x-ratelimit-rps-limit', b'300'), (b'x-ratelimit-rps-remaining', b'291'), (b'x-ratelimit-endpoint-limit', b'unlimited'), (b'x-ratelimit-endpoint-remaining', b'-1788'), (b'x-ratelimit-conn-limit', b'200'), (b'x-ratelimit-conn-remaining', b'199'), (b'x-ratelimit-connrate-limit', b'200'), (b'x-ratelimit-connrate-remaining', b'199'), (b'x-ratelimit-pubsub-limit', b'50'), (b'x-ratelimit-pubsub-remaining', b'50'), (b'access-control-allow-origin', b'*'), (b'access-control-allow-methods', b'OPTIONS, POST, GET'), (b'access-control-allow-headers', b'authorization, *'), (b'access-control-max-age', b'86400'), (b'allow', b'OPTIONS, POST, GET'), (b'transfer-encoding', b'chunked'), (b'vary', b'Accept-Encoding'), (b'content-encoding', b'gzip')])  
+2025-05-07 22:33:37,484 - httpx - INFO - HTTP Request: POST https://api.devnet.solana.com "HTTP/1.1 200 OK"
+2025-05-07 22:33:37,484 - httpcore.http11 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-07 22:33:37,484 - httpcore.http11 - DEBUG - receive_response_body.complete
+2025-05-07 22:33:37,485 - httpcore.http11 - DEBUG - response_closed.started
+2025-05-07 22:33:37,485 - httpcore.http11 - DEBUG - response_closed.complete
+2025-05-07 22:33:37,486 - referral_payout - DEBUG - RPC response for Arsg2eAULndN77ykNCr82Q6kV9MmvzdR5PZBHqUmN7r7: GetAccountInfoResp { context: RpcResponseContext { slot: 379357867, api_version: Some("2.2.12") }, value: None }
+2025-05-07 22:33:37,486 - referral_payout - INFO - Uninitialized but valid user wallet candidate for user 963037462: Arsg2eAULndN77ykNCr82Q6kV9MmvzdR5PZBHqUmN7r7
+2025-05-07 22:33:37,487 - referral_payout - INFO - Completed batch 1/1: 9 valid, 0 invalid
+2025-05-07 22:33:37,487 - referral_payout - INFO - Wallet validation complete: 9 valid, 0 invalid

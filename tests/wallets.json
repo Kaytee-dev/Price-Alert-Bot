@@ -1,0 +1,26 @@
+[
+    {
+      "user_id": "user1",
+      "wallet_address": "Arsg2eAULndN77ykNCr82Q6kV9MmvzdR5PZBHqUmN7r7"
+    },
+    {
+      "user_id": "user2",
+      "wallet_address": "8ncucXv6U6epZKHPbgaEBcEK399TpHGKCquSt4RnmX4f"
+    },
+    {
+      "user_id": "user3",
+      "wallet_address": "GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4"
+    },
+    {
+      "user_id": "user4",
+      "wallet_address": "N3ve9zJ71CGT6EmzY8qXBLjupiqW8kzRzWP33jSeMyh"
+    },
+    {
+      "user_id": "user5",
+      "wallet_address": "C6RZwXDKxKDHfTMS22dtG3KbHL1cAxVZ1ZX8qYphsuiN"
+    },
+    {
+      "user_id": "user6",
+      "wallet_address": "So11111111111111111111111111111111111111112"
+    }
+  ]

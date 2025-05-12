@@ -1,0 +1,40 @@
+{
+  "error_id": "error_20250507_202906",
+  "timestamp": "2025-05-07T20:29:06.400454",
+  "error_message": "",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_application.py\", line 1264, in process_update\n    await coroutine\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\conversationhandler.py\", line 857, in handle_update\n    new_state: object = await handler.handle_update(\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\basehandler.py\", line 157, in handle_update\n    return await self.callback(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\admin.py\", line 52, in wrapper\n    return await func(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\referral_payout.py\", line 411, in process_referral_payouts\n    total_users, total_usd, network_fees, network_fees_sol, total_cost = await calculate_payout_totals(valid_users)\n                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\referral_payout.py\", line 180, in calculate_payout_totals\n    sol_usd_price = await fetch_sol_price_usd()\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\upgrade.py\", line 40, in fetch_sol_price_usd\n    async with session.get(url) as resp:\n               ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\aiohttp\\client.py\", line 1194, in __aenter__\n    self._resp = await self._coro\n                 ^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\aiohttp\\client.py\", line 504, in _request\n    with timer:\n         ^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\aiohttp\\helpers.py\", line 735, in __exit__\n    raise asyncio.TimeoutError from None\nTimeoutError\n",
+  "update": {
+    "message": {
+      "channel_chat_created": false,
+      "delete_chat_photo": false,
+      "entities": [
+        {
+          "length": 15,
+          "offset": 0,
+          "type": "bot_command"
+        }
+      ],
+      "group_chat_created": false,
+      "supergroup_chat_created": false,
+      "text": "/processpayouts",
+      "chat": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "type": "private",
+        "username": "toheeb6538"
+      },
+      "date": 1746640368,
+      "message_id": 2384,
+      "from": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "is_bot": false,
+        "language_code": "en",
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "username": "toheeb6538"
+      }
+    },
+    "update_id": 223394601
+  }
+}

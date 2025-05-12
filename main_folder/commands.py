@@ -26,6 +26,7 @@ from upgrade import start_upgrade
 from referral import show_referral_page, start_with_referral
 from renewal import start_renewal
 from datetime import datetime
+import api
 
 logger = logging.getLogger(__name__)
 
@@ -96,63 +97,223 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🛑 Monitoring paused.\nYou're still tracking {len(users.USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
     
 
+
+# async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     user_id = update.effective_chat.id
+#     chat_id = str(user_id)
+
+#     if not context.args:
+#         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ... or /a <token_address1>, <token_address2>, ...")
+#         return
+
+#     if chat_id not in users.USER_TRACKING:
+#         users.USER_TRACKING[chat_id] = {}
+
+#     await tiers.enforce_token_limit(int(chat_id), bot=context.bot)
+
+#     user_chains = users.USER_TRACKING[chat_id]
+#     tier_limit = tiers.get_user_limit(chat_id)
+#     already_tracking = sum(len(tokens) for tokens in user_chains.values())
+#     available_slots = tier_limit - already_tracking
+
+#     addresses_raw = " ".join(context.args)
+#     addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
+
+#     if not addresses:
+#         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
+#         return
+
+#     status_message = await update.message.reply_text("🔍 Looking up token information...")
+
+#     tokens_added = []
+#     tokens_already_tracking = []
+#     tokens_failed = []
+#     tokens_dropped = []
+#     slots_used = 0
+
+#     for address in addresses:
+#         await status_message.edit_text(f"🔍 Looking up token information for {address}...")
+
+#         try:
+#             token_info = await asyncio.to_thread(api.get_token_chain_info, address)
+
+#             if not token_info or not token_info.get('chain_id'):
+#                 tokens_failed.append(address)
+#                 continue
+
+#             chain_id = token_info['chain_id']
+#             symbol = token_info.get('symbol', address[:6])
+
+#             if chain_id not in user_chains:
+#                 user_chains[chain_id] = []
+
+#             if address in user_chains[chain_id]:
+#                 tokens_already_tracking.append(f"{chain_id}:{address}")
+#                 continue
+
+#             if slots_used >= available_slots:
+#                 tokens_dropped.append(address)
+#                 continue
+
+#             user_chains[chain_id].append(address)
+
+#             if chain_id not in tokens.TRACKED_TOKENS:
+#                 tokens.TRACKED_TOKENS[chain_id] = []
+
+#             if address not in tokens.TRACKED_TOKENS[chain_id]:
+#                 tokens.TRACKED_TOKENS[chain_id].append(address)
+
+#             symbols.ADDRESS_TO_SYMBOL[address] = symbol
+
+#             tokens_added.append(f"{chain_id}:{address} ({symbol})")
+#             slots_used += 1
+
+#         except Exception as e:
+#             logger.error(f"Error adding token {address}: {str(e)}")
+#             tokens_failed.append(address)
+
+#     users.save_user_tracking()
+#     tokens.save_tracked_tokens()
+#     symbols.save_symbols_to_file()
+
+#     response_parts = []
+#     if tokens_added:
+#         response_parts.append(f"✅ Tracking {len(tokens_added)} new token(s):\n" + "\n".join(tokens_added))
+#     if tokens_already_tracking:
+#         response_parts.append(f"ℹ️ Already tracking {len(tokens_already_tracking)} token(s):\n" + "\n".join(tokens_already_tracking))
+#     if tokens_failed:
+#         response_parts.append(f"❌ Failed to add {len(tokens_failed)} token(s):\n" + "\n".join(tokens_failed))
+#     if tokens_dropped:
+#         response_parts.append(
+#             f"🚫 Limit Reached! You can only track {tier_limit} tokens.\n"
+#             f"The following were not added ({len(tokens_dropped)}):\n" + "\n".join(tokens_dropped)
+#         )
+
+#     await status_message.edit_text("\n\n".join(response_parts))
+
+#     if tokens_added and users.USER_STATUS.get(chat_id, False) is False:
+#         users.USER_STATUS[chat_id] = True
+#         user_chat = await context.bot.get_chat(user_id)
+#         user_name = user_chat.full_name or f"User {user_id}"
+
+#         logger.info(f"🤖 {user_name} auto-started monitoring.")
+#         await send_message(
+#             context.bot,
+#             f"🧹 {user_name} auto-started monitoring.",
+#             chat_id=BOT_INFO_LOGS_ID,
+#             super_admin=SUPER_ADMIN_ID
+#         )
+
+#         await start(update, context)
+
+# Updated display format for grouped token additions by chain
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
     chat_id = str(user_id)
-    
 
     if not context.args:
         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ... or /a <token_address1>, <token_address2>, ...")
         return
 
-    # Checking if user exists first
     if chat_id not in users.USER_TRACKING:
-        users.USER_TRACKING[chat_id] = []
+        users.USER_TRACKING[chat_id] = {}
 
-    # Getting user tokens and current tier to calculate limit 
-    # before adding new ones
-
-    # Get tier and enforce super admin status
     await tiers.enforce_token_limit(int(chat_id), bot=context.bot)
-    
-    current_tokens = users.USER_TRACKING[chat_id]
+
+    user_chains = users.USER_TRACKING[chat_id]
     tier_limit = tiers.get_user_limit(chat_id)
-    already_tracking = len(current_tokens)
+    already_tracking = sum(len(tokens) for tokens in user_chains.values())
     available_slots = tier_limit - already_tracking
 
-    # Comibining user input if they are comma-separated
     addresses_raw = " ".join(context.args)
     addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
 
     if not addresses:
         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
         return
-    
-    # Checking user tracking list to know new and already tracking tokens
-    already_present = [addr for addr in addresses if addr in current_tokens]
-    tokens_to_add = [addr for addr in addresses if addr not in current_tokens]
-    tokens_allowed = tokens_to_add[:available_slots]
-    tokens_dropped = tokens_to_add[available_slots:]
 
+    status_message = await update.message.reply_text("🔍 Looking up token information...")
 
-    for address in tokens_allowed:
-        users.USER_TRACKING[chat_id].append(address)
-        if address not in tokens.TRACKED_TOKENS:
-            tokens.TRACKED_TOKENS.append(address)
-    
+    tokens_added = {}
+    tokens_already_tracking = []
+    tokens_failed = []
+    tokens_dropped = []
+    slots_used = 0
+
+    for address in addresses:
+        await status_message.edit_text(f"🔍 Looking up token information for {address}...")
+
+        try:
+            token_info = await asyncio.to_thread(api.get_token_chain_info, address)
+
+            if not token_info or not token_info.get('chain_id'):
+                tokens_failed.append(address)
+                continue
+
+            chain_id = token_info['chain_id']
+            symbol = token_info.get('symbol', address[:6])
+
+            if chain_id not in user_chains:
+                user_chains[chain_id] = []
+
+            if address in user_chains[chain_id]:
+                tokens_already_tracking.append(f"{chain_id}:{address}")
+                continue
+
+            if slots_used >= available_slots:
+                tokens_dropped.append(address)
+                continue
+
+            user_chains[chain_id].append(address)
+
+            if chain_id not in tokens.TRACKED_TOKENS:
+                tokens.TRACKED_TOKENS[chain_id] = []
+
+            if address not in tokens.TRACKED_TOKENS[chain_id]:
+                tokens.TRACKED_TOKENS[chain_id].append(address)
+
+            symbols.ADDRESS_TO_SYMBOL[address] = symbol
+
+            if chain_id not in tokens_added:
+                tokens_added[chain_id] = []
+            tokens_added[chain_id].append((address, symbol))
+
+            slots_used += 1
+
+        except Exception as e:
+            logger.error(f"Error adding token {address}: {str(e)}")
+            tokens_failed.append(address)
+
     users.save_user_tracking()
     tokens.save_tracked_tokens()
-    
+    symbols.save_symbols_to_file()
 
-    # Auto-start the user if they haven't started yet
-    if users.USER_STATUS.get(chat_id, False) is False:
-        users.USER_STATUS[chat_id] = True  # Mark as started
-        
-        # Getting user info
+    response_parts = []
+    if tokens_added:
+        total = sum(len(lst) for lst in tokens_added.values())
+        response_parts.append(f"✅ Tracking {total} new token(s):")
+        for chain_id, token_list in tokens_added.items():
+            response_parts.append(f"\n🌐 {chain_id.upper()}")
+            for addr, sym in token_list:
+                response_parts.append(f"- {addr} ({sym})")
+
+    if tokens_already_tracking:
+        response_parts.append(f"\nℹ️ Already tracking {len(tokens_already_tracking)} token(s):\n" + "\n".join(tokens_already_tracking))
+    if tokens_failed:
+        response_parts.append(f"\n❌ Failed to add {len(tokens_failed)} token(s):\n" + "\n".join(tokens_failed))
+    if tokens_dropped:
+        response_parts.append(
+            f"\n🚫 Limit Reached! You can only track {tier_limit} tokens.\n"
+            f"The following were not added ({len(tokens_dropped)}):\n" + "\n".join(tokens_dropped)
+        )
+
+    await status_message.edit_text("\n".join(response_parts))
+
+    if tokens_added and users.USER_STATUS.get(chat_id, False) is False:
+        users.USER_STATUS[chat_id] = True
         user_chat = await context.bot.get_chat(user_id)
         user_name = user_chat.full_name or f"User {user_id}"
 
-        # Log and notify the super admin
         logger.info(f"🤖 {user_name} auto-started monitoring.")
         await send_message(
             context.bot,
@@ -161,22 +322,10 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
             super_admin=SUPER_ADMIN_ID
         )
 
-        # Trigger the /start functionality for the user
-        await start(update, context)  # Directly call the /start function logic
+        await start(update, context)
 
 
-    if tokens_allowed:
-        await update.message.reply_text(f"✅ Tracking token(s):\n" + "\n".join(tokens_allowed))
-    
-    if already_present:
-        await update.message.reply_text(f"ℹ️ Already tracking:\n" + "\n".join(already_present))
-
-    if tokens_dropped:
-        await update.message.reply_text(
-            f"🚫 Limit Reached! You can only track {tier_limit} tokens.\n"
-            f"The following were not added:\n" + "\n".join(tokens_dropped)
-        )
-
+# Updated `remove` command for new USER_TRACKING structure
 async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
     chat_id = str(user_id)
@@ -185,7 +334,6 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Usage: /remove <token_address1>, <token_address2>, ... or /rm <token_address1>, <token_address2>, ...")
         return
 
-    # Processing user token input if they are multiple and comma-separated
     addresses_raw = " ".join(context.args)
     addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
 
@@ -197,26 +345,42 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("ℹ️ You're not tracking any tokens.")
         return
 
+    user_chains = users.USER_TRACKING[chat_id]
     removed = []
     not_found = []
     tokens_removed = []
 
     for address in addresses:
-        if address in users.USER_TRACKING[chat_id]:
-            users.USER_TRACKING[chat_id].remove(address)
-            removed.append(address)
-        else:
+        found = False
+        for chain_id, addr_list in user_chains.items():
+            if address in addr_list:
+                addr_list.remove(address)
+                removed.append(address)
+                found = True
+                break
+        if not found:
             not_found.append(address)
 
+    # Clean up empty chain entries
+    users.USER_TRACKING[chat_id] = {
+        k: v for k, v in user_chains.items() if v
+    }
+
     # Clean up global tracked list
-    for token in removed:
-        if not any(token in tokens_list for tokens_list in users.USER_TRACKING.values()):
-            if token in tokens.TRACKED_TOKENS:
-                tokens.TRACKED_TOKENS.remove(token)
-                tokens_removed.append(token)
-                symbols.ADDRESS_TO_SYMBOL.pop(token, None)
-                history.TOKEN_DATA_HISTORY.pop(token, None)
-                history.LAST_SAVED_HASHES.pop(token, None)
+    for address in removed:
+        still_used = any(
+            address in chain_list
+            for user_tokens in users.USER_TRACKING.values()
+            for chain_list in user_tokens.values()
+        )
+        if not still_used:
+            for chain_id, addr_list in tokens.TRACKED_TOKENS.items():
+                if address in addr_list:
+                    addr_list.remove(address)
+                    tokens_removed.append(address)
+            symbols.ADDRESS_TO_SYMBOL.pop(address, None)
+            history.TOKEN_DATA_HISTORY.pop(address, None)
+            history.LAST_SAVED_HASHES.pop(address, None)
 
     users.save_user_tracking()
     tokens.save_tracked_tokens()
@@ -235,15 +399,13 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat_id=BOT_INFO_LOGS_ID,
             super_admin=SUPER_ADMIN_ID
         )
-    
-    # If user no longer tracks any tokens, clean up their entry
+
     if not users.USER_TRACKING.get(chat_id):
         users.USER_TRACKING.pop(chat_id, None)
         users.USER_STATUS.pop(chat_id, None)
         users.save_user_tracking()
         users.save_user_status()
 
-        # Getting user info
         user_chat = await context.bot.get_chat(user_id)
         user_name = user_chat.full_name or f"User {user_id}"
 
@@ -256,9 +418,13 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
+# Updated `list_tokens` to support new USER_TRACKING structure
 async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = str(update.effective_chat.id)
-    user_tokens = users.USER_TRACKING.get(chat_id, [])
+    user_chains = users.USER_TRACKING.get(chat_id, {})
+
+    # Flatten all tracked tokens across chains
+    user_tokens = [addr for chain_tokens in user_chains.values() for addr in chain_tokens]
 
     if not user_tokens:
         await update.message.reply_text("📭 You're not tracking any tokens.")
@@ -288,6 +454,7 @@ async def list_tokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['page_size'] = PAGE_SIZE
     context.user_data['page'] = 0
     await show_token_dashboard(update, context)
+
 
 async def show_token_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tokens_list = context.user_data.get('tokens_list', [])
@@ -421,24 +588,23 @@ async def callback_reset_confirmation(update: Update, context: ContextTypes.DEFA
 
         #await query.edit_message_text("❌ Reset canceled.")
 
+# Updated `perform_reset` for chain-aware USER_TRACKING structure
 async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
     chat_id = str(user_id)
 
-    # Step 1: Deactivate user if they were active
     if users.USER_STATUS.get(chat_id):
         users.USER_STATUS[chat_id] = False
         users.save_user_status()
         logger.info(f"🔴 Deactivated monitoring for user {chat_id}")
 
+    user_chains = users.USER_TRACKING.get(chat_id, {})
     tokens_removed = []
-    user_tokens = users.USER_TRACKING.get(chat_id, [])
 
-    # removing chat id of users who invoked /reset command but saved users tokens
+    # Remove user entry
     if chat_id in users.USER_TRACKING:
         users.USER_TRACKING.pop(chat_id, None)
 
-        # Getting user info
         user_chat = await context.bot.get_chat(user_id)
         user_name = user_chat.full_name or f"User {user_id}"
 
@@ -450,12 +616,19 @@ async def perform_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
             super_admin=SUPER_ADMIN_ID
         )
 
-    # Clean tracked tokens that are no longer used
-    for token in user_tokens:
-        if not any(token in tokens_list for tokens_list in users.USER_TRACKING.values()):
-            if token in tokens.TRACKED_TOKENS:
-                tokens.TRACKED_TOKENS.remove(token)
-                tokens_removed.append(token)
+    # Clean up unreferenced tokens
+    for chain_tokens in user_chains.values():
+        for token in chain_tokens:
+            still_used = any(
+                token in chain_list
+                for user_tokens in users.USER_TRACKING.values()
+                for chain_list in user_tokens.values()
+            )
+            if not still_used:
+                for chain_id, addr_list in tokens.TRACKED_TOKENS.items():
+                    if token in addr_list:
+                        addr_list.remove(token)
+                        tokens_removed.append(token)
                 symbols.ADDRESS_TO_SYMBOL.pop(token, None)
                 history.TOKEN_DATA_HISTORY.pop(token, None)
                 history.LAST_SAVED_HASHES.pop(token, None)
@@ -515,9 +688,15 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg_lines += [
             "\n*👑 Super Admin Commands:*",
             "/addadmin or /aa — Add a new admin",
-            "/removeadmin or /ra — Remove an admin",
+            "/removeadmin or /ra — Remove an admin\n",
             "/listadmins or /la — List all admins",
+            "/listwallet or /lw — List all wallets\n",
+            "/addwallet or /aw — Add regular wallets",
+            "/removewallet or /rw — Remove regular wallets\n",
+            "/addpayout or /ap — Add payout wallets",
+            "/removepayout or /rp — Remove payout wallets",
         ]
+
 
     msg_txt = "\n".join(msg_lines)
 
@@ -539,12 +718,18 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     
-
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
     chat_id = str(user_id)
-    user_tokens = users.USER_TRACKING.get(chat_id, [])
-    all_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
+    user_chains = users.USER_TRACKING.get(chat_id, {})
+    user_tokens = [addr for chain_tokens in user_chains.values() for addr in chain_tokens]
+
+    all_tokens = set(
+        addr
+        for user_data in users.USER_TRACKING.values()
+        for chain_tokens in user_data.values()
+        for addr in chain_tokens
+    )
 
     spike_count = 0
     for addr in all_tokens:
@@ -560,7 +745,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     is_active = users.USER_STATUS.get(chat_id, False)
     monitor_state = "✅ Monitoring: Active" if is_active else "🔴 Monitoring: Inactive"
-    
+
     user_threshold = thresholds.USER_THRESHOLDS.get(chat_id, 5.0)
     user_tier = tiers.get_user_tier(int(chat_id))
     user_limit = tiers.get_user_limit(int(chat_id))
@@ -569,23 +754,22 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"📊 *Bot Status*\n\n"
         f"{monitor_state}\n\n"
         f"🎯 Tier: {user_tier.capitalize()} ({user_limit} token limit)\n"
-         f"🔔 Alert threshold: {user_threshold}%\n\n"
+        f"🔔 Alert threshold: {user_threshold}%\n\n"
         f"👤 You are tracking {len(user_tokens)} token(s).\n"
         f"🌐 Total unique tokens tracked: {len(all_tokens)}\n\n"
         f"💥 Active spikes (≥15%): {spike_count}\n"
         f"🕓 Last update: {last_update if last_update else 'N/A'}"
     )
 
-    # Check if we came from dashboard and need to add back button
     if context.user_data.get('from_dashboard', False):
         keyboard = InlineKeyboardMarkup([[
             InlineKeyboardButton("🏠 Back to Dashboard", callback_data="go_to_dashboard")
         ]])
         await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=keyboard)
-        # Reset the flag
         context.user_data['from_dashboard'] = False
     else:
         await update.message.reply_text(msg, parse_mode="Markdown")
+
     
     #await update.message.reply_text(msg, parse_mode="Markdown")
 
@@ -602,7 +786,12 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @restricted_to_admin
 async def alltokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    all_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
+    all_tokens = set(
+        addr
+        for user_chains in users.USER_TRACKING.values()
+        for chain_tokens in user_chains.values()
+        for addr in chain_tokens
+    )
 
     if not all_tokens:
         await update.message.reply_text("📭 No tokens are being tracked by any user.")
@@ -632,6 +821,7 @@ async def alltokens(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['page_size'] = PAGE_SIZE_ALL
     context.user_data['page'] = 0
     await show_token_dashboard(update, context)
+
 
 async def threshold(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -667,8 +857,16 @@ async def launch(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
     chat_id = str(user_id)
 
-    user_tokens = users.USER_TRACKING.get(chat_id, [])
-    all_tokens = set(addr for tokens_list in users.USER_TRACKING.values() for addr in tokens_list)
+    user_chains = users.USER_TRACKING.get(chat_id, {})
+    user_tokens = [addr for chain_tokens in user_chains.values() for addr in chain_tokens]
+
+    all_tokens = set(
+        addr
+        for user_data in users.USER_TRACKING.values()
+        for chain_tokens in user_data.values()
+        for addr in chain_tokens
+    )
+    
     spike_count = 0
 
     for addr in all_tokens:

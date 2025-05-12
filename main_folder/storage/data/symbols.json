@@ -32,10 +32,10 @@
   "4hqSrQy7rY9RFWakUsn1bZDzxENKy6ZuUFd5o6UJpump": "MURK",
   "HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK": "MYKU",
   "38PgzpJYu2HkiYvV8qePFakB8tuobPdGm2FFEn7Dpump": "gork",
-  "Ds1K683crskEEqyvpnwpYU1nF3qxjn1QmanRn52Zpump": "THOT",
   "E6mHNjbkNiFsNXJqeU2T46aFSUJPbDoNufZWsmAgpump": "lolcat",
   "F5VrsFPsB6xFYmzip4AH3s41ySzL8AV7qhWmbCNpump": "TOPHAT",
   "tdVDVTL6n6DP7w16ch7dS8Z4wVRcrK9FNJC47vSpump": "CUM",
+<<<<<<< HEAD
   "5TkdXzqos8NYQbNPQR7dyXcMsvGEwUvSbnb3voGtpump": "schnoz",
   "9wK8yN6iz1ie5kEJkvZCTxyN1x5sTdNfx8yeMY8Ebonk": "Hosico",
   "C3DwDjT17gDvvCYC2nsdGHxDHVmQRdhKfpAdqQ29pump": "RFC",
@@ -44,4 +44,12 @@
   "8GiNGBm7rRr82CKXZSEd6xnBiULAypKWbeQdHZKpump": "STRAWBERRY",
   "Ai3eKAWjzKMV8wRwd41nVP83yqfbAVJykhvJVPxspump": "moonpig",
   "GWsmnVgPUoY5z9sNj5phRZbFWEY8M8WAjGZEvhCwbonk": "GOD"
+=======
+  "0x12B4356C65340Fb02cdff01293F95FEBb1512F3b": "Broccoli",
+  "0xa89b8A1fd3F72F3e85b9791F3E7ff42bD2D4E669": "RUSTY",
+  "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL": "HAEDAL",
+  "Ds1K683crskEEqyvpnwpYU1nF3qxjn1QmanRn52Zpump": "THOT",
+  "0x274b2d24daa95e8b90f7779902688627909e4444": "Doubao",
+  "0xf816507E690f5Aa4E29d164885EB5fa7a5627860": "RATO"
+>>>>>>> c423f2b (added support for multiple chains)
 }
