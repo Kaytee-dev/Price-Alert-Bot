@@ -97,115 +97,6 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"🛑 Monitoring paused.\nYou're still tracking {len(users.USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
     
 
-
-# async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     user_id = update.effective_chat.id
-#     chat_id = str(user_id)
-
-#     if not context.args:
-#         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ... or /a <token_address1>, <token_address2>, ...")
-#         return
-
-#     if chat_id not in users.USER_TRACKING:
-#         users.USER_TRACKING[chat_id] = {}
-
-#     await tiers.enforce_token_limit(int(chat_id), bot=context.bot)
-
-#     user_chains = users.USER_TRACKING[chat_id]
-#     tier_limit = tiers.get_user_limit(chat_id)
-#     already_tracking = sum(len(tokens) for tokens in user_chains.values())
-#     available_slots = tier_limit - already_tracking
-
-#     addresses_raw = " ".join(context.args)
-#     addresses = [addr.strip() for addr in addresses_raw.split(",") if addr.strip()]
-
-#     if not addresses:
-#         await update.message.reply_text("Usage: /add <token_address1>, <token_address2>, ...")
-#         return
-
-#     status_message = await update.message.reply_text("🔍 Looking up token information...")
-
-#     tokens_added = []
-#     tokens_already_tracking = []
-#     tokens_failed = []
-#     tokens_dropped = []
-#     slots_used = 0
-
-#     for address in addresses:
-#         await status_message.edit_text(f"🔍 Looking up token information for {address}...")
-
-#         try:
-#             token_info = await asyncio.to_thread(api.get_token_chain_info, address)
-
-#             if not token_info or not token_info.get('chain_id'):
-#                 tokens_failed.append(address)
-#                 continue
-
-#             chain_id = token_info['chain_id']
-#             symbol = token_info.get('symbol', address[:6])
-
-#             if chain_id not in user_chains:
-#                 user_chains[chain_id] = []
-
-#             if address in user_chains[chain_id]:
-#                 tokens_already_tracking.append(f"{chain_id}:{address}")
-#                 continue
-
-#             if slots_used >= available_slots:
-#                 tokens_dropped.append(address)
-#                 continue
-
-#             user_chains[chain_id].append(address)
-
-#             if chain_id not in tokens.TRACKED_TOKENS:
-#                 tokens.TRACKED_TOKENS[chain_id] = []
-
-#             if address not in tokens.TRACKED_TOKENS[chain_id]:
-#                 tokens.TRACKED_TOKENS[chain_id].append(address)
-
-#             symbols.ADDRESS_TO_SYMBOL[address] = symbol
-
-#             tokens_added.append(f"{chain_id}:{address} ({symbol})")
-#             slots_used += 1
-
-#         except Exception as e:
-#             logger.error(f"Error adding token {address}: {str(e)}")
-#             tokens_failed.append(address)
-
-#     users.save_user_tracking()
-#     tokens.save_tracked_tokens()
-#     symbols.save_symbols_to_file()
-
-#     response_parts = []
-#     if tokens_added:
-#         response_parts.append(f"✅ Tracking {len(tokens_added)} new token(s):\n" + "\n".join(tokens_added))
-#     if tokens_already_tracking:
-#         response_parts.append(f"ℹ️ Already tracking {len(tokens_already_tracking)} token(s):\n" + "\n".join(tokens_already_tracking))
-#     if tokens_failed:
-#         response_parts.append(f"❌ Failed to add {len(tokens_failed)} token(s):\n" + "\n".join(tokens_failed))
-#     if tokens_dropped:
-#         response_parts.append(
-#             f"🚫 Limit Reached! You can only track {tier_limit} tokens.\n"
-#             f"The following were not added ({len(tokens_dropped)}):\n" + "\n".join(tokens_dropped)
-#         )
-
-#     await status_message.edit_text("\n\n".join(response_parts))
-
-#     if tokens_added and users.USER_STATUS.get(chat_id, False) is False:
-#         users.USER_STATUS[chat_id] = True
-#         user_chat = await context.bot.get_chat(user_id)
-#         user_name = user_chat.full_name or f"User {user_id}"
-
-#         logger.info(f"🤖 {user_name} auto-started monitoring.")
-#         await send_message(
-#             context.bot,
-#             f"🧹 {user_name} auto-started monitoring.",
-#             chat_id=BOT_INFO_LOGS_ID,
-#             super_admin=SUPER_ADMIN_ID
-#         )
-
-#         await start(update, context)
-
 # Updated display format for grouped token additions by chain
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_chat.id
@@ -244,7 +135,8 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await status_message.edit_text(f"🔍 Looking up token information for {address}...")
 
         try:
-            token_info = await asyncio.to_thread(api.get_token_chain_info, address)
+            #token_info = await asyncio.to_thread(api.get_token_chain_info, address)
+            token_info = await api.get_token_chain_info(address)
 
             if not token_info or not token_info.get('chain_id'):
                 tokens_failed.append(address)

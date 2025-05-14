@@ -18,7 +18,8 @@ async def complete_verified_upgrade(user_id: int, payment: dict, context: Contex
     wallet_address = payment.get("payment_wallet")
     usdc_amount = float(payment.get("amount_in_usdc", 0))
     sol_amount = float(payment.get("amount_in_sol", 0))
-    reference = payment.get("payment_reference") or "-"
+    #reference = payment.get("payment_reference") or "-"
+    reference = context.user_data.get("manual_payment_id") or "-" # Getting reference from the payment id input
 
     # Only update tier if different
     current_tier = tiers.USER_TIERS.get(user_id)

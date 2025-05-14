@@ -4,7 +4,7 @@ from datetime import datetime
 from util.utils import load_json, save_json, send_message
 from storage import users
 
-from config import NOTIFY_DATA_FILE, BASE_URL
+from config import NOTIFY_DATA_FILE, DEXSCREENER_BASE
 
 
 USER_NOTIFY_DATA = {}
@@ -20,9 +20,11 @@ def save_notify_data():
 
 
 async def build_normal_spike_message(cleaned_data, address, timestamp):
-    link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
+    base_url = f"{DEXSCREENER_BASE}{cleaned_data['chain_id']}/"
+    link = f"[{cleaned_data['symbol']}]({base_url}{address})"
     message = (
-        f"📢 {link} is spiking!\n\n"
+        f"📢 {link} is spiking!\n"
+        f"🪙 `{cleaned_data['address']}`\n\n"
         f"💰 Market Cap: ${cleaned_data['marketCap']:,.0f}\n\n"
         f"💹 5m Change: {cleaned_data['priceChange_m5']}%\n"
         f"📈 5m Volume: ${cleaned_data['volume_m5']:,.2f}\n\n"
@@ -32,9 +34,11 @@ async def build_normal_spike_message(cleaned_data, address, timestamp):
 
 
 async def build_first_spike_message(cleaned_data, address, timestamp):
-    link = f"[{cleaned_data['symbol']}]({BASE_URL}{address})"
+    base_url = f"{DEXSCREENER_BASE}{cleaned_data['chain_id']}/"
+    link = f"[{cleaned_data['symbol']}]({base_url}{address})"
     message = (
-        f"📢 {link} is spiking!\n\n"
+        f"📢 {link} is spiking!\n"
+        f"🪙 `{cleaned_data['address']}`\n\n"
         f"💰 Market Cap: ${cleaned_data['marketCap']:,.0f}\n\n"
         f"💹 5m Change: {cleaned_data['priceChange_m5']}%\n"
         f"📈 5m Volume: ${cleaned_data['volume_m5']:,.2f}\n"

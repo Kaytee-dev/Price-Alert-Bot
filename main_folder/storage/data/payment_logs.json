@@ -79,6 +79,27 @@
       "start_time": "2025-04-30T08:34:25.765929",
       "tx_sig": null,
       "logged_at": "2025-04-30T08:34:25.766003"
+    },
+    "z5Ow97VqoCU": {
+      "tier": "disciple",
+      "duration_months": "1",
+      "payment_wallet": "GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4",
+      "amount_in_usdc": 5,
+      "amount_in_sol": 0.03,
+      "start_time": "2025-05-13T07:59:55.778925",
+      "tx_sig": "646ZYu15YVHFsCpMfndpXM8FNqg9by8Dn8x3EEUssyLvgh6JUHEVmMBLo1Dx4YrjpGeAyyBDEgUY8iWbxZEdRfK3",
+      "logged_at": "2025-05-13T08:01:31.524493"
+    },
+    "Bobm1pxNTAE": {
+      "action": "renewal",
+      "tier": "disciple",
+      "duration_months": "1",
+      "payment_wallet": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
+      "amount_in_sol": 0.03,
+      "amount_in_usd": 5,
+      "start_time": "2025-05-13T22:13:47.676066",
+      "tx_sig": "aghasdhfqeprjfhinva dvuhadofghopgj;fgf",
+      "logged_at": "2025-05-13T22:16:36.531228"
     }
   },
   "6015881080": {

@@ -31,7 +31,7 @@ import os
 import requests
 
 # Manual upgrade conversation states
-MANUAL_USER_ID, MANUAL_PAYMENT_ID = range(2)
+MANUAL_USER_ID, MANUAL_TX_SIG, MANUAL_PAYMENT_ID = range(3)
 
 # User payment log query conversation states 
 ASK_USER_ID, ASK_PAYMENT_ID = range(2)
@@ -351,6 +351,12 @@ async def manualupgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def manual_receive_user_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["manual_user_id"] = update.message.text.strip()
+    await update.message.reply_text("🧾 Please enter the transaction signature:")
+    return MANUAL_TX_SIG
+
+
+async def manual_receive_tx_sig(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["manual_tx_sig"] = update.message.text.strip()
     await update.message.reply_text("📎 Now enter the Payment Reference ID:")
     return MANUAL_PAYMENT_ID
 
@@ -360,20 +366,30 @@ async def manual_receive_payment_id(update: Update, context: ContextTypes.DEFAUL
     user_id = context.user_data.get("manual_user_id")
     logs = payment_logs.PAYMENT_LOGS.get(str(user_id), {})
     payment = logs.get(payment_id)
+    context.user_data["manual_payment_id"] = payment_id # Saving payment refernce to user data
+
+
 
     if not payment: 
         await update.message.reply_text("❌ Payment entry not found for the given user and reference.")
         return ConversationHandler.END
+
+    tx_sig = context.user_data.get("manual_tx_sig")
+    if tx_sig:
+        payment["tx_sig"] = tx_sig
 
     await manual_upgrade.complete_verified_upgrade(int(user_id), payment, context)
     await update.message.reply_text("✅ Manual upgrade completed and payment forwarded.")
     return ConversationHandler.END
 
 manual_upgrade_conv = ConversationHandler(
-    entry_points=[CommandHandler("manualupgrade", manualupgrade),
-                  CommandHandler("mu", manualupgrade)],
+    entry_points=[
+        CommandHandler("manualupgrade", manualupgrade),
+        CommandHandler("mu", manualupgrade)
+    ],
     states={
         MANUAL_USER_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, manual_receive_user_id)],
+        MANUAL_TX_SIG: [MessageHandler(filters.TEXT & ~filters.COMMAND, manual_receive_tx_sig)],
         MANUAL_PAYMENT_ID: [MessageHandler(filters.TEXT & ~filters.COMMAND, manual_receive_payment_id)],
     },
     fallbacks=[],

@@ -48,9 +48,9 @@ def chunked(iterable, size):
 #             except Exception as super_err:
 #                 logging.error(f"❌ Also failed to notify SUPER_ADMIN {super_admin}: {super_err}")
 
-async def send_message(bot, text: str, chat_id, parse_mode="Markdown", admins=None, super_admin=None):
+async def send_message(bot, text: str, chat_id, parse_mode="Markdown", admins=None, super_admin=None, disable_web_page_preview=False):
     try:
-        await bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
+        await bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode, disable_web_page_preview=disable_web_page_preview)
     except Exception as e:
         logging.error(f"❌ Failed to send message to {chat_id}: {e}")
         if admins:
