@@ -1,0 +1,40 @@
+{
+  "error_id": "error_20250508_221955",
+  "timestamp": "2025-05-08T22:19:55.338936",
+  "error_message": "Button_data_invalid",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_application.py\", line 1264, in process_update\n    await coroutine\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\basehandler.py\", line 157, in handle_update\n    return await self.callback(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\admin.py\", line 68, in wrapper\n    return await func(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\admin.py\", line 639, in removewallet\n    await confirm_action(\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder\\util\\utils.py\", line 187, in confirm_action\n    await update.message.reply_text(\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_message.py\", line 1809, in reply_text\n    return await self.get_bot().send_message(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_extbot.py\", line 2820, in send_message\n    return await super().send_message(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 542, in decorator\n    result = await func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 1018, in send_message\n    return await self._send_message(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_extbot.py\", line 581, in _send_message\n    result = await super()._send_message(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 736, in _send_message\n    result = await self._post(\n             ^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 630, in _post\n    return await self._do_post(\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_extbot.py\", line 347, in _do_post\n    return await super()._do_post(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 658, in _do_post\n    return await request.post(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\request\\_baserequest.py\", line 200, in post\n    result = await self._request_wrapper(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\request\\_baserequest.py\", line 379, in _request_wrapper\n    raise BadRequest(message)\ntelegram.error.BadRequest: Button_data_invalid\n",
+  "update": {
+    "message": {
+      "channel_chat_created": false,
+      "delete_chat_photo": false,
+      "entities": [
+        {
+          "length": 3,
+          "offset": 0,
+          "type": "bot_command"
+        }
+      ],
+      "group_chat_created": false,
+      "supergroup_chat_created": false,
+      "text": "/rw EEy1A55p5bUs9yCRhmXstVki5SetLzhC9XFTGHzDePyD",
+      "chat": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "type": "private",
+        "username": "toheeb6538"
+      },
+      "date": 1746739195,
+      "message_id": 2470,
+      "from": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "is_bot": false,
+        "language_code": "en",
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "username": "toheeb6538"
+      }
+    },
+    "update_id": 223394724
+  }
+}
