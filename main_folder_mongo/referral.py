@@ -1,7 +1,7 @@
 import logging
-from config import REFERRALS_FILE, BOT_NAME, REFERRAL_PERCENTAGE
-from util.utils import load_json, save_json, build_custom_update_from_query, send_message
-from typing import Dict, List, Optional
+from config import BOT_NAME, REFERRAL_PERCENTAGE
+from util.utils import build_custom_update_from_query, send_message
+from typing import Dict
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
@@ -10,6 +10,7 @@ from telegram.ext import (
 )
 
 from telegram.constants import ChatAction
+import storage.user_collection as user_collection
 
 import asyncio
 
@@ -18,64 +19,54 @@ logger = logging.getLogger(__name__)
 # States for the wallet address conversation
 ENTERING_WALLET = 1
 
-# Global dictionary to store referral data in-memory
-REFERRAL_DATA = {}  # {user_id: {referred_users: [], total_commission: 0.0, ...}}
-
-def load_referral_data():
-    global REFERRAL_DATA
-    REFERRAL_DATA = load_json(REFERRALS_FILE, {}, "referral data")
-
-def save_referral_data():
-    save_json(REFERRALS_FILE, REFERRAL_DATA, "referral data")
 
 def get_user_referral_data(user_id: int) -> Dict:
     user_id_str = str(user_id)
-    if user_id_str not in REFERRAL_DATA:
-        REFERRAL_DATA[user_id_str] = {
+    user_doc = user_collection.USER_COLLECTION.setdefault(user_id_str, {})
+    if "referral" not in user_doc:
+        user_doc["referral"] = {
             "referred_users": [],
             "total_commission": 0.0,
             "total_paid": 0.0,
             "wallet_address": "",
-            "successful_referrals": 0  # Count of referrals who upgraded for 6+ months
+            "successful_referrals": 0,
+            "total_referred": 0
         }
-        save_referral_data()
-    return REFERRAL_DATA[user_id_str]
+    return user_doc["referral"]
 
-def register_referral(referrer_id: int, referred_id: int) -> bool:
+
+async def register_referral(referrer_id: int, referred_id: int) -> bool:
     referrer_id_str = str(referrer_id)
     referred_id_str = str(referred_id)
-    
-    # Initialize referrer data if not exists
-    if referrer_id_str not in REFERRAL_DATA:
-        REFERRAL_DATA[referrer_id_str] = {
-            "referred_users": [],
-            "total_commission": 0.0,
-            "total_paid": 0.0,
-            "wallet_address": "",
-            "successful_referrals": 0
-        }
-    
-    # Add referred user if not already referred
-    if referred_id_str not in REFERRAL_DATA[referrer_id_str]["referred_users"]:
-        REFERRAL_DATA[referrer_id_str]["referred_users"].append(referred_id_str)
-        save_referral_data()
+
+    referral_data = get_user_referral_data(referrer_id)
+    if referred_id_str not in referral_data["referred_users"]:
+        referral_data["referred_users"].append(referred_id_str)
+        referral_data.setdefault("total_referred", 0)
+        referral_data["total_referred"] += 1
+
+        await user_collection.update_user_fields(referrer_id_str, {
+            "referral.referred_users": referral_data["referred_users"],
+            "referral.total_referred": referral_data["total_referred"]
+        })
         return True
     return False
 
-def handle_successful_referral_upgrade(referrer_id: int, upgrade_fee: float) -> float:
+
+async def handle_successful_referral_upgrade(referrer_id: int, upgrade_fee: float) -> float:
     referrer_id_str = str(referrer_id)
+    referral_data = get_user_referral_data(referrer_id)
     
-    if referrer_id_str in REFERRAL_DATA:
-        # Calculate 5% commission
-        commission = upgrade_fee * REFERRAL_PERCENTAGE
-        
-        # Update referrer's data
-        REFERRAL_DATA[referrer_id_str]["total_commission"] += commission
-        REFERRAL_DATA[referrer_id_str]["successful_referrals"] += 1
-        save_referral_data()
-        
-        return commission
-    return 0
+    commission = upgrade_fee * REFERRAL_PERCENTAGE
+
+    referral_data["total_commission"] += commission
+    referral_data["successful_referrals"] += 1
+
+    await user_collection.update_user_fields(referrer_id_str, {
+        "referral.total_commission": referral_data["total_commission"],
+        "referral.successful_referrals": referral_data["successful_referrals"]
+    })
+    return commission
 
 # Main referral page handler
 async def show_referral_page(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -97,8 +88,7 @@ async def show_referral_page(update: Update, context: ContextTypes.DEFAULT_TYPE)
     unpaid_commission = user_data["total_commission"] - user_data["total_paid"]
     
     # Calculate total referred users (historical) - this is successful_referrals + current pending referrals
-    total_historical_referrals = user_data["successful_referrals"] + len(user_data["referred_users"])
-
+    total_historical_referrals = user_data["total_referred"]
     referral_page_para_1 = (
         "💰 Invite your friends and get a 5% referral commision when they upgrade their " 
         "tier to any package with a minimum of 6 months duration. There is no maximum "
@@ -190,6 +180,7 @@ async def prompt_for_wallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Handle wallet address input
 async def save_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
+    user_id_str = str(user_id)
     wallet_address = update.message.text.strip()
     
     # Basic validation (can be enhanced for specific wallet types)
@@ -199,10 +190,14 @@ async def save_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE
         )
         return ENTERING_WALLET
     
-    # Save the wallet address
-    user_id_str = str(user_id)
-    REFERRAL_DATA[user_id_str]["wallet_address"] = wallet_address
-    save_referral_data()
+    # Update in-memory cache
+    referral_data = user_collection.USER_COLLECTION.setdefault(user_id_str, {}).setdefault("referral", {})
+    referral_data["wallet_address"] = wallet_address
+
+    # Update DB
+    await user_collection.update_user_fields(user_id_str, {
+        "referral.wallet_address": wallet_address
+    })
     
     await update.message.reply_text(
         "✅ Your wallet address has been saved successfully!"
@@ -211,7 +206,6 @@ async def save_wallet_address(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     # 📝 Show 'typing...' animation
     await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-
     await asyncio.sleep(2)  # wait 2 seconds
     
     # Return to referral dashboard
@@ -271,7 +265,7 @@ async def start_with_referral(update: Update, context: ContextTypes.DEFAULT_TYPE
             # Don't allow self-referrals
             if referrer_id != user_id:
                 # Register the referral
-                success = register_referral(referrer_id, user_id)
+                success = await register_referral(referrer_id, user_id)
                 
                 if success:
                     context.user_data["referred_by"] = referrer_id
@@ -305,29 +299,34 @@ async def start_with_referral(update: Update, context: ContextTypes.DEFAULT_TYPE
     
 
 # Function to integrate with your existing upgrade completion
-def on_upgrade_completed(user_id: int, upgrade_fee: float, duration_months: int) -> tuple:
-    # Find which user referred this user
+async def on_upgrade_completed(user_id: int, upgrade_fee: float, duration_months: int) -> tuple:
     referred_by = None
     user_id_str = str(user_id)
     
-    for potential_referrer_id, data in REFERRAL_DATA.items():
-        if user_id_str in data["referred_users"]:
+    for potential_referrer_id, doc in user_collection.USER_COLLECTION.items():
+        referral_info = doc.get("referral", {})
+        referred_users = referral_info.get("referred_users", [])
+        if user_id_str in referred_users:
             referred_by = int(potential_referrer_id)
             break
-    
-    if referred_by and duration_months >= 6:
-        # Process commission for the referrer
-        commission = handle_successful_referral_upgrade(referred_by, upgrade_fee)
 
-        # Remove referred user from referrer's list to prevent future commissions
+    if referred_by and duration_months >= 6:
+        commission = await handle_successful_referral_upgrade(referred_by, upgrade_fee)
+
         referred_by_str = str(referred_by)
-        if user_id_str in REFERRAL_DATA[referred_by_str]["referred_users"]:
-            REFERRAL_DATA[referred_by_str]["referred_users"].remove(user_id_str)
-        
-        save_referral_data()
+        referral_info = user_collection.USER_COLLECTION.setdefault(referred_by_str, {}).setdefault("referral", {})
+
+        if user_id_str in referral_info.get("referred_users", []):
+            referral_info["referred_users"].remove(user_id_str)
+
+        await user_collection.update_user_fields(referred_by_str, {
+            "referral": referral_info
+        })
+
         return True, commission, referred_by
-    
+
     return False, 0, None
+
 
 # Modify handle_back_to_dashboard to work with referral module
 async def handle_back_to_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -340,7 +339,7 @@ async def handle_back_to_dashboard(update: Update, context: ContextTypes.DEFAULT
 
 # Initialize module
 def init_referral_module():
-    load_referral_data()
+    logger.info("✅ Referral module is ready (MongoDB-backed)")
 
 # Create conversation handler for wallet address setup
 wallet_conv_handler = ConversationHandler(
@@ -376,6 +375,3 @@ def register_referral_handlers(app):
     # Payout request handler
     app.add_handler(CallbackQueryHandler(request_payout, pattern="^request_payout$"))
     
-    # You'll need to modify your existing start handler to incorporate referral functionality
-    # or add a new one that works alongside your existing handler
-    # application.add_handler(CommandHandler("start", start_with_referral))

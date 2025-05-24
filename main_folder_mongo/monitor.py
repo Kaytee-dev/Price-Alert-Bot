@@ -13,11 +13,12 @@ import storage.tokens as tokens
 import storage.symbols as symbols
 import storage.history as history
 import storage.thresholds as thresholds
+import storage.notify as notify
 
 from api import fetch_prices_for_tokens
 from util.utils import chunked, send_message
 
-from storage.notify import build_normal_spike_message, build_first_spike_message
+from storage.notify import build_normal_spike_message, build_first_spike_message, save_user_notify_entry
 
 logger = logging.getLogger(__name__)
 
@@ -138,8 +139,7 @@ class TokenPriceMonitor:
                 if address not in symbols.ADDRESS_TO_SYMBOL:
                     symbol = base.get("symbol", address[:6])
                     symbols.ADDRESS_TO_SYMBOL[address] = symbol
-                    symbols.save_symbols_to_file()  # This is small and can be saved immediately
-
+                    
                 symbol = symbols.ADDRESS_TO_SYMBOL.get(address)
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -156,11 +156,11 @@ class TokenPriceMonitor:
                 # Use the optimized history module to check for changes
                 if history.update_token_data(address, cleaned_data):
                     # Data was updated, update the active token data as well
-                    if address not in tokens.ACTIVE_TOKEN_DATA:
-                        tokens.ACTIVE_TOKEN_DATA[address] = []
+                    if address not in history.ACTIVE_TOKEN_DATA:
+                        history.ACTIVE_TOKEN_DATA[address] = []
                     
-                    tokens.ACTIVE_TOKEN_DATA[address].insert(0, cleaned_data)
-                    tokens.ACTIVE_TOKEN_DATA[address] = tokens.ACTIVE_TOKEN_DATA[address][:3]
+                    history.ACTIVE_TOKEN_DATA[address].insert(0, cleaned_data)
+                    history.ACTIVE_TOKEN_DATA[address] = history.ACTIVE_TOKEN_DATA[address][:3]
                     
                     # Only count changes after startup is complete
                     if not self.is_first_run:
@@ -193,7 +193,8 @@ class TokenPriceMonitor:
         
         # First pass: identify all notifications needed
         for address, cleaned_data in token_data_list:
-            history_data = history.TOKEN_DATA_HISTORY.get(address, [])[:3]
+            #history_data = history.TOKEN_DATA_HISTORY.get(address, [])[:3] #changed this to use ACTIVE_TOKEN_DATA
+            history_data = history.ACTIVE_TOKEN_DATA.get(address, [])[:3]
             recent_changes = [
                 entry.get("priceChange_m5")
                 for entry in history_data
@@ -243,14 +244,29 @@ class TokenPriceMonitor:
                         user_notifications[chat_id].append((address, cleaned_data, spike_type, 
                                                         spike_type_for_user, timestamp))
         
+
+
+
         # Process notifications in batches
         notification_tasks = []
+
+        # Marking users who got spike alerts
+        now_iso = datetime.now().isoformat()
+        notify_updates = []
         
         # Create tasks for user notifications
         for chat_id, notifications in user_notifications.items():
             notification_tasks.append(
                 self._send_user_notifications_batch(chat_id, notifications)
             )
+
+            # Update notify cache (only memory, not Mongo yet)
+            notify_updates.append((chat_id, {
+                "last_alert_time": now_iso,
+                "next_interval": 24,
+                "has_received_spike": True
+            }))
+
             
             # For admin log
             for address, cleaned_data, spike_type, spike_type_for_user, timestamp in notifications:
@@ -273,6 +289,10 @@ class TokenPriceMonitor:
         # Execute all notification tasks concurrently
         if notification_tasks:
             await asyncio.gather(*notification_tasks)
+        
+        # In-memory notify update only
+        if notify_updates:
+            await save_user_notify_entry(notify_updates)
             
     async def _send_user_notifications_batch(self, chat_id: int, 
                                            notifications: List[Tuple[str, Dict, str, str, str]]):
@@ -348,18 +368,18 @@ class TokenPriceMonitor:
         # Set of active addresses (from active users)
         active_addresses = {t["address"] for t in active_tokens}
         
-        # Set of all tracked addresses (from user tracking)
-        all_tracked_addresses = set()
-        for user_chains in users.USER_TRACKING.values():
-            for chain_id, addresses in user_chains.items():
-                if isinstance(addresses, list):
-                    all_tracked_addresses.update(addresses)
+        # Get all tokens being tracked from TRACKED_TOKEN
+        all_tracked_addresses = {
+            address
+            for chain_tokens in tokens.TRACKED_TOKENS.values()
+            for address in chain_tokens
+        }
 
         # Clean up stale token history and active data based on address keys
         for address in list(history.TOKEN_DATA_HISTORY.keys()):
             if address not in all_tracked_addresses:
                 history.TOKEN_DATA_HISTORY.pop(address, None)
-                tokens.ACTIVE_TOKEN_DATA.pop(address, None)
+                history.ACTIVE_TOKEN_DATA.pop(address, None)
                 history.LAST_SAVED_HASHES.pop(address, None)
                 symbols.ADDRESS_TO_SYMBOL.pop(address, None)
                 for chain in list(tokens.TRACKED_TOKENS):
@@ -367,9 +387,9 @@ class TokenPriceMonitor:
                         tokens.TRACKED_TOKENS[chain].remove(address)
 
         # Clean up orphaned active data (no longer active for this cycle)
-        for address in list(tokens.ACTIVE_TOKEN_DATA):
+        for address in list(history.ACTIVE_TOKEN_DATA):
             if address not in active_addresses:
-                tokens.ACTIVE_TOKEN_DATA.pop(address, None)
+                history.ACTIVE_TOKEN_DATA.pop(address, None)
 
     
     async def save_data_if_needed(self, change_count: int, force_save=False):
@@ -394,11 +414,9 @@ class TokenPriceMonitor:
                 f"[MONITOR] Saving data: {self.pending_changes} changes after {self.cycles_since_last_save} cycles"
             )
             
-            # Use a task group to run both save operations in parallel
             async with asyncio.TaskGroup() as tg:
-                tg.create_task(asyncio.to_thread(tokens.save_active_token_data))
-                tg.create_task(asyncio.to_thread(history.save_token_history))
-            
+                tg.create_task(history.save_token_history())
+
             # Reset counters
             self.pending_changes = 0
             self.cycles_since_last_save = 0
@@ -438,39 +456,6 @@ class TokenPriceMonitor:
             return False
 
 
-# def background_price_monitor(app):
-
-#     """
-#     Create a background task to monitor prices at regular intervals.
-    
-#     Args:
-#         app: The application instance with the bot
-#     """
-#     async def monitor():
-#         try:
-#             monitor = TokenPriceMonitor(
-#                 app, 
-#                 chunk_size=30,
-#                 notification_batch_size=20,
-#                 max_concurrent_notifications=5,
-#                 save_threshold=50,  # Save after 50 changes
-#                 max_save_delay=5    # Or after 5 cycles with pending changes
-#             )
-            
-#             while True:
-#                 await monitor.run_monitoring_cycle()
-#                 await asyncio.sleep(POLL_INTERVAL)
-
-#         except asyncio.CancelledError:
-#             logger.info("🛑 Monitor task cancelled cleanly.")
-#             # Save any pending changes before exiting
-#             if monitor.pending_changes > 0:
-#                 logger.info(f"[MONITOR] Saving {monitor.pending_changes} pending changes before exit")
-#                 await asyncio.to_thread(tokens.save_active_token_data)
-#                 await asyncio.to_thread(history.save_token_history)
-
-#     return monitor()
-
 def background_price_monitor(app):
     """
     Create a background task to monitor prices at regular intervals.
@@ -509,7 +494,7 @@ def background_price_monitor(app):
             logger.info("🛑 Monitor task cancelled cleanly.")
             if monitor.pending_changes > 0:
                 logger.info(f"[MONITOR] Saving {monitor.pending_changes} pending changes before exit")
-                await asyncio.to_thread(tokens.save_active_token_data)
-                await asyncio.to_thread(history.save_token_history)
+                #await asyncio.to_thread(tokens.save_active_token_data)
+                await history.save_token_history()
 
     return monitor()

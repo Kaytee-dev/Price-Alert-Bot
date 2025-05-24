@@ -1,5 +1,11 @@
 {
     "python.analysis.extraPaths": [
         "./main_folder/storage"
+    ],
+    "mdb.presetConnections": [
+        {
+            "name": "Preset Connection",
+            "connectionString": "mongodb://localhost:27017"
+        }
     ]
 }

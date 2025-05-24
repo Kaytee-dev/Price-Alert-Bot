@@ -1,5 +1,6 @@
 # withdrawal.py
 import logging
+import asyncio
 import html
 import time
 from typing import Tuple, Union
@@ -19,7 +20,7 @@ from storage.payout import get_next_payout_wallet
 
 from util.utils import send_message
 from config import (SOLANA_RPC, DEFAULT_FEE_LAMPORTS, LAMPORTS_PER_SOL,
-                    BOT_PAYMENT_LOGS_ID
+                    BOT_PAYMENT_LOGS_ID, BOT_ERROR_LOGS_ID
                     )
 
 logger = logging.getLogger(__name__)
@@ -166,7 +167,8 @@ async def forward_user_payment(from_address: str, context: ContextTypes.DEFAULT_
                 logger.error(f"Error checking transaction status: {e}")
                 # Continue trying despite error
             
-            time.sleep(CONFIRMATION_CHECK_INTERVAL)
+            #time.sleep(CONFIRMATION_CHECK_INTERVAL)
+            await asyncio.sleep(CONFIRMATION_CHECK_INTERVAL)
 
         # If we get here, transaction timed out
         logger.error(f"Transaction {sig} not finalized after {MAX_CONFIRMATION_ATTEMPTS} attempts")
@@ -253,3 +255,39 @@ async def _notify_successful_transfer(
         logger.error(f"Error in notification formatting: {e}")
         # Even if notification fails, the transaction was successful
         return True, sig
+
+async def run_forward_user_payment(wallet_address: str, context: ContextTypes.DEFAULT_TYPE, user_id: int):
+    try:
+        success, result = await forward_user_payment(wallet_address, context)
+        if not success:
+            await send_message(
+                context.bot,
+                f"⚠️ Auto-forward failed for {user_id} ({wallet_address}) — Error: {result}",
+                chat_id=BOT_ERROR_LOGS_ID
+            )
+    except Exception as e:
+        await send_message(
+            context.bot,
+            f"❌ Exception during auto-forward for {user_id}: {e}",
+            chat_id=BOT_ERROR_LOGS_ID
+        )
+
+# async def run_forwardpayment(wallet_address: str, context: ContextTypes.DEFAULT_TYPE, user_id: int):
+#     wallet_address = wallet_address
+#     user_id = user_id
+
+#     try:
+#         success, result = await forward_user_payment(wallet_address, context)
+#         if not success:
+#             await send_message(
+#                 context.bot,
+#                 f"⚠️ Auto-forward failed for {user_id} ({wallet_address}) — Error: {result}",
+#                 chat_id=BOT_ERROR_LOGS_ID
+#             )
+#     except Exception as e:
+#         await send_message(
+#             context.bot,
+#             f"❌ Exception during auto-forward for {user_id}: {e}",
+#             chat_id=BOT_ERROR_LOGS_ID
+#         )
+

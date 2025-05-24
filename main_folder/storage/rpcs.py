@@ -44,3 +44,4 @@ def remove_rpc(rpc: str) -> bool:
         save_rpc_list()
         return True
     return False
+

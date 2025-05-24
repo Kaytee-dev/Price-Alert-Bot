@@ -2,15 +2,21 @@ from pymongo import AsyncMongoClient
 from pymongo.server_api import ServerApi
 import os
 import logging
+from dotenv import load_dotenv
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+load_dotenv() 
+
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise RuntimeError("❌ MONGO_URI environment variable is not set.")
+
 MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "price_alert_bot")
 
 client: AsyncMongoClient = None
 
 # Exposed DB handle
 db = None
-
+_collection_cache = {}
 
 async def connect():
     global client, db
@@ -19,7 +25,7 @@ async def connect():
         db = client[MONGO_DB_NAME]
         logging.info("✅ Connected to MongoDB")
     except Exception as e:
-        logging.error(f"❌ MongoDB connection failed: {e}")
+        logging.exception(f"❌ MongoDB connection failed:")
         raise
 
 
@@ -28,3 +34,10 @@ async def disconnect():
     if client:
         await client.close()
         logging.info("🔌 MongoDB connection closed")
+
+def get_collection(collection_name: str):
+    if db is None:
+        raise RuntimeError("MongoDB not connected. Call connect() first.")
+    if collection_name not in _collection_cache:
+        _collection_cache[collection_name] = db[collection_name]
+    return _collection_cache[collection_name]

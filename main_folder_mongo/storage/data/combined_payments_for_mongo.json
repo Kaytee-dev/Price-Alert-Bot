@@ -1,0 +1,276 @@
+{
+  "deposit_wallets": {
+    "_id": "deposit_wallets",
+    "wallets": [
+      {
+        "address": "GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj",
+        "status": "available"
+      },
+      {
+        "address": "HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5",
+        "status": "available"
+      },
+      {
+        "address": "27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM",
+        "status": "available"
+      },
+      {
+        "address": "GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4",
+        "status": "available"
+      },
+      {
+        "address": "N3ve9zJ71CGT6EmzY8qXBLjupiqW8kzRzWP33jSeMyh",
+        "status": "available"
+      },
+      {
+        "address": "C6RZwXDKxKDHfTMS22dtG3KbHL1cAxVZ1ZX8qYphsuiN",
+        "status": "available"
+      },
+      {
+        "address": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
+        "status": "available"
+      },
+      {
+        "address": "Hi411Qp26KNyA52iX6jHFxeMqnep6tzrk6EbADhGPdq8",
+        "status": "available"
+      },
+      {
+        "address": "EEy1A55p5bUs9yCRhmXstVki5SetLzhC9XFTGHzDePyD",
+        "status": "available"
+      }
+    ]
+  },
+  "wallet_secrets": {
+    "_id": "wallet_secrets",
+    "secrets": {
+      "GXC2MurdMVgtF6P5KuX8KktnDJiHC5KHEYWVfiDkjRXj": "gAAAAABoE6H_ceISo9WnyDUftvut6B7XD3Xpb7AcTDEEZnOEhKn4dD0YXqG3bd8KwnlaC_UrdPg0rHBogHtAPKvqeFCmFjXTyNlBthehDgCKUtpgyxcycP5p_u01mHuTkfN5kalmHJhiJbdK9Eb5dSWfPeVpif_RyxoNfjjiAu5C5OZAh_NNbRd2QxI8cRAGmVy1qU4YKJsA",
+      "HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5": "gAAAAABoE6H_XyYF-jpC3YdM1N69ojnlsg5CqdzgQ7aQhlFqWJp1z3Ix8zXChWsDNm8PIN-r-ul5NI7tithZUHBUgy7VEgPH7dO3mgfceWEbTN6C0wkxZRQZvAeT7Cfm5TPXSo4caHHg89uF9_wWi7AhA_iap_KjY1LV57GHunK2ZBxFzFhj0KaXlHZ-ubjjXqc2VhfBfc4N",
+      "27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM": "gAAAAABoE6IAYOwY-ApPlOBbacnRcuw8TzcTk6UXsjteCyH732Ok11oGkPqfT3zx6MNSfdAyEOqAoRPb5IYkhP1pg9JgH3gn91DpVbsAioFwCj-9Mv0x2W6vvlGMQYoL2mVcHKx1DMBD8OhD5sy6IHWIeK9TH0unkMEDzA_PaUN3usfJA6mcWNjhCdRG3A2I9JjI3GKq0JIb",
+      "GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4": "gAAAAABoE6IABHlDzu26inPH7jXMgYAN1a0vy_dBDi44cs4b79SlJlxq40t1eDL5ZNrQtWowYAGumxvXTJm3vjCuHNx8H6fE5n51H80O6gbPOOdKvD9oT9KTsCXbPGRPm1vaVK7Q6WhVzV8WGR7rHswJDARb91f-F8vsuBlMlqdHgxSLkJ1FjjsEjwEdecez3fY0vfJSxqMP",
+      "N3ve9zJ71CGT6EmzY8qXBLjupiqW8kzRzWP33jSeMyh": "gAAAAABoFASUcKpj0sliSvX0uBVjTuOo0NvzDkffR-_b_fV1TuGsuN-OyU0Xo8dgbQkMrPJz4K_huk3yEjt1rPbRHgiJYuE4kG0ZKB1t_7Mj4ijI9TtZEBZvnd3RsHz6jgAQ0DLTtqBbB-EKqR4O3v5IERzIs1fwEQatKYrKz3745tMBWNcr1x9caOJStrYPTB5KXW4iZu26",
+      "C6RZwXDKxKDHfTMS22dtG3KbHL1cAxVZ1ZX8qYphsuiN": "gAAAAABoFAYyIvpT2q4flxORQHkl9RzksNLrOOy-ffcwX-TWpIaC6xBv-dgaChsEAovH2r_w_VcT0la-Du81Y90U7rX-d8WLit2BmiOQqqNLYE35FPYvqDgOYl-XIHXOTgXTeHFRRkoPlH8LdNn_7v7smk4kwnHJMineHkQ0WNkhYxnmgIlNmIemJoXwUg5HLavQBVutyCw4",
+      "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8": "gAAAAABoFAYzrwioJwJXT8VcKpMg9SlFWpUNu1s-Hwz7W-ze-y1xGUckXm1rHWATYZaRTN5TyiJgNmMSuYjT455tCw9bwEBN3HT6fIxbzri_Z7J5ROp4dQg7i1qa6BvcK-I7RGxkL4KyiBylCNkiOBvj0fWeYO-b-LEET8wTQf5_-Ta8-gxYlsRPBP5S6Ml6YxUBtsPI31L9",
+      "Hi411Qp26KNyA52iX6jHFxeMqnep6tzrk6EbADhGPdq8": "gAAAAABoFAYzaM6ufp8hFiXHDN0pOz-Ho7lzjuzHzhxacDof074g7qVoOk6ANZSvqjuN2Epzv6MfAcoIy6qpnTiJ97xFbS0ypS9ZdTJ6N-9gu96ISLAvTTeR0U55fYBvuweEoYAfVfr1_9akODPgeknfatr7qlmdpqRm0mEnznMe7bnFs-Kr1ATwK4PLj3-amnzb449FfYOc",
+      "EEy1A55p5bUs9yCRhmXstVki5SetLzhC9XFTGHzDePyD": "gAAAAABoHMRqet5T_SaBLOAVQKbv0w9w79HN264DorMWTjCMEXUSQZweOD4M0VZj0HwAMMiL27OdWURuGzoR-KEDzvLv6-UUyrIYZX_JroI8ei0M1uZkghiSFZ0Xtwgeon0xZLP2-wccIQMy7Gxn3Y4iOdwbD6KNqxrWrgmwkV9oE6JA6gFQeC3FibnMqc7RQa6J3ogAZN96"
+    }
+  },
+  "withdrawal_wallets": {
+    "_id": "withdrawal_wallets",
+    "wallets": [
+      "4SrnvcZ4SxpEo2JgEZ8jxxBefnRMCYr33BN7fLXpUC74",
+      "BggN2aJagL95Lo7hSK6k8hgAuicaGV1LL1TTKfgPg9QT",
+      "EjKgWi3yHTPKCXgwGp4sXB1um28mhz86JfGQe6gRtG8A",
+      "54nsAoGJ6711Ynut38M6JKAsRUbmXr5eJ6Seyei1wz3t",
+      "EEy1A55p5bUs9yCRhmXstVki5SetLzhC9XFTGHzDePyD"
+    ]
+  },
+  "user_payment_logs": [
+    {
+      "_id": "7129984365",
+      "user_id": "7129984365",
+      "payments": {
+        "vRy2GL0KtAU": {
+          "tier": "chieftain",
+          "duration_months": "1",
+          "payment_wallet": "68EEXEFsMb61gMqD4hvzWrPa5SGrULQqz6NRxSG3yF6b",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-04-29T23:40:01.416646",
+          "tx_sig": null,
+          "logged_at": "2025-04-29T23:40:01.416646"
+        },
+        "wNvoxQ6LMeY": {
+          "tier": "chieftain",
+          "duration_months": "6",
+          "payment_wallet": "CLbzh8RphEKD6NqQL8G7p8GQu1KibLU7RhAXnHftkENB",
+          "amount_in_usdc": 8,
+          "amount_in_sol": 0.05,
+          "start_time": "2025-04-29T23:46:11.667128",
+          "tx_sig": "3y4mVNhXqb6jNPwce8oUqBiMFgMM2tXf9ES3vNBHSjeZ8XKtqCEGDQCzJcPm93zF4wYJeGSRF4P2WKGBbnkW7oy5",
+          "logged_at": "2025-04-29T23:46:11.667128"
+        },
+        "P8aFenRg1ek": {
+          "tier": "overlord",
+          "duration_months": "1",
+          "payment_wallet": "5xJ2qJLjq7Mp6dR2vZby8rgFTKmBWqcoEa1xxgA3LKZT",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-04-30T00:18:14.987087",
+          "tx_sig": "5GCDsrGdrW3SkLnAbqfWqywzcnQGhkvzNXpDWhCchURpNEoDh11bpfjNqP7JzFrt9T6UdFoiEoK6uPns7qSAx2zn",
+          "logged_at": "2025-04-30T00:18:14.987087"
+        },
+        "11oLmXyM02w": {
+          "tier": "overlord",
+          "duration_months": "1",
+          "payment_wallet": "5xJ2qJLjq7Mp6dR2vZby8rgFTKmBWqcoEa1xxgA3LKZT",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-04-30T00:23:41.428074",
+          "tx_sig": "2KMvie4LGtjU23nF3Th4iXx1Sg3tXTiWWjuwxsrYxNjsycf1J88wgvbDyAEN2uPdLDLNaveATSGrEoGEsDfWtdBg",
+          "logged_at": "2025-04-30T00:23:41.428074"
+        },
+        "8VzDoy7BiPQ": {
+          "tier": "overlord",
+          "duration_months": "1",
+          "payment_wallet": "CLbzh8RphEKD6NqQL8G7p8GQu1KibLU7RhAXnHftkENB",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-04-30T08:04:40.987436",
+          "tx_sig": null,
+          "logged_at": "2025-04-30T08:04:40.987535"
+        },
+        "U5KpXn-jeKM": {
+          "tier": "overlord",
+          "duration_months": "1",
+          "payment_wallet": "68EEXEFsMb61gMqD4hvzWrPa5SGrULQqz6NRxSG3yF6b",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-04-30T08:04:44.586155",
+          "tx_sig": null,
+          "logged_at": "2025-04-30T08:04:44.586270"
+        },
+        "K_-6e2-FIrI": {
+          "tier": "overlord",
+          "duration_months": "6",
+          "payment_wallet": "CLbzh8RphEKD6NqQL8G7p8GQu1KibLU7RhAXnHftkENB",
+          "amount_in_usdc": 8,
+          "amount_in_sol": 0.05,
+          "start_time": "2025-04-30T08:06:11.443212",
+          "tx_sig": null,
+          "logged_at": "2025-04-30T08:06:11.443256"
+        },
+        "aTrqlqXuHGE": {
+          "tier": "overlord",
+          "duration_months": "1",
+          "payment_wallet": "7eERmVPXxkdy3eE9bgDPAv7oVKmYuqwne7trKvUwrWAX",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-04-30T08:34:25.765929",
+          "tx_sig": null,
+          "logged_at": "2025-04-30T08:34:25.766003"
+        },
+        "z5Ow97VqoCU": {
+          "tier": "disciple",
+          "duration_months": "1",
+          "payment_wallet": "GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-05-13T07:59:55.778925",
+          "tx_sig": "646ZYu15YVHFsCpMfndpXM8FNqg9by8Dn8x3EEUssyLvgh6JUHEVmMBLo1Dx4YrjpGeAyyBDEgUY8iWbxZEdRfK3",
+          "logged_at": "2025-05-13T08:01:31.524493"
+        },
+        "Bobm1pxNTAE": {
+          "action": "renewal",
+          "tier": "disciple",
+          "duration_months": "1",
+          "payment_wallet": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
+          "amount_in_sol": 0.03,
+          "amount_in_usd": 5,
+          "start_time": "2025-05-13T22:13:47.676066",
+          "tx_sig": "aghasdhfqeprjfhinva dvuhadofghopgj;fgf",
+          "logged_at": "2025-05-13T22:16:36.531228"
+        }
+      }
+    },
+    {
+      "_id": "6015881080",
+      "user_id": "6015881080",
+      "payments": {
+        "KYxfw12KIIs": {
+          "tier": "chieftain",
+          "duration_months": "1",
+          "payment_wallet": "68EEXEFsMb61gMqD4hvzWrPa5SGrULQqz6NRxSG3yF6b",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-04-29T23:49:30.065568",
+          "tx_sig": "5GCDsrGdrW3SkLnAbqfWqywzcnQGhkvzNXpDWhCchURpNEoDh11bpfjNqP7JzFrt9T6UdFoiEoK6uPns7qSAx2zn",
+          "logged_at": "2025-04-29T23:49:30.065568"
+        },
+        "NPtNomcZ-9s": {
+          "tier": "overlord",
+          "duration_months": "1",
+          "payment_wallet": "GnWj7wLVxLbZkbdfYWSTuPxX4pJoLo9wwQ2aoochdKv4",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-05-02T22:52:23.386743",
+          "tx_sig": "22JqRMBWk7qP4buRdn2NcQZd8b9imuqPJLmjbAet7VW9JaLs8h7mWBFrGtpMaH21ELAd3bf2KnokytvqnQNo2b9E",
+          "logged_at": "2025-05-02T22:53:40.614141"
+        },
+        "SWjvkLcN944": {
+          "action": "renewal",
+          "tier": "overlord",
+          "duration_months": "6",
+          "payment_wallet": "27VCkyAt98AmwHLP73WZihApv8dbA9YuPGVNPLDCTxXM",
+          "amount_in_sol": 0.05,
+          "amount_in_usd": 8,
+          "start_time": "2025-05-03T11:25:23.617470",
+          "tx_sig": "49KWnFbwP8xe11sxfUrfkJCtvfBr8zPn83NcXSetzucnTvm3fHS2Pei3BjfdifeDuFzaz2rV4LTzBwrMcpzWFQ9M",
+          "logged_at": "2025-05-03T11:26:41.547134"
+        },
+        "ahSoYJbVRl4": {
+          "tier": "chieftain",
+          "duration_months": "6",
+          "payment_wallet": "N3ve9zJ71CGT6EmzY8qXBLjupiqW8kzRzWP33jSeMyh",
+          "amount_in_usdc": 20,
+          "amount_in_sol": 0.13,
+          "start_time": "2025-05-03T15:27:44.848018",
+          "tx_sig": "mfRka5oPxTWqvacPsxVLBWiuWPHyQ4i33oo1rT5yQfLjKLwDE2dMwhtQT5PWqJbwiaRfHzWTqfAyE5DPwbgkMFV",
+          "logged_at": "2025-05-03T15:28:42.400250"
+        },
+        "k_fYoqhV-8Y": {
+          "action": "renewal",
+          "tier": "chieftain",
+          "duration_months": "12",
+          "payment_wallet": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
+          "amount_in_sol": 0.13,
+          "amount_in_usd": 20,
+          "start_time": "2025-05-03T15:29:35.669152",
+          "tx_sig": "3Xjo85gvTGwJYDccz9dYr1vBvX1TQQex53Uvuvh4poZM4ZC3JvjTSQJfYJxHtY7atGsbyjcBkvQofPjsvgYrNXNM",
+          "logged_at": "2025-05-03T15:31:00.943705"
+        },
+        "pB77PFbzyPg": {
+          "tier": "overlord",
+          "duration_months": "6",
+          "payment_wallet": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
+          "amount_in_usdc": 8,
+          "amount_in_sol": 0.05,
+          "start_time": "2025-05-03T18:25:46.894847",
+          "tx_sig": "5E4H397W6Q7mb6idJBPP5CT61FCNMyPUy9Wop4gwm7Dhb6qDa5ep6Nq9vq2Wcjt4sVmdnra2YxDVsjAKTEsHL933",
+          "logged_at": "2025-05-03T18:27:05.118682"
+        },
+        "XnMAch2C1H4": {
+          "tier": "disciple",
+          "duration_months": "1",
+          "payment_wallet": "Hi411Qp26KNyA52iX6jHFxeMqnep6tzrk6EbADhGPdq8",
+          "amount_in_usdc": 5,
+          "amount_in_sol": 0.03,
+          "start_time": "2025-05-19T12:45:40.685276",
+          "tx_sig": "2ZF8uKSYP6zxJfxSeNoN6XVsuczUoqcTJZJntJjKZ2VYjbaAuRcAW8tJXZ4MHBeJ3XiXc7ikvJ2p2XEhpkUHav6n",
+          "logged_at": "2025-05-19T12:47:39.894240"
+        },
+        "MTV2vOT_gzs": {
+          "action": "renewal",
+          "tier": "disciple",
+          "duration_months": "1",
+          "payment_wallet": "HvYc2oxZyfg4LF7DzXdZHmfQgyGs8a2ZbHDiHJ7R7sb5",
+          "amount_in_sol": 0.03,
+          "amount_in_usd": 5,
+          "start_time": "2025-05-19T12:56:00.495133",
+          "tx_sig": "5TJehXmzWp8BB7TG3YzgGJtm2e6ogcwX4x9wJyE8385Jn8qDWYkZWKVxxmwRMbJXcm9H1bgeppncQZHQGhXYSJt4",
+          "logged_at": "2025-05-19T12:57:51.294333"
+        },
+        "qceGnp_1m74": {
+          "action": "renewal",
+          "tier": "disciple",
+          "duration_months": "1",
+          "payment_wallet": "9rFdpQUJXRmT1cbQvTcgR8UtBv6QVPnEZPyzsAR8cED8",
+          "amount_in_sol": 0.03,
+          "amount_in_usd": 5,
+          "start_time": "2025-05-19T13:15:22.414080",
+          "tx_sig": "4YYJjDT9joGXKegekvsEQb1EeSYBHiE8ZupQ8fog1Doq6ti4iMTyGTgMcDP32o3L8nZaiFAcJrqmLp3rAFxmfZoK",
+          "logged_at": "2025-05-19T13:16:37.166034"
+        }
+      }
+    }
+  ]
+}

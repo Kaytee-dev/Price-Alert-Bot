@@ -1,34 +1,32 @@
 import asyncio
 import logging
 from typing import Dict, List, Tuple, Any
-from solders.pubkey import Pubkey # type: ignore
+from solders.pubkey import Pubkey  # type: ignore
 from solana.rpc.api import Client
-from config import SOLANA_RPC
 from telegram import Message
 
+from storage.rpcs import get_next_rpc
 
 logger = logging.getLogger(__name__)
+
+TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 
 async def validate_wallet_addresses(
         eligible_users: List[Tuple[str, Dict[str, Any]]],
         status_msg: Message
-        ) -> Tuple[List[Tuple[str, Dict[str, Any]]], List[Tuple[str, str]]]:
+) -> Tuple[List[Tuple[str, Dict[str, Any]]], List[Tuple[str, str]]]:
     valid_users = []
     invalid_users = []
 
     if not eligible_users:
         return valid_users, invalid_users
 
-    client = Client(SOLANA_RPC)
-    logger.info(f"Using RPC endpoint: {SOLANA_RPC}")
-
-    BATCH_SIZE = 5
+    BATCH_SIZE = 10
     MAX_CONCURRENT = 5
-    REQUEST_TIMEOUT = 5  # seconds
+    REQUEST_TIMEOUT = 10  # seconds
+    MAX_RETRIES = 3
 
     request_semaphore = asyncio.Semaphore(MAX_CONCURRENT)
-
-    TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 
     async def validate_single_wallet(user_id: str, data: Dict[str, Any]):
         addr = data["wallet_address"]
@@ -46,61 +44,64 @@ async def validate_wallet_addresses(
             logger.warning(f"Invalid base58 public key for user {user_id}: {addr} - {str(e)}")
             return (user_id, "Invalid base58 public key"), None
 
-        # RPC call with timeout and concurrency control
-        async with request_semaphore:
-            try:
-                # Use asyncio timeout to prevent hanging
-                async with asyncio.timeout(REQUEST_TIMEOUT):
-                    logger.debug(f"Fetching account info for: {addr}")
-                    #resp = client.get_account_info(pubkey)
-                    resp = await asyncio.to_thread(client.get_account_info, pubkey)
+        for attempt in range(1, MAX_RETRIES + 1):
+            rpc_url = get_next_rpc()
+            client = Client(rpc_url)
+            logger.debug(f"Attempt {attempt} using RPC: {rpc_url}")
 
-                    logger.debug(f"RPC response for {addr}: {resp}")
+            async with request_semaphore:
+                try:
+                    # Use asyncio timeout to prevent hanging
+                    async with asyncio.timeout(REQUEST_TIMEOUT):
+                        logger.debug(f"Fetching account info for: {addr}")
+                        #resp = client.get_account_info(pubkey)
+                        resp = await asyncio.to_thread(client.get_account_info, pubkey)
 
-                    if resp is None or resp.value is None:
-                        logger.warning(f"Uninitialized address: {addr} — cannot determine owner. Rejecting to be safe.")
-                        return (user_id, "Address is uninitialized and ownership can't be verified"), None
+                        logger.debug(f"RPC response for {addr}: {resp}")
 
-                    owner = str(resp.value.owner)
-                    is_system_owned = owner == "11111111111111111111111111111111"
-                    is_token_owned = owner == TOKEN_PROGRAM_ID
-                    data_len = len(resp.value.data) if hasattr(resp.value.data, '__len__') else 0
-                    is_executable = resp.value.executable
+                        if resp is None or resp.value is None:
+                            logger.warning(f"Uninitialized address: {addr}")
+                            return (user_id, "Uninitialized address, ownership unverifiable"), None
 
-                    logger.debug(f"Wallet {addr} details: System owned: {is_system_owned}, Token owned: {is_token_owned}, Data len: {data_len}, Executable: {is_executable}")
+                        owner = str(resp.value.owner)
+                        is_system_owned = owner == "11111111111111111111111111111111"
+                        is_token_owned = owner == TOKEN_PROGRAM_ID
+                        data_len = len(resp.value.data) if hasattr(resp.value.data, '__len__') else 0
+                        is_executable = resp.value.executable
 
-                    if is_token_owned:
-                        logger.warning(f"Address is a token mint or token account owned by the Token Program: {addr}")
-                        return (user_id, "Address owned by Token Program - likely token or mint"), None
+                        logger.debug(f"Wallet {addr} details: System owned: {is_system_owned}, Token owned: {is_token_owned}, Data len: {data_len}, Executable: {is_executable}")
 
-                    if is_system_owned and data_len == 0 and not is_executable:
-                        logger.info(f"Valid initialized user wallet for user {user_id}: {addr}")
-                        return None, (user_id, data)
-                    else:
-                        reason = "Not a user wallet address"
+                        if is_token_owned:
+                            logger.warning(f"Address is a token mint or token account owned by the Token Program: {addr}")
+                            return (user_id, "Address owned by Token Program"), None
+
+                        if is_system_owned and data_len == 0 and not is_executable:
+                            logger.info(f"Valid initialized user wallet for user {user_id}: {addr}")
+                            return None, (user_id, data)
+
+                        reason = "Not a user wallet"
                         if not is_system_owned:
-                            reason = f"Address owned by program {owner}, not System Program"
+                            reason = f"Owned by non-System Program: {owner}"
                         elif data_len > 0:
-                            reason = f"Address has {data_len} bytes of data (user wallets have none)"
+                            reason = f"Has data: {data_len} bytes"
                         elif is_executable:
-                            reason = "Address is executable (user wallets are not executable)"
+                            reason = "Executable account"
 
                         logger.warning(f"Invalid wallet for user {user_id}: {addr} - {reason}")
                         return (user_id, reason), None
 
-            except asyncio.TimeoutError:
-                logger.error(f"Timeout validating wallet for user {user_id}: {addr}")
-                return (user_id, "Validation timed out"), None
-            except Exception as e:
-                logger.error(f"Error validating wallet for user {user_id}: {addr} - {str(e)}", exc_info=True)
-                return (user_id, f"Validation error: {str(e)}"), None
+                except asyncio.TimeoutError:
+                    logger.error(f"Timeout validating wallet for user {user_id}: {addr} on attempt {attempt}")
+                    if attempt == MAX_RETRIES:
+                        return (user_id, "Validation timed out"), None
+                except Exception as e:
+                    logger.error(f"Error on RPC {rpc_url} for wallet {addr}: {str(e)}")
+                    if attempt == MAX_RETRIES:
+                        return (user_id, f"RPC Error: {str(e)}"), None
 
     logger.info(f"Starting validation of {len(eligible_users)} wallets")
 
-    # Use asyncio.gather with return_exceptions=True to prevent one failure from stopping all validations
-    tasks = []
-    for user_id, data in eligible_users:
-        tasks.append(validate_single_wallet(user_id, data))
+    tasks = [validate_single_wallet(user_id, data) for user_id, data in eligible_users]
 
     # Process in batches to avoid memory issues with too many simultaneous tasks
     for i in range(0, len(tasks), BATCH_SIZE):
@@ -144,4 +145,3 @@ async def validate_wallet_addresses(
             logger.info(f"  User {user_id}: {reason}")
 
     return valid_users, invalid_users
-

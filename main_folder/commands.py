@@ -93,7 +93,7 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Regular user shutdown (no confirmation needed)
     users.USER_STATUS[chat_id] = False
-    users.save_user_status()
+    users.save_user_status(chat_id)
     await update.message.reply_text(
         f"🛑 Monitoring paused.\nYou're still tracking {len(users.USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
     

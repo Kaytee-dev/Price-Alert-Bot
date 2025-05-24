@@ -1,39 +1,19 @@
 import hashlib, json
-from util.utils import load_json, save_json
-from config import TOKEN_HISTORY_FILE, HASH_FILE
 import storage.users as users
+import storage.tokens as tokens
+import storage.symbols as symbols
 from typing import List, Dict
 import logging
+import storage.token_collection as token_collection
+from pymongo import UpdateOne
+
 
 TOKEN_DATA_HISTORY: Dict[str, List[dict]] = {}
+ACTIVE_TOKEN_DATA: Dict[str, List[dict]] = {}
 LAST_SAVED_HASHES: Dict[str, str] = {}
 
 # Setup logging
 logger = logging.getLogger(__name__)
-
-# def load_token_history():
-#     global TOKEN_DATA_HISTORY, LAST_SAVED_HASHES
-#     TOKEN_DATA_HISTORY = load_json(TOKEN_HISTORY_FILE, {}, "token history")
-
-#     for addr, history_list in TOKEN_DATA_HISTORY.items():
-#         if history_list:
-#             latest = history_list[0]
-#             hash_val = hashlib.md5(json.dumps(latest, sort_keys=True).encode()).hexdigest()
-#             LAST_SAVED_HASHES[addr] = hash_val
-
-# def save_token_history():
-#     all_tracked_addresses = set()
-#     for user_chains in users.USER_TRACKING.values():
-#             for chain_id, addresses in user_chains.items():
-#                 if isinstance(addresses, list):
-#                     all_tracked_addresses.update(addresses)
-    
-#     for addr in list(TOKEN_DATA_HISTORY.keys()):
-#         if addr not in all_tracked_addresses:
-#             del TOKEN_DATA_HISTORY[addr]
-#             LAST_SAVED_HASHES.pop(addr, None)
-
-#     save_json(TOKEN_HISTORY_FILE, TOKEN_DATA_HISTORY, "token history")
 
 def compute_data_hash(data: dict) -> str:
     """
@@ -52,52 +32,71 @@ def compute_data_hash(data: dict) -> str:
     snapshot_json = json.dumps(hash_base, sort_keys=True)
     return hashlib.md5(snapshot_json.encode()).hexdigest()
 
-def load_token_history():
-    """
-    Load token history and compute hashes for the latest entries.
-    This ensures we have hash references even on first startup.
-    """
-    global TOKEN_DATA_HISTORY, LAST_SAVED_HASHES
-    
-    # Load the history data
-    TOKEN_DATA_HISTORY = load_json(TOKEN_HISTORY_FILE, {}, "token history")
-    
-    # Try to load saved hashes first
-    LAST_SAVED_HASHES = load_json(HASH_FILE, {}, "saved hashes")
-    
-    # If no saved hashes or missing entries, compute from history
-    for addr, history_list in TOKEN_DATA_HISTORY.items():
-        if history_list and addr not in LAST_SAVED_HASHES:
-            latest = history_list[0]
-            LAST_SAVED_HASHES[addr] = compute_data_hash(latest)
-    
-    logger.info(f"✅ Loaded token history for {len(TOKEN_DATA_HISTORY)} tokens with {len(LAST_SAVED_HASHES)} hashes")
 
-def save_token_history():
+async def save_token_history():
     """
     Save token history and simultaneously clean up unused tokens.
-    Only tracked tokens are saved to disk.
+    Only tracked tokens are saved to TOKEN_COLLECTION.
     """
-    # Get all tokens being tracked by any user
-    all_tracked_addresses = set()
-    for user_chains in users.USER_TRACKING.values():
-            for chain_id, addresses in user_chains.items():
-                if isinstance(addresses, list):
-                    all_tracked_addresses.update(addresses)
+    # Get all tokens being tracked from TRACKED_TOKEN
+    all_tracked_addresses = {
+        address
+        for chain_tokens in tokens.TRACKED_TOKENS.values()
+        for address in chain_tokens
+    }
 
     # Clean up any tokens no longer being tracked
     for addr in list(TOKEN_DATA_HISTORY.keys()):
         if addr not in all_tracked_addresses:
             del TOKEN_DATA_HISTORY[addr]
             LAST_SAVED_HASHES.pop(addr, None)
-    
-    # Save the history data
-    save_json(TOKEN_HISTORY_FILE, TOKEN_DATA_HISTORY, "token history")
-    
-    # Save the hashes
-    save_json(HASH_FILE, LAST_SAVED_HASHES, "saved hashes")
-    
-    logger.info(f"✅ Saved token history and hashes for {len(TOKEN_DATA_HISTORY)} tokens")
+
+    # Prepare bulk updates for the database
+    # Prepare updates for MongoDB
+    updates = []
+    for address, history in TOKEN_DATA_HISTORY.items():
+        if address in all_tracked_addresses and history:
+            # Extract metadata and sessions
+            first_entry = history[0]
+            chain_id = first_entry.get("chain_id", None)
+            symbol = first_entry.get("symbol", None)
+
+            # Prepare sessions data
+            sessions = [
+                {
+                    "timestamp": entry["timestamp"],
+                    "priceChange_m5": entry.get("priceChange_m5"),
+                    "volume_m5": entry.get("volume_m5"),
+                    "marketCap": entry.get("marketCap")
+                }
+                for entry in history
+            ]
+
+            # Add to updates
+            updates.append(
+                UpdateOne(
+                    {"_id": address},  # Filter by the `_id` field
+                    {
+                        "$set": {
+                            "sessions": sessions,
+                            "hash": LAST_SAVED_HASHES.get(address, ""),
+                            "address": address,
+                            "chain_id": chain_id,
+                            "symbol": symbol
+                        }
+                    },
+                    upsert=True
+                )
+            )
+
+    # Perform bulk write to persist the updates
+    if updates:
+        collection = token_collection.get_tokens_collection()
+        await collection.bulk_write(updates)
+        logger.info(f"✅ Persisted token history and metadata for {len(updates)} tokens.")
+
+    logger.info(f"✅ Cleaned and saved token history for {len(TOKEN_DATA_HISTORY)} tokens.")
+
 
 def has_data_changed(address: str, data: dict) -> bool:
     """
@@ -154,3 +153,84 @@ def update_token_data(address: str, data: dict) -> bool:
 
 # Initialize the module
 #load_token_history()
+
+async def load_token_data():
+    """
+    Load data from TOKEN_COLLECTION and populate in-memory caches.
+    """
+    global TOKEN_DATA_HISTORY, ACTIVE_TOKEN_DATA, LAST_SAVED_HASHES
+
+    # Fetch all token data from the database
+    collection = token_collection.get_tokens_collection()
+
+    # Fetch all token documents except the "tracked_token" document
+    token_documents = [doc async for doc in collection.find({"_id": {"$ne": "tracked_token"}})]
+
+    # Build caches
+    for doc in token_documents:
+        try:
+            address = doc["address"]
+            hash_key = doc["hash"]
+            symbol = doc["symbol"]
+            chain_id = doc["chain_id"]
+            sessions = doc.get("sessions", [])
+
+            # Populate TOKEN_DATA_HISTORY
+            TOKEN_DATA_HISTORY[address] = [
+                {
+                    "timestamp": session["timestamp"],
+                    "address": address,
+                    "symbol": symbol,
+                    "chain_id": chain_id,
+                    "priceChange_m5": session.get("priceChange_m5"),
+                    "volume_m5": session.get("volume_m5"),
+                    "marketCap": session.get("marketCap")
+                }
+                for session in sessions
+            ]
+
+            # Populate LAST_SAVED_HASHES
+            LAST_SAVED_HASHES[address] = hash_key
+
+            # Populate ACTIVE_TOKEN_DATA (Example: Use a filter to check active tokens)
+            # Replace with actual active token logic
+            ACTIVE_TOKEN_DATA[address] = TOKEN_DATA_HISTORY[address]
+        
+        except KeyError as e:
+            # Log and skip invalid documents
+            logger.warning(f"Skipped document due to missing key: {e}. Document: {doc}")
+
+    # If no saved hashes or missing entries, compute from history
+    for addr, history_list in TOKEN_DATA_HISTORY.items():
+        if history_list and addr not in LAST_SAVED_HASHES:
+            latest = history_list[0]
+            LAST_SAVED_HASHES[addr] = compute_data_hash(latest)
+    
+    logger.info(f"✅ Loaded token history for {len(TOKEN_DATA_HISTORY)} tokens with {len(LAST_SAVED_HASHES)} hashes")
+
+
+async def remove_token_history(addresses: list[str]):
+    """
+    Remove token history for a list of token addresses from the caches and database.
+
+    :param addresses: List of token addresses to remove.
+    """
+    global TOKEN_DATA_HISTORY
+
+    collection = token_collection.get_tokens_collection()
+
+    # Remove from TOKEN_DATA_HISTORY & associated data for unreferenced tokens
+    for address in addresses:
+        TOKEN_DATA_HISTORY.pop(address, None)
+        LAST_SAVED_HASHES.pop(address, None)
+        symbols.ADDRESS_TO_SYMBOL.pop(address, None)
+    
+    logger.info(f"✅ Cleanup complete for unreferenced tokens.")
+
+    # Remove from the database
+    if addresses:
+        await collection.delete_many({"_id": {"$in": addresses}})
+
+    logger.info(f"✅ Removed history and documents for {len(addresses)} tokens.")
+
+

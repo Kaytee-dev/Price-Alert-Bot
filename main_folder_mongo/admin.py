@@ -3,15 +3,14 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (ContextTypes, ConversationHandler, CommandHandler, MessageHandler,
                           filters, CallbackQueryHandler
                           )
-from util.utils import load_json, save_json, refresh_user_commands, confirm_action
-from config import (ADMINS_FILE, SUPER_ADMIN_ID, WALLET_SECRETS_FILE, SOLSCAN_BASE, SOLANA_RPC,
-                    TOKEN_PROGRAM_ID, SYSTEM_PROGRAM_ID, LIST_WALLET_PAGE, WALLET_PAGE_SIZE,
-                    PAYOUT_WALLETS_FILE
+from util.utils import refresh_user_commands, confirm_action, build_custom_update_from_query
+from config import (SUPER_ADMIN_ID, SOLANA_RPC,
+                    TOKEN_PROGRAM_ID, SYSTEM_PROGRAM_ID, LIST_WALLET_PAGE, WALLET_PAGE_SIZE
                     )
 
 import storage.tiers as tiers
 import storage.payout as payout
-import referral
+import storage.user_collection as user_collection
 
 from base58 import b58decode
 from solders.keypair import Keypair # type: ignore
@@ -20,15 +19,18 @@ from solana.rpc.api import Client
 
 from pwd_loader.env_loader import get_wallet_password
 from secrets_key import encrypt_key
-from storage.payout import add_wallet_to_payout_list
+from storage.payout import add_wallets_to_payout_bulk
+import storage.rpcs as rpcs
+
 import secrets_key as secrets_key
 import util.wallet_sync as wallet_sync
 import util.manual_upgrade as manual_upgrade
 import storage.payment_logs as payment_logs
+import logging
 
-import json
-import os
-import requests
+from telegram.error import BadRequest
+
+from mongo_client import get_collection
 
 # Manual upgrade conversation states
 MANUAL_USER_ID, MANUAL_TX_SIG, MANUAL_PAYMENT_ID = range(3)
@@ -39,17 +41,43 @@ ADMINS = set()
 
 SOLANA_CLIENT = Client(SOLANA_RPC)
 
+logger = logging.getLogger(__name__)
+
 # --- Super Admin ID ---
 #SUPER_ADMIN_ID = -4710110042  # Replace this with your actual ID
 
 # --- Load/Save Admins ---
-def load_admins():
+async def load_admins():
+    """
+    Async: Load the list of admin user_ids from MongoDB and ensure all are integers.
+    """
     global ADMINS
-    ADMINS = set(load_json(ADMINS_FILE, [], "admins"))
-    ADMINS.add(SUPER_ADMIN_ID)  # ensure super admin is always present
+    collection = get_collection("admins")
+    doc = await collection.find_one({"_id": "admin_list"})
+    
+    if doc and "user_ids" in doc:
+        # Cast all user IDs to int safely
+        ADMINS = set(int(uid) for uid in doc["user_ids"])
+    else:
+        ADMINS = set()
 
-def save_admins():
-    save_json(ADMINS_FILE, list(ADMINS), "admins")
+    ADMINS.add(int(SUPER_ADMIN_ID))
+    logger.info("✅ ADMINS loaded from admins collection")
+
+async def save_admins():
+    """
+    Async: Save ADMINS to MongoDB and refresh cache.
+    """
+    global ADMINS
+    collection = get_collection("admins")
+    await collection.update_one(
+        {"_id": "admin_list"},
+        {"$set": {"user_ids": list(ADMINS)}},
+        upsert=True
+    )
+    # Refresh cache from what was saved
+    ADMINS = set(ADMINS)
+    ADMINS.add(SUPER_ADMIN_ID)
 
 # --- Admin Decorators ---
 def restricted_to_admin(func: Callable):
@@ -97,7 +125,7 @@ async def addadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"ℹ️ User {user_id} is already an admin.")
     else:
         ADMINS.add(user_id)
-        save_admins()
+        await save_admins()
 
         await tiers.promote_to_premium(user_id, bot=context.bot)
         await refresh_user_commands(user_id, bot=context.bot)
@@ -153,8 +181,8 @@ async def handle_removeadmin_callback(update: Update, context: ContextTypes.DEFA
         user_id = int(query.data.split(":")[1])
         if user_id in ADMINS:
             ADMINS.remove(user_id)
-            save_admins()
-            await tiers.set_user_tier(user_id, "Apprentice", bot=context.bot)
+            await save_admins()
+            await tiers.set_user_tier(user_id, "apprentice", bot=context.bot)
             await refresh_user_commands(user_id, bot=context.bot)
             await query.edit_message_text(f"🗑️ Removed user {user_id} from admins.")
         else:
@@ -178,15 +206,18 @@ async def addwallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ No valid secret keys provided.")
         return
 
-    if os.path.exists(WALLET_SECRETS_FILE):
-        with open(WALLET_SECRETS_FILE, "r") as f:
-            secret_data = json.load(f)
-    else:
-        secret_data = {}
+    # Ensure DECRYPTED_WALLETS is populated
+    await secrets_key.load_encrypted_keys()
 
     added = []
     failed = []
     password = get_wallet_password()
+
+    # Fetch existing secrets from cache
+    secret_data = {
+        address: encrypt_key(key, password)
+        for address, key in secrets_key.DECRYPTED_WALLETS.items()
+    }
 
     for base58_secret in base58_keys:
         try:
@@ -206,9 +237,9 @@ async def addwallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             failed.append((base58_secret[:6] + "...", str(e)))
 
-    secrets_key.persist_encrypted_keys(secret_data)
-    wallet_sync.sync_wallets_from_secrets()
-    wallet_sync.purge_orphan_wallets()
+    await secrets_key.persist_encrypted_keys(secret_data)
+    await wallet_sync.sync_wallets_from_secrets()
+    await wallet_sync.purge_orphan_wallets()
 
     msg = ""
     if added:
@@ -219,6 +250,78 @@ async def addwallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg.strip())
 
 @restricted_to_super_admin
+# async def addpayout(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     if not context.args:
+#         await update.message.reply_text("Usage: /addpayout <base58-private-key1>,<base58-private-key2>,...")
+#         return
+
+#     keys_raw = " ".join(context.args)
+#     keys = [k.strip() for k in keys_raw.split(",") if k.strip()]
+
+#     if not keys:
+#         await update.message.reply_text("❌ No valid private keys provided.")
+#         return
+
+#     await update.message.reply_text("⏳ Validating wallet private keys, please wait...")
+
+#     added, failed = [], []
+
+#     for key in keys:
+#         try:
+#             secret = b58decode(key)
+#             keypair = Keypair.from_bytes(secret)
+#             addr = str(keypair.pubkey())
+#             pubkey = Pubkey.from_string(addr)
+#         except Exception:
+#             failed.append((key, "Invalid base58 private key"))
+#             continue
+
+#         try:
+#             resp = SOLANA_CLIENT.get_account_info(pubkey)
+
+#             if resp is None or resp.value is None:
+#                 # Wallet not on-chain yet — accept it since we have private key
+#                 if add_wallet_to_payout_list(addr):
+#                     added.append(addr)
+#                 else:
+#                     failed.append((addr, "Already exists"))
+#                 continue
+
+#             owner = str(resp.value.owner)
+#             is_system_owned = owner == SYSTEM_PROGRAM_ID
+#             is_token_owned = owner == TOKEN_PROGRAM_ID
+#             data_len = len(resp.value.data) if hasattr(resp.value.data, '__len__') else 0
+#             is_executable = resp.value.executable
+
+#             if is_token_owned:
+#                 failed.append((addr, "Address is owned by Token Program (token/mint account)"))
+#                 continue
+
+#             if is_system_owned and data_len == 0 and not is_executable:
+#                 if add_wallet_to_payout_list(addr):
+#                     added.append(addr)
+#                 else:
+#                     failed.append((addr, "Already exists"))
+#             else:
+#                 reason = "Not a user wallet"
+#                 if not is_system_owned:
+#                     reason = f"Owned by non-System Program: {owner}"
+#                 elif data_len > 0:
+#                     reason = f"Has data: {data_len} bytes"
+#                 elif is_executable:
+#                     reason = "Executable account"
+#                 failed.append((addr, reason))
+
+#         except Exception as e:
+#             failed.append((addr, str(e)))
+
+#     result_msg = ""
+#     if added:
+#         result_msg += f"✅ Added payout wallets:\n" + "\n".join(added) + "\n\n"
+#     if failed:
+#         result_msg += f"⚠️ Failed to add:\n" + "\n".join(f"{a} ({r})" for a, r in failed)
+
+#     await update.message.reply_text(result_msg.strip())
 async def addpayout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text("Usage: /addpayout <base58-private-key1>,<base58-private-key2>,...")
@@ -233,7 +336,7 @@ async def addpayout(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("⏳ Validating wallet private keys, please wait...")
 
-    added, failed = [], []
+    added, failed, valid_new = [], [], []
 
     for key in keys:
         try:
@@ -249,11 +352,7 @@ async def addpayout(update: Update, context: ContextTypes.DEFAULT_TYPE):
             resp = SOLANA_CLIENT.get_account_info(pubkey)
 
             if resp is None or resp.value is None:
-                # Wallet not on-chain yet — accept it since we have private key
-                if add_wallet_to_payout_list(addr):
-                    added.append(addr)
-                else:
-                    failed.append((addr, "Already exists"))
+                valid_new.append(addr)
                 continue
 
             owner = str(resp.value.owner)
@@ -264,13 +363,8 @@ async def addpayout(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             if is_token_owned:
                 failed.append((addr, "Address is owned by Token Program (token/mint account)"))
-                continue
-
-            if is_system_owned and data_len == 0 and not is_executable:
-                if add_wallet_to_payout_list(addr):
-                    added.append(addr)
-                else:
-                    failed.append((addr, "Already exists"))
+            elif is_system_owned and data_len == 0 and not is_executable:
+                valid_new.append(addr)
             else:
                 reason = "Not a user wallet"
                 if not is_system_owned:
@@ -284,6 +378,14 @@ async def addpayout(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             failed.append((addr, str(e)))
 
+    # Bulk add new addresses
+    actually_added = await add_wallets_to_payout_bulk(valid_new)
+    added.extend(actually_added)
+
+    already_exist = list(set(valid_new) - set(actually_added))
+    for dup in already_exist:
+        failed.append((dup, "Already exists"))
+
     result_msg = ""
     if added:
         result_msg += f"✅ Added payout wallets:\n" + "\n".join(added) + "\n\n"
@@ -291,6 +393,8 @@ async def addpayout(update: Update, context: ContextTypes.DEFAULT_TYPE):
         result_msg += f"⚠️ Failed to add:\n" + "\n".join(f"{a} ({r})" for a, r in failed)
 
     await update.message.reply_text(result_msg.strip())
+
+
 
 @restricted_to_admin
 async def checkpayment(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -377,6 +481,8 @@ async def manual_receive_payment_id(update: Update, context: ContextTypes.DEFAUL
     tx_sig = context.user_data.get("manual_tx_sig")
     if tx_sig:
         payment["tx_sig"] = tx_sig
+        # Persist the changes to database
+        await payment_logs.log_user_payment(user_id, payment_id, payment)
 
     await manual_upgrade.complete_verified_upgrade(int(user_id), payment, context)
     await update.message.reply_text("✅ Manual upgrade completed and payment forwarded.")
@@ -400,92 +506,91 @@ manual_upgrade_conv = ConversationHandler(
 async def list_referrals(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Admin command to view referral data for all users or a specific user."""
     
-    
-    # Ensure referral data is loaded
-    referral.load_referral_data()
-    
-    # If no args, show summary of all referrers
+    await user_collection.load_user_collection_from_mongo()
+
+    # Filter users that have a referral section
+    referral_users = {
+        uid: doc["referral"]
+        for uid, doc in user_collection.USER_COLLECTION.items()
+        if "referral" in doc
+    }
+
     if not context.args:
-        if not referral.REFERRAL_DATA:
+        if not referral_users:
             await update.message.reply_text("📊 No referral data found in the system.")
             return
-            
-        # Sort referrers by total commission (highest first)
+
+        # Sort by total_commission
         sorted_referrers = sorted(
-            referral.REFERRAL_DATA.items(), 
-            key=lambda x: x[1]["total_commission"], 
+            referral_users.items(),
+            key=lambda x: x[1].get("total_commission", 0),
             reverse=True
         )
-        
+
         msg = "📊 *Referral Program Summary*\n\n"
-        
-        for user_id, data in sorted_referrers[:5]:  # Show top 5
+
+        for user_id, data in sorted_referrers[:5]:  # top 5
             try:
                 user_info = await context.bot.get_chat(int(user_id))
                 user_name = user_info.full_name or f"User {user_id}"
             except:
                 user_name = f"User {user_id}"
-            
-                
+
             msg += (
                 f"👤 *{user_name}* (ID: `{user_id}`)\n"
-                f"  • Successful Referrals: {data['successful_referrals']}\n"
-                f"  • Pending Referrals: {len(data['referred_users'])}\n"
-                f"  • Total Commission: ${data['total_commission']:.2f}\n"
-                #f"  • Paid: ${data['total_paid']:.2f}\n"
+                f"  • All Time Referrals: {data.get('total_referred', 0)}\n"
+                f"  • Successful Referrals: {data.get('successful_referrals', 0)}\n"
+                f"  • Pending Referrals: {len(data.get('referred_users', []))}\n"
+                f"  • Total Commission: ${data.get('total_commission', 0):.2f}\n"
+                f"  • Paid: ${data.get('total_paid', 0):.2f}\n"
             )
+
             if data.get("tx_sig"):
-                msg += (
-                    f"  • Paid: ${data['total_paid']:.2f}\n"
-                    f"  • Tx Sig: `{data['tx_sig']}`\n\n")
-            else:
-                msg += f"  • Paid: ${data['total_paid']:.2f}\n\n"
-            
-            
-        msg += "\n\nUse `/listrefs <user_id>` to see details for a specific user."
-        
-        await update.message.reply_text(msg, parse_mode="Markdown")
-        
+                msg += f"  • Tx Sig: `{data['tx_sig']}`\n"
+
+            msg += "\n"
+
+        msg += "\nUse `/listrefs <user_id>` to see details for a specific user."
+        await update.message.reply_text(msg.strip(), parse_mode="Markdown")
+
     else:
-        # Show details for specific user
         user_id = context.args[0]
-        
-        if user_id not in referral.REFERRAL_DATA:
+
+        if user_id not in user_collection.USER_COLLECTION or "referral" not in user_collection.USER_COLLECTION[user_id]:
             await update.message.reply_text(f"❌ No referral data found for user ID {user_id}.")
             return
-            
-        data = referral.REFERRAL_DATA[user_id]
-        
+
+        data = user_collection.USER_COLLECTION[user_id]["referral"]
+
         try:
             user_info = await context.bot.get_chat(int(user_id))
             user_name = user_info.full_name or f"User {user_id}"
         except:
             user_name = f"User {user_id}"
-            
+
         msg = f"📊 *Referral Data for {user_name}* (ID: `{user_id}`)\n\n"
-        
-        # User's data
         msg += (
-            f"✅ Successful Referrals: {data['successful_referrals']}\n"
-            f"🔄 Pending Referrals: {len(data['referred_users'])}\n\n"
-            f"💰 Total Commission: ${data['total_commission']:.2f}\n"
-            f"💵 Paid Amount: ${data['total_paid']:.2f}\n"
-            f"💸 Unpaid Amount: ${data['total_commission'] - data['total_paid']:.2f}\n"
+            f"👤 All Time Referrals: {data.get('total_referred', 0)}\n"
+            f"✅ Successful Referrals: {data.get('successful_referrals', 0)}\n"
+            f"🔄 Pending Referrals: {len(data.get('referred_users', []))}\n\n"
+            f"💰 Total Commission: ${data.get('total_commission', 0):.2f}\n"
+            f"💵 Paid Amount: ${data.get('total_paid', 0):.2f}\n"
+            f"💸 Unpaid Amount: ${(data.get('total_commission', 0) - data.get('total_paid', 0)):.2f}\n"
         )
 
         if data.get("tx_sig"):
-                msg += f"\n🔗 Signature: `{data['tx_sig']}`\n"
-        
-        # Wallet info
-        if data["wallet_address"]:
+            msg += f"\n🔗 Signature: `{data['tx_sig']}`\n"
+
+        if data.get("wallet_address"):
             msg += f"\n🔑 Wallet: `{data['wallet_address']}`\n"
         else:
             msg += "\n🔑 No wallet address set\n"
-            
-        
-        await update.message.reply_text(msg, parse_mode="Markdown")
 
-@restricted_to_admin
+        await update.message.reply_text(msg.strip(), parse_mode="Markdown")
+
+
+
+@restricted_to_super_admin
 async def listwallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Admin command to list all wallets (payout and regular) with pagination."""
     
@@ -529,14 +634,14 @@ async def show_wallet_dashboard(update: Update, context: ContextTypes.DEFAULT_TY
     
     # Add payout wallets for current page
     if payout_start < len(payout_wallets):
-        current_wallets.extend([("payout", addr) for addr in payout_wallets[payout_start:payout_end]])
+        current_wallets.extend([("withdrawal", addr) for addr in payout_wallets[payout_start:payout_end]])
     
     # If we have space left, add regular wallets
     if end_idx > len(payout_wallets):
         secret_start = max(0, start_idx - len(payout_wallets))
         secret_end = max(0, end_idx - len(payout_wallets))
         if secret_start < len(secret_wallets):
-            current_wallets.extend([("regular", addr) for addr in secret_wallets[secret_start:secret_end]])
+            current_wallets.extend([("deposit", addr) for addr in secret_wallets[secret_start:secret_end]])
     
     # Calculate total pages
     total_pages = (total_wallets - 1) // WALLET_PAGE_SIZE + 1
@@ -545,10 +650,10 @@ async def show_wallet_dashboard(update: Update, context: ContextTypes.DEFAULT_TY
     msg = f"💼 *Wallet List* (Page {page + 1}/{total_pages})\n\n"
     
     for wallet_type, addr in current_wallets:
-        if wallet_type == "payout":
-            msg += f"💰 *Payout Wallet*: `{addr}`\n\n"
+        if wallet_type == "withdrawal":
+            msg += f"💰 *Withdrawal Wallet*: `{addr}`\n\n"
         else:
-            msg += f"🔑 *Regular Wallet*: `{addr}`\n\n"
+            msg += f"🔑 *Deposit Wallet*: `{addr}`\n\n"
     
     # Build navigation buttons
     buttons = []
@@ -561,7 +666,7 @@ async def show_wallet_dashboard(update: Update, context: ContextTypes.DEFAULT_TY
         nav_buttons.append(InlineKeyboardButton("Next ⏭", callback_data=f"{LIST_WALLET_PAGE}_next"))
     
     buttons.append(nav_buttons)
-    #buttons.append([InlineKeyboardButton("🏠 Back to Dashboard", callback_data="back_to_dashboard")])
+    buttons.append([InlineKeyboardButton("🏠 Back to Dashboard", callback_data="to_dashboard")])
 
     keyboard = InlineKeyboardMarkup(buttons)
     
@@ -582,8 +687,29 @@ async def show_wallet_dashboard(update: Update, context: ContextTypes.DEFAULT_TY
 async def handle_wallet_list_navigation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle navigation buttons for wallet listing."""
     query = update.callback_query
+
+    if query.data == "to_dashboard":
+        await query.answer()
+        # Delete the current message containing the token list
+        #context.user_data.clear()
+        await query.message.delete()
+        # Directly call the launch function after deletion
+        launch_func = context.bot_data.get("launch_dashboard")
+
+        if launch_func:
+            await launch_func(update, context)
+            return
+        else:
+            try:
+                await update.callback_query.edit_message_text("⚠️ Dashboard unavailable.")
+            except BadRequest as e:
+                if "message to edit" in str(e):
+                    await update.effective_chat.send_message("⚠️ Dashboard unavailable.")
+                else:
+                    raise
+        return
     
-    if query.data == f"{LIST_WALLET_PAGE}_prev":
+    elif query.data == f"{LIST_WALLET_PAGE}_prev":
         context.user_data['wallet_page'] = max(0, context.user_data.get('wallet_page', 0) - 1)
     elif query.data == f"{LIST_WALLET_PAGE}_next":
         payout_wallets = context.user_data.get('payout_wallets', [])
@@ -609,15 +735,11 @@ async def removewallet(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ No valid wallet addresses provided.")
         return
 
-    if not secrets_key.DECRYPTED_WALLETS:
-        secret_data = secrets_key.load_encrypted_keys()
-    else:
-        secret_data = secrets_key.DECRYPTED_WALLETS
-
+    # Always refresh DECRYPTED_WALLETS to ensure consistency
+    secret_data = await secrets_key.load_encrypted_keys()
     if not secret_data:
         await update.message.reply_text("❌ No wallet secrets found.")
         return
-
 
     # Identify removable and in-use addresses
     addresses_to_remove = []
@@ -687,10 +809,10 @@ async def handle_removewallet_callback(update: Update, context: ContextTypes.DEF
                 a: encrypt_key(k, password)
                 for a, k in secrets_key.DECRYPTED_WALLETS.items()
             }
-            secrets_key.persist_encrypted_keys(encrypted_data)
+            await secrets_key.persist_encrypted_keys(encrypted_data)
 
-            wallet_sync.sync_wallets_from_secrets()
-            wallet_sync.purge_orphan_wallets()
+            await wallet_sync.sync_wallets_from_secrets()
+            await wallet_sync.purge_orphan_wallets()
 
             msg = f"✅ Successfully removed {len(removed)} wallet(s):\n" + "\n".join(f"`{addr}`" for addr in removed)
             if skipped:
@@ -753,24 +875,9 @@ async def handle_removepayout_callback(update: Update, context: ContextTypes.DEF
     if query.data.startswith("confirm_removepayout:"):
         addresses = query.data.split(":")[1].split(",")
         
-        # Get current payout wallets
-        current_wallets = payout.get_payout_wallets()
-        
-        # Remove specified wallets
-        removed = []
-        new_payout_list = []
-        
-        for addr in current_wallets:
-            if addr in addresses:
-                removed.append(addr)
-            else:
-                new_payout_list.append(addr)
-        
+        removed = await payout.remove_wallets_from_payout(addresses)
+
         if removed:
-            payout.PAYOUT_WALLETS = new_payout_list
-            payout.save_payout_wallets()
-            
-            
             msg = f"✅ Successfully removed {len(removed)} payout wallet(s):\n" + "\n".join(f"`{addr}`" for addr in removed)
             await query.edit_message_text(msg, parse_mode="Markdown")
         else:
@@ -778,6 +885,99 @@ async def handle_removepayout_callback(update: Update, context: ContextTypes.DEF
 
     elif query.data == "cancel_removepayout":
         await query.edit_message_text("❌ Payout wallet removal cancelled.")
+
+
+@restricted_to_admin
+async def addrpc(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text("Usage: /addrpc <rpc1>,<rpc2>,...")
+        return
+
+    if not rpcs.RPC_LIST:
+        await rpcs.load_rpc_list()
+    raw_input = " ".join(context.args)
+    new_rpcs = [rpc.strip() for rpc in raw_input.split(",") if rpc.strip()]
+    
+    added = await rpcs.add_rpcs_bulk(new_rpcs)
+    skipped = list(set(new_rpcs) - set(added))
+
+    msg = ""
+    if added:
+        msg += f"✅ Added RPC(s):\n" + "\n".join(added) + "\n\n"
+    if skipped:
+        msg += f"⚠️ Already present:\n" + "\n".join(skipped)
+    await update.message.reply_text(msg.strip())
+
+
+@restricted_to_admin
+async def removerpc(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text("Usage: /removerpc <rpc1>,<rpc2>,...")
+        return
+
+    if not rpcs.RPC_LIST:
+        await rpcs.load_rpc_list()
+    raw_input = " ".join(context.args)
+    to_remove = [rpc.strip() for rpc in raw_input.split(",") if rpc.strip()]
+    
+    found = [rpc for rpc in to_remove if rpc in rpcs.RPC_LIST]
+    not_found = [rpc for rpc in to_remove if rpc not in rpcs.RPC_LIST]
+
+    if not found:
+        msg = "❌ None of the provided RPCs were found in the list."
+        if not_found:
+            msg += "\n\nMissing:\n" + "\n".join(not_found)
+        await update.message.reply_text(msg)
+        return
+
+    confirmation = (
+        f"⚠️ Are you sure you want to remove these {len(found)} RPC(s)?\n\n" +
+        "\n".join([f"- `{rpc}`" for rpc in found])
+    )
+
+    await confirm_action(
+        update,
+        context,
+        confirm_callback_data=f"confirm_removerpc:{','.join(found)}",
+        cancel_callback_data="cancel_removerpc",
+        confirm_message=confirmation
+    )
+
+
+@restricted_to_admin
+async def handle_removerpc_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data.startswith("confirm_removerpc:"):
+        to_remove = query.data.split(":")[1].split(",")
+
+        removed = await rpcs.remove_rpcs_bulk(to_remove)
+
+        if removed:
+            msg = f"✅ Successfully removed {len(removed)} RPC(s):\n" + "\n".join(f"`{rpc}`" for rpc in removed)
+            await query.edit_message_text(msg, parse_mode="Markdown")
+        else:
+            await query.edit_message_text("❌ No RPCs were removed.")
+
+    elif query.data == "cancel_removerpc":
+        await query.edit_message_text("❌ RPC removal cancelled.")
+
+
+@restricted_to_admin
+async def listrpc(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Step 1: Check if RPC_LIST is empty and load if needed
+    if not rpcs.RPC_LIST:
+        await rpcs.load_rpc_list()
+
+    # Step 2: If still empty, notify user
+    if not rpcs.RPC_LIST:
+        await update.message.reply_text("ℹ️ No RPC endpoints found.")
+        return
+
+    # Step 3: Display the list
+    rpc_list = "\n".join([f"{i+1}. {rpc}" for i, rpc in enumerate(rpcs.RPC_LIST)])
+    await update.message.reply_text(f"📡 Current RPC Endpoints:\n{rpc_list}")
 
 
 def register_wallet_commands(app):
@@ -790,7 +990,7 @@ def register_wallet_commands(app):
     # Navigation callbacks
     app.add_handler(CallbackQueryHandler(
         handle_wallet_list_navigation, 
-        pattern=f"^{LIST_WALLET_PAGE}_"
+        pattern=f"^{LIST_WALLET_PAGE}_|^to_dashboard$"
     ))
 
     # Confirmation callbacks

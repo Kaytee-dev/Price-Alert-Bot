@@ -15,7 +15,7 @@ import storage.expiry as expiry
 
 from storage import wallets
 from storage import payment_logs
-from withdrawal import forward_user_payment
+from withdrawal import forward_user_payment, run_forward_user_payment
 
 from datetime import datetime, timedelta
 
@@ -32,14 +32,6 @@ from referral import on_upgrade_completed
 # === STATE CONSTANTS ===
 SELECTING_DURATION, PAYMENT, ASK_TRANSACTION_HASH, VERIFICATION = range(4)
 
-
-# async def fetch_sol_price_usd() -> float:
-#     """Fetch current SOL price in USD from CoinGecko."""
-#     url = "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd"
-#     async with aiohttp.ClientSession() as session:
-#         async with session.get(url) as resp:
-#             data = await resp.json()
-#             return data['solana']['usd']
 
 # === TRANSACTION HASH PROMPT ===
 async def prompt_transaction_hash(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -61,20 +53,6 @@ async def prompt_transaction_hash(update: Update, context: ContextTypes.DEFAULT_
             raise
 
     return ASK_TRANSACTION_HASH
-
-# async def go_back_to_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     launch_func = context.bot_data.get("launch_dashboard")
-#     if launch_func:
-#         custom_update = build_custom_update_from_query(update.callback_query)
-#         return await launch_func(custom_update, context)
-#     else:
-#         try:
-#             await update.callback_query.edit_message_text("⚠️ Dashboard unavailable.")
-#         except BadRequest as e:
-#             if "message to edit" in str(e):
-#                 await update.effective_chat.send_message("⚠️ Dashboard unavailable.")
-#             else:
-#                 raise
 
 async def start_renewal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start the renewal process and show user's current tier and expiry."""
@@ -176,13 +154,13 @@ async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.edit_text("⚠️ Missing renewal details. Please restart with /renew.")
         return ConversationHandler.END
 
-    chosen_wallet = wallets.get_random_wallet()
+    chosen_wallet = await wallets.get_random_wallet()
     if not chosen_wallet:
         await query.message.edit_text("❌ No wallets available for payment at this time. Please try again later.")
         return ConversationHandler.END
 
     # Mark wallet as in-use
-    wallets.set_wallet_status(chosen_wallet, "in-use")
+    await wallets.set_wallet_status(chosen_wallet, "in-use")
 
     # Set price in USD based on tier and duration
     tier_prices_usd = {
@@ -285,7 +263,7 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
     tx_sig = user_input.strip()
     
     # ✅ Log new payment only after hash is submitted
-    payment_logs.log_user_payment(user_id, payment_reference, {
+    await payment_logs.log_user_payment(user_id, payment_reference, {
         "action": "renewal",
         "tier": current_tier,
         "duration_months": duration_months,
@@ -356,14 +334,14 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
                     new_expiry = current_expiry + timedelta(days=int(duration_months) * 30)
                 
                 # Update expiry
-                tiers.set_user_expiry(user_id, new_expiry)
+                await tiers.set_user_expiry(user_id, new_expiry)
 
                 # Mark wallet as available
-                wallets.mark_wallet_as_available(wallet_address)
+                await wallets.mark_wallet_as_available(wallet_address)
 
                 # Process referral commission if applicable (for 6+ month renewals)
                 if int(duration_months) >= 6:
-                    referral_success, commission, referrer_id = on_upgrade_completed(user_id, renewal_fee_usd, int(duration_months))
+                    referral_success, commission, referrer_id = await on_upgrade_completed(user_id, renewal_fee_usd, int(duration_months))
                     
                     if referral_success and referrer_id:
                         # Get referrer and referred user info
@@ -402,12 +380,12 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
                         referred = await context.bot.get_chat(user_id)
                         referred_name = referred.full_name or f"User {user_id}"
 
-                await send_message(
-                            context.bot,
-                            f"♻️ User {referred_name} (ID: `{user_id}`) has successfully renewed their *{current_tier.capitalize()}* tier for {duration_months} month(s).\n\n"
-                            f"⏳ New Expiry: {new_expiry.strftime('%d %b %Y')} | Ref: `{payment_reference}`",
-                            chat_id=BOT_INFO_LOGS_ID
-                        )
+                        await send_message(
+                                    context.bot,
+                                    f"♻️ User {referred_name} (ID: `{user_id}`) has successfully renewed their *{current_tier.capitalize()}* tier for {duration_months} month(s).\n\n"
+                                    f"⏳ New Expiry: {new_expiry.strftime('%d %b %Y')} | Ref: `{payment_reference}`",
+                                    chat_id=BOT_INFO_LOGS_ID
+                                )
 
                 complete_keyboard = InlineKeyboardMarkup([
                     [InlineKeyboardButton("🏠 Back to Dashboard", callback_data="complete")]
@@ -422,15 +400,18 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
 
                 await update.message.reply_text(success_msg, parse_mode="Markdown", reply_markup=complete_keyboard)
 
-                # Auto-forward funds
-                success_forward, result = await forward_user_payment(wallet_address, context)
+                # # Auto-forward funds
+                # success_forward, result = await forward_user_payment(wallet_address, context)
                 
-                if not success_forward:
-                    await send_message(
-                        context.bot,
-                        f"⚠️ Auto-forward failed for {user_id} ({wallet_address}) — Error: {result}",
-                        chat_id=BOT_ERROR_LOGS_ID
-                    )
+                # if not success_forward:
+                #     await send_message(
+                #         context.bot,
+                #         f"⚠️ Auto-forward failed for {user_id} ({wallet_address}) — Error: {result}",
+                #         chat_id=BOT_ERROR_LOGS_ID
+                #     )
+
+                # Start background auto-forward
+                asyncio.create_task(run_forward_user_payment(wallet_address, context, user_id))
                 return VERIFICATION
 
     # Payment verification failed
@@ -455,7 +436,7 @@ async def back_to_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     # Revert the wallet status
-    wallets.revert_wallet_status_from_context(context)
+    await wallets.revert_wallet_status_from_context(context)
     
     # Delete current message with QR code
     try:
@@ -546,7 +527,7 @@ async def retry_verification(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def cancel_renewal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel the renewal process and return to dashboard."""
     # Revert the status of the assigned wallet from in-use to available
-    wallets.revert_wallet_status_from_context(context)
+    await wallets.revert_wallet_status_from_context(context)
 
     if update.callback_query:
         await update.callback_query.answer()
@@ -573,7 +554,7 @@ async def cancel_renewal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # === RENEWAL CONVERSATION HANDLER ===
 renewal_conv_handler = ConversationHandler(
     entry_points=[
-        CommandHandler("renew", start_renewal),
+        CommandHandler(["renew", "rn"], start_renewal),
         CallbackQueryHandler(start_renewal, pattern="^cmd_renew$")
     ],
     states={

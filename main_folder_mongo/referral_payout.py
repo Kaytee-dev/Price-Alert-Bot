@@ -26,6 +26,8 @@ from config import SOLSCAN_BASE, SOLSCAN_TX_BASE, SOLANA_RPC, BOT_NAME
 from util.process_batch_payout_util import process_batch_payouts
 from util.wallet_validator import validate_wallet_addresses
 
+import storage.user_collection as user_collection
+
 logger = logging.getLogger(__name__)
 
 # Constants
@@ -44,22 +46,23 @@ CLUSTER = "mainnet" if IS_MAINNET else "devnet"
 def get_eligible_users() -> Tuple[List[Tuple[str, Dict[str, Any]]], List[Tuple[str, Dict[str, Any]]]]:
     eligible_users = []
     eligible_without_wallet = []
-    
-    for user_id, data in referral.REFERRAL_DATA.items():
-        # Calculate unpaid commission
-        unpaid_commission = data["total_commission"] - data["total_paid"]
-        
-        # Check eligibility criteria
-        if (unpaid_commission > 0 and 
-            data["successful_referrals"] >= MIN_SUCCESSFUL_REFERRALS):
-            
-            if data["wallet_address"]:
-                eligible_users.append((user_id, data))
-            else:
-                eligible_without_wallet.append((user_id, data))
-    
-    return eligible_users, eligible_without_wallet
 
+    for user_id, doc in user_collection.USER_COLLECTION.items():
+        referral_data = doc.get("referral", {})
+        total_commission = referral_data.get("total_commission", 0.0)
+        total_paid = referral_data.get("total_paid", 0.0)
+        wallet_address = referral_data.get("wallet_address", "")
+        successful_referrals = referral_data.get("successful_referrals", 0)
+
+        unpaid_commission = total_commission - total_paid
+
+        if unpaid_commission > 0 and successful_referrals >= MIN_SUCCESSFUL_REFERRALS:
+            if wallet_address:
+                eligible_users.append((user_id, referral_data))
+            else:
+                eligible_without_wallet.append((user_id, referral_data))
+
+    return eligible_users, eligible_without_wallet
 
 
 async def calculate_payout_totals(valid_users: List[Tuple[str, Dict[str, Any]]]) -> Tuple[int, float, float, float, float]:
@@ -213,10 +216,10 @@ async def handle_notification_selection(update: Update, context: ContextTypes.DE
 # Main command handler
 @restricted_to_admin
 async def process_referral_payouts(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    referral.load_referral_data()
-    if not referral.REFERRAL_DATA:
+    if not user_collection.USER_COLLECTION:
         await update.message.reply_text("📊 No referral data found in the system.")
         return ConversationHandler.END
+
 
     # Get eligible users
     eligible_users, eligible_without_wallet = get_eligible_users()
@@ -303,24 +306,6 @@ async def run_wallet_validation_background(context: ContextTypes.DEFAULT_TYPE, c
         context.user_data["valid_users"] = valid_users
         context.user_data["invalid_users"] = invalid_users
 
-        # if invalid_users:
-        #     await context.bot.send_message(
-        #         chat_id=chat_id,
-        #         text="⏳ Sending notifications to users with invalid wallets..."
-        #     )
-
-        #     newly_notified = await notify_users_invalid_wallet(
-        #         context,
-        #         invalid_users,
-        #         context.user_data["invalid_wallet_notified"]
-        #     )
-
-        #     if newly_notified > 0:
-        #         await context.bot.send_message(
-        #             chat_id=chat_id,
-        #             text=f"✅ Notifications sent to {newly_notified} users with invalid wallets."
-        #         )
-
         if invalid_users:
             asyncio.create_task(
                 notify_invalid_wallets_background(context, chat_id, invalid_users)
@@ -343,7 +328,7 @@ async def run_wallet_validation_background(context: ContextTypes.DEFAULT_TYPE, c
             f"🧑‍🤝‍🧑 Eligible Users: {total_users}\n"
             f"💲 Total Commission (USD): ${total_usd:.2f}\n"
             f"🔄 Network Fees: {network_fees:.6f} USD (~ {network_fees_sol:.6f} SOL)\n"
-            f"💵 *Total Cost: {total_cost:.6f} SOL*\n\n"
+            f"💵 *Total Cost: {total_cost:.6f} USD*\n\n"
         )
 
         if invalid_users:
@@ -472,8 +457,13 @@ async def process_payments(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Parse results
     successful_transfers = []
     failed_transfers = []
+
+    # Prepare bulk updates
+    bulk_updates = []
     
     for user_id, success, tx_sig, message in results:
+        user_doc = user_collection.USER_COLLECTION.get(user_id, {})
+        referral_data = user_doc.get("referral", {})
         # Find the data for this user
         user_data = next((data for uid, data in valid_users if uid == user_id), None)
         
@@ -485,18 +475,29 @@ async def process_payments(update: Update, context: ContextTypes.DEFAULT_TYPE):
         amount_usd = unpaid_commission
         
         if success:
-            # Update referral data
-            referral.REFERRAL_DATA[user_id]["total_paid"] += unpaid_commission
-            referral.REFERRAL_DATA[user_id]["successful_referrals"] = 0  # Reset successful referrals
-            referral.REFERRAL_DATA[user_id]["tx_sig"] = tx_sig  # Store transaction signature
-            
+            # Update referral data to database
+            # referral_data["total_paid"] = referral_data.get("total_paid", 0.0) + unpaid_commission
+            # referral_data["successful_referrals"] = 0
+            # referral_data["tx_sig"] = tx_sig
+            # await user_collection.update_user_fields(user_id, {"referral": referral_data})
+
+            bulk_updates.append({
+            "_id": user_id,
+            "fields": {
+                "referral.total_paid": referral_data.get("total_paid", 0.0) + unpaid_commission,
+                "referral.tx_sig": tx_sig,
+                "referral.successful_referrals": 0
+            }
+            })
+
             successful_transfers.append((user_id, amount_usd, tx_sig))
         else:
             failed_transfers.append((user_id, amount_usd, message))
     
-    # Save updated referral data
-    referral.save_referral_data()
-    
+    # Perform bulk update
+    if bulk_updates:
+        await user_collection.bulk_update_user_fields(bulk_updates)
+
     # Create summary message
     summary = (
         f"✅ *Referral Payout Complete*\n\n"
@@ -572,9 +573,10 @@ async def notify_users_invalid_wallet(context: ContextTypes.DEFAULT_TYPE, invali
             
         try:
             # Get user data
-            user_data = referral.REFERRAL_DATA.get(user_id, {})
-            unpaid_commission = user_data.get("total_commission", 0) - user_data.get("total_paid", 0)
-            
+            user_doc = user_collection.USER_COLLECTION.get(user_id, {})
+            referral_data = user_doc.get("referral", {})
+            unpaid_commission = referral_data.get("total_commission", 0) - referral_data.get("total_paid", 0)
+
             message = (
                 "⚠️ *Your wallet address needs attention*\n\n"
                 f"You have ${unpaid_commission:.2f} in unpaid referral commissions ready to be paid out, "

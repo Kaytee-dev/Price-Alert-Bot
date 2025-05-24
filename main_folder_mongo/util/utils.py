@@ -1,29 +1,17 @@
 # utils.py
-import json
+
 import logging
 from telegram import Update, BotCommand, BotCommandScopeChat, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from config import SUPER_ADMIN_ID, ADMINS_FILE, BOT_ERROR_LOGS_ID
+from config import SUPER_ADMIN_ID, BOT_ERROR_LOGS_ID
 from telegram.error import BadRequest
+from util.bot_commands import regular_cmds, admin_cmds, super_admin_cmds
 
+from mongo_client import get_collection
+ADMINS = set()
 
-def load_json(file_path: str, fallback, log_label: str = ""):
-    try:
-        with open(file_path, "r") as f:
-            data = json.load(f)
-            logging.info(f"📂 Loaded {log_label or file_path}.")
-            return data
-    except (FileNotFoundError, json.JSONDecodeError):
-        logging.info(f"📂 No valid {log_label or file_path} found. Starting fresh.")
-        return fallback.copy() if isinstance(fallback, dict) else list(fallback)
+logger = logging.getLogger(__name__)
 
-def save_json(file_path: str, data, log_label: str = ""):
-    try:
-        with open(file_path, "w") as f:
-            json.dump(data, f, indent=2)
-        logging.info(f"💾 Saved {log_label or file_path}.")
-    except Exception as e:
-        logging.error(f"❌ Failed to save {log_label or file_path}: {e}")
 
 # utils.py (add at the end)
 def chunked(iterable, size):
@@ -48,52 +36,28 @@ async def send_message(bot, text: str, chat_id, parse_mode="Markdown", admins=No
             logging.error(f"❌ Also failed to notify BOT_LOGS_ID fallback: {super_err}")
 
 
-def load_admins():
-    try:
-        with open(ADMINS_FILE, "r") as f:
-            return set(json.load(f))
-    except Exception:
-        return set()
+async def load_admins():
+    """
+    Async: Load the list of admin user_ids from MongoDB and ensure all are integers.
+    """
+    global ADMINS
+    collection = get_collection("admins")
+    doc = await collection.find_one({"_id": "admin_list"})
+    
+    if doc and "user_ids" in doc:
+        # Cast all user IDs to int safely
+        ADMINS = set(int(uid) for uid in doc["user_ids"])
+    else:
+        ADMINS = set()
 
+    ADMINS.add(int(SUPER_ADMIN_ID))
+    logger.info("✅ ADMINS loaded from admins collection for refreshing commands")
 
 async def refresh_user_commands(user_id: int, bot):
 
-    ADMINS = load_admins()
-
-    regular_cmds = [
-        BotCommand("lc", "Launch bot dashboard"),
-        BotCommand("start", "Start tracking tokens"),
-        BotCommand("stop", "Stop tracking tokens"),
-        BotCommand("add", "Add a token to track -- /a"),
-        BotCommand("remove", "Remove token from tracking -- /rm"),
-        BotCommand("list", "List tracked tokens -- /l"),
-        BotCommand("reset", "Clear all tracked tokens -- /x"),
-        BotCommand("help", "Show help message -- /h"),
-        BotCommand("status", "Show stats of tracked tokens -- /s"),
-        BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
-    ]
-
-    admin_cmds = [
-        BotCommand("restart", "Restart the bot -- /rs"),
-        BotCommand("alltokens", "List all tracked tokens -- /at"),
-        BotCommand("checkpayment", "Retrieve user payment log -- /cp"),
-        BotCommand("manualupgrade", "Manually upgrade user tier -- /mu"),
-        BotCommand("processpayouts", "Process referral commission -- /pp"),
-        BotCommand("listrefs", "View user referral data -- /lr"),
-
-    ]
-
-    super_admin_cmds = [
-        BotCommand("addadmin", "Add a new admin -- /aa"),
-        BotCommand("removeadmin", "Remove an admin -- /ra"),
-        BotCommand("listadmins", "List all admins -- /la"),
-        BotCommand("addwallet", "Add new wallet -- /aw"),
-        BotCommand("addpayout", "Add payout wallet -- /ap"),
-        BotCommand("listwallet", "Add payout wallet -- /lw"),
-        BotCommand("removewallet", "Remove regular wallets -- /rm"),
-        BotCommand("removepayout", "Remove payout wallets -- /rp"),
-        
-    ]
+    global ADMINS
+    if not ADMINS:
+        await load_admins()
 
     if user_id == SUPER_ADMIN_ID:
         commands = regular_cmds + admin_cmds + super_admin_cmds
@@ -172,4 +136,13 @@ async def confirm_action(update, context, confirm_callback_data, cancel_callback
             reply_markup=reply_markup
         )
 
-
+async def back_to_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    # Delete the current message
+    await query.message.delete()
+    # Call the launch function to show the dashboard
+    launch_func = context.bot_data.get("launch_dashboard")
+    if launch_func:
+        return await launch_func(update, context)
+    #await launch(update, context)

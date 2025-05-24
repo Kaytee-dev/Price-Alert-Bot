@@ -12,7 +12,7 @@ from telegram.ext import (
 )
 
 from config import (
-    BOT_TOKEN, RESTART_FLAG_FILE, ACTIVE_RESTART_USERS_FILE, SUPER_ADMIN_ID
+    BOT_TOKEN, SUPER_ADMIN_ID
 )
 
 from commands import (
@@ -24,17 +24,18 @@ from commands import (
 
 import storage.tokens
 import storage.users
-from storage.tiers import load_user_tiers, check_and_process_tier_expiry_scheduler
+from storage.tiers import check_and_process_tier_expiry_scheduler
 import storage.tiers as tiers
 import storage.thresholds as thresholds
 
 
-from storage.tokens import load_tracked_tokens, load_active_token_data
-from storage.symbols import load_symbols_from_file
-from storage.users import load_user_tracking, load_user_status, save_user_status
-from storage.history import load_token_history
+from storage.tokens import load_tracked_tokens
+from storage.symbols import load_symbols
+from storage.users import load_user_tracking
+from storage.history import load_token_data
+from storage.rpcs import load_rpc_list
 
-from storage.expiry import load_user_expiry
+
 from storage.notify import remind_inactive_users
 from storage.payment_logs import load_payment_logs
 from storage.wallets import load_wallets
@@ -46,20 +47,28 @@ from secrets_key import load_encrypted_keys
 
 from admin import (
     addadmin, removeadmin, listadmins,
-    handle_removeadmin_callback, load_admins, ADMINS, addwallet, addpayout,
-    check_payment_conv, manual_upgrade_conv, list_referrals, register_wallet_commands
+    handle_removeadmin_callback, load_admins, addwallet, addpayout,
+    check_payment_conv, manual_upgrade_conv, list_referrals, register_wallet_commands,
+    addrpc, removerpc, listrpc, handle_removerpc_callback
 )
-from util.utils import (load_json, save_json, send_message,
-                   refresh_user_commands
+from util.utils import (send_message,
+                   refresh_user_commands, ADMINS
                    )
 from monitor import background_price_monitor
 
-from upgrade import upgrade_conv_handler
+from upgrade import upgrade_conv_handler, start_upgrade
 from referral import register_referral_handlers
-from renewal import renewal_conv_handler
+from renewal import renewal_conv_handler, start_renewal
 from referral_payout import register_payout_handlers
 from util.error_logs import error_handler
 import mongo_client
+
+from storage import user_collection, token_collection, payment_collection
+from util import restart_recovery as restart_recovery
+import util.utils as utils
+from storage.notify import (flush_notify_cache_to_db, ensure_notify_records_for_active_users,
+                            
+                            )
 
 
 
@@ -71,13 +80,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-
+# --- /restart Callback ---
 async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
     if query.data == "confirm_restart":
         await query.edit_message_text("♻️ Restarting bot...")
+        await restart_recovery.mark_active_users_for_restart()
         admin_id = query.from_user.id
 
         async def safe_restart():
@@ -91,30 +101,9 @@ async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                     return
 
-                active_users = [user_id for user_id, status in storage.users.USER_STATUS.items() if status]
-                save_json(ACTIVE_RESTART_USERS_FILE, active_users, "active restart users")
-                save_json(RESTART_FLAG_FILE, {"from_restart": True}, "restart flag")
-
-                for user_id in storage.users.USER_STATUS:
-                    storage.users.USER_STATUS[user_id] = False
-                save_user_status()
-
-                if hasattr(context.application, "_monitor_task"):
-                    task = context.application._monitor_task
-                    if task and not task.done():
-                        task.cancel()
-                        try:
-                            await task
-                        except asyncio.CancelledError:
-                            pass
-                    else:
-                        logger.info("ℹ️ Monitor task exists but already completed.")
-                else:
-                    logger.warning("⚠️ Monitor task reference missing despite start flag — possible inconsistency.")
-
-                # Cancelling expiry task scheduler
-                if hasattr(context.application, "_expiry_task"):
-                    task = context.application._expiry_task
+                # Cancel running tasks
+                for attr in ["_monitor_task", "_expiry_task", "_reminder_task"]:
+                    task = getattr(context.application, attr, None)
                     if task and not task.done():
                         task.cancel()
                         try:
@@ -122,16 +111,8 @@ async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         except asyncio.CancelledError:
                             pass
                 
-                # Cancelling inactive users reminder task scheduler
-                if hasattr(context.application, "_reminder_task"):
-                    task = context.application._reminder_task
-                    if task and not task.done():
-                        task.cancel()
-                        try:
-                            await task
-                        except asyncio.CancelledError:
-                            pass
-                
+                await flush_notify_cache_to_db()
+                await asyncio.sleep(1)
                 await mongo_client.disconnect()
                 await asyncio.sleep(1)
                 await context.application.stop()
@@ -149,60 +130,30 @@ async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("❌ Restart cancelled.")
 
 
+# --- /stop Callback ---
 async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
     if query.data == "confirm_stop":
         await query.edit_message_text("🔌 Shutting down bot...")
+        await restart_recovery.mark_active_users_for_restart()
 
         async def safe_shutdown():
             try:
-
-                 # ✅ Save current active users
-                active_users = [user_id for user_id, status in storage.users.USER_STATUS.items() if status]
-                save_json(ACTIVE_RESTART_USERS_FILE, active_users, "active restart users")
-                save_json(RESTART_FLAG_FILE, {"from_restart": True}, "restart flag")
-
-                # ✅ Reset all statuses
-                for user_id in storage.users.USER_STATUS:
-                    storage.users.USER_STATUS[user_id] = False
-                save_user_status()
-
-                # ✅ Cancel monitor loop
-                if hasattr(context.application, "_monitor_task"):
-                    task = context.application._monitor_task
-                    if not task.done():
-                        task.cancel()
-                        try:
-                            await task
-                        except asyncio.CancelledError:
-                            pass
-                
-                # Cancelling expiry task scheduler
-                if hasattr(context.application, "_expiry_task"):
-                    task = context.application._expiry_task
+                # Cancel running tasks
+                for attr in ["_monitor_task", "_expiry_task", "_reminder_task"]:
+                    task = getattr(context.application, attr, None)
                     if task and not task.done():
                         task.cancel()
                         try:
                             await task
                         except asyncio.CancelledError:
                             pass
-                
-                # Cancelling inactive users reminder task scheduler
-                if hasattr(context.application, "_reminder_task"):
-                    task = context.application._reminder_task
-                    if task and not task.done():
-                        task.cancel()
-                        try:
-                            await task
-                        except asyncio.CancelledError:
-                            pass
-                
                 
                 await context.application.stop()
 
-                # ✅ Cancel all running tasks
+                # Cancel all other running tasks
                 tasks = asyncio.all_tasks()
                 for task in tasks:
                     if task is not asyncio.current_task():
@@ -211,9 +162,12 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             await task
                         except asyncio.CancelledError:
                             pass
-                
+
+                await flush_notify_cache_to_db()
+                await asyncio.sleep(1)
                 await mongo_client.disconnect()
                 await asyncio.sleep(1)
+                #await context.application.stop()
                 logger.info("🔌 Bot stopped cleanly.")
             except Exception as e:
                 logger.error(f"Shutdown error: {e}")
@@ -229,6 +183,56 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # --- Bot Runner ---
 async def on_startup(app):
     await mongo_client.connect()
+    await user_collection.load_user_collection_from_mongo()
+    await user_collection.ensure_user_indexes()
+
+    await token_collection.load_token_collection_from_mongo()
+    await token_collection.create_token_list_index()
+    await load_token_data()
+
+    await payment_collection.load_payment_collection_from_mongo()
+
+    await load_admins()
+    load_user_tracking()
+    # load_user_status()
+
+    load_symbols
+    load_tracked_tokens()
+    #load_token_history()
+
+    # load_user_tiers()
+    await load_payment_logs()
+    load_payout_wallets()
+
+    await load_wallets()
+    await load_encrypted_keys()
+    await sync_wallets_from_secrets()
+    await purge_orphan_wallets()
+    await load_rpc_list()
+    await ensure_notify_records_for_active_users()
+
+
+    # 🔒 Enforce token limits based on user tiers
+    await tiers.enforce_token_limits_bulk()
+
+    
+    # ♻️ Restore active restart users
+    await restart_recovery.restore_active_users()
+
+    # 🧮 Token Tracking — Rebuild from loaded structured USER_TRACKING
+    storage.tokens.rebuild_tracked_token()
+    
+    # Adding threshold on startup
+    await thresholds.load_user_thresholds()
+    updated = False
+    for chat_id in storage.users.USER_TRACKING:
+        if chat_id not in thresholds.USER_THRESHOLDS:
+            thresholds.USER_THRESHOLDS[chat_id] = 5.0
+            updated = True
+    if updated:
+        await thresholds.save_user_thresholds()
+
+
     if any(storage.users.USER_STATUS.values()):
         monitor_task = app.create_task(background_price_monitor(app))
         app._monitor_task = monitor_task
@@ -258,6 +262,8 @@ async def on_startup(app):
         BotCommand("help", "Show help message -- /h"),
         BotCommand("status", "Show stats of tracked tokens -- /s"),
         BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
+        BotCommand("upgrade", "Upgrade your tier to track more tokens -- /u"),
+        BotCommand("renew", "Renew your current tier to continue tracking your tokens -- /rn"),
     ]
     await app.bot.set_my_commands(default_cmds, scope=BotCommandScopeDefault())
 
@@ -282,67 +288,6 @@ async def extract_username(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 def main():
     # 🚀 Core Launch Commands
-    load_admins()
-    load_user_tracking()
-    load_user_status()
-
-    load_symbols_from_file()
-    
-    load_tracked_tokens()
-    load_token_history()
-    load_active_token_data()
-    load_user_tiers()
-    load_user_expiry()
-    load_payment_logs()
-    load_payout_wallets()
-    load_wallets()
-    load_encrypted_keys()
-    sync_wallets_from_secrets()
-    purge_orphan_wallets()
-
-    # 🔒 Enforce token limits based on user tiers
-    for user_id_str in list(storage.users.USER_TRACKING.keys()):
-        tiers.enforce_token_limit_core(int(user_id_str))
-    
-    
-
-    # Restore active users if bot restarted via /restart
-    restart_flag = load_json(RESTART_FLAG_FILE, {}, "restart flag")
-    if restart_flag.get("from_restart"):
-        active_users = load_json(ACTIVE_RESTART_USERS_FILE, [], "active restart users")
-        for user_id in active_users:
-            storage.users.USER_STATUS[user_id] = True
-        storage.users.save_user_status()
-        try:
-            os.remove(ACTIVE_RESTART_USERS_FILE)
-            os.remove(RESTART_FLAG_FILE)
-            logger.info("🧹 Cleaned up restart state files.")
-        except Exception as e:
-            logger.warning(f"⚠️ Failed to clean restart state files: {e}")
-
-    # 🧮 Token Tracking — Rebuild from loaded structured USER_TRACKING
-    grouped_tokens = {}
-    for token_dict in storage.users.USER_TRACKING.values():
-        for chain_id, addresses in token_dict.items():
-            grouped_tokens.setdefault(chain_id, set()).update(addresses)
-
-    # Convert sets to sorted lists
-    grouped_tokens = {k: sorted(v) for k, v in grouped_tokens.items()}
-
-    storage.tokens.TRACKED_TOKENS = grouped_tokens
-    storage.tokens.save_tracked_tokens()
-    logger.info(f"🔁 Rebuilt tracked tokens list across {len(grouped_tokens)} chains.")
-
-    # Adding threshold on startup
-    thresholds.load_user_thresholds()
-    updated = False
-    for chat_id in storage.users.USER_TRACKING:
-        if chat_id not in thresholds.USER_THRESHOLDS:
-            thresholds.USER_THRESHOLDS[chat_id] = 5.0
-            updated = True
-    if updated:
-        thresholds.save_user_thresholds()
-
     app = (
         ApplicationBuilder()
         .token(BOT_TOKEN)
@@ -383,10 +328,19 @@ def main():
     app.add_handler(CommandHandler("threshold", threshold))
     app.add_handler(CommandHandler("t", threshold))
 
+    app.add_handler(CommandHandler(["addrpc", "ar"], addrpc))
+    app.add_handler(CommandHandler(["removerpc", "rr"], removerpc))
+    app.add_handler(CommandHandler(["listrpc", "lrp"], listrpc))
+
+    # app.add_handler(CommandHandler("u", start_upgrade))
+    # app.add_handler(CommandHandler("r", start_renewal))
+
+
     app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
     app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
     app.add_handler(CallbackQueryHandler(callback_reset_confirmation, pattern="^confirm_reset$|^cancel_reset$"))
     app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
+    app.add_handler(CallbackQueryHandler(handle_removerpc_callback, pattern="^(confirm_removerpc|cancel_removerpc):"))
 
     app.add_handler(CallbackQueryHandler(back_to_dashboard, pattern="^go_to_dashboard$"))
     app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$|^back_to_dashboard$"))

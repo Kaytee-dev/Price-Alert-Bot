@@ -16,7 +16,7 @@ import storage.tiers as tiers
 
 from storage import wallets
 from storage import payment_logs
-from withdrawal import forward_user_payment
+from withdrawal import forward_user_payment, run_forward_user_payment
 
 from datetime import datetime, timedelta
 
@@ -64,9 +64,18 @@ async def prompt_transaction_hash(update: Update, context: ContextTypes.DEFAULT_
 
 async def go_back_to_dashboard(update: Update, context: ContextTypes.DEFAULT_TYPE):
     launch_func = context.bot_data.get("launch_dashboard")
+    # if launch_func:
+    #     custom_update = build_custom_update_from_query(update.callback_query)
+    #     return await launch_func(custom_update, context)
+    
     if launch_func:
-        custom_update = build_custom_update_from_query(update.callback_query)
+        try:
+            custom_update = build_custom_update_from_query(update.callback_query)
+        except AttributeError:
+            custom_update = update  # fallback to raw update for command-based entry
+
         return await launch_func(custom_update, context)
+
     else:
         try:
             await update.callback_query.edit_message_text("⚠️ Dashboard unavailable.")
@@ -105,6 +114,11 @@ async def start_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Store the original message if we need to return to dashboard
     if hasattr(update, 'callback_query') and update.callback_query:
         context.user_data['dashboard_message'] = update.callback_query.message
+    
+    else:
+        # User came from /upgrade command — simulate dashboard context
+        context.user_data['from_dashboard'] = True
+        context.user_data['dashboard_message'] = message  # fallback to current command msg
 
     # Create tier options based on current tier
     tier_options = []
@@ -252,13 +266,13 @@ async def handle_payment(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
 
 
-    chosen_wallet = wallets.get_random_wallet()
+    chosen_wallet = await wallets.get_random_wallet()
     if not chosen_wallet:
         await query.message.edit_text("❌ No wallets available for payment at this time. Please try again later.")
         return ConversationHandler.END
 
     # Mark wallet as in-use
-    wallets.set_wallet_status(chosen_wallet, "in-use")
+    await wallets.set_wallet_status(chosen_wallet, "in-use")
 
 
     # Set price in USDC based on duration (you can customize this mapping)
@@ -368,7 +382,7 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
     tx_sig = user_input.strip()
     
     # ✅ Log new payment only after hash is submitted
-    payment_logs.log_user_payment(user_id, payment_reference, {
+    await payment_logs.log_user_payment(user_id, payment_reference, {
     "tier": selected_tier,
     "duration_months": duration_months,
     "payment_wallet": wallet_address,
@@ -423,11 +437,11 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
                 # === Payment verified — handle upgrade ===
                 await tiers.set_user_tier(user_id, selected_tier)
                 expiry_date = datetime.now() + timedelta(days=int(duration_months) * 30)
-                tiers.set_user_expiry(user_id, expiry_date)
+                await tiers.set_user_expiry(user_id, expiry_date)
 
-                wallets.mark_wallet_as_available(wallet_address)
+                await wallets.mark_wallet_as_available(wallet_address)
 
-                success, commission, referrer_id = on_upgrade_completed(user_id, upgrade_fee, int(duration_months))
+                success, commission, referrer_id = await on_upgrade_completed(user_id, upgrade_fee, int(duration_months))
 
                 # Process referral commission if applicable (for 6+ month upgrade)
                 if success and referrer_id:
@@ -477,16 +491,19 @@ async def verify_payment_from_hash(update: Update, context: ContextTypes.DEFAULT
 
                 await update.message.reply_text(success_msg, parse_mode="Markdown", reply_markup=complete_keyboard)
 
-                # Auto-forward funds
-                success_forward, result = await forward_user_payment(wallet_address, context)
+                # # Auto-forward funds
+                # success_forward, result = await forward_user_payment(wallet_address, context)
 
-                if not success_forward:
-                    #await update.message.reply_text(f"⚠️ Upgrade successful, but auto-forward failed:\n{result}")
-                    await send_message(
-                        context.bot,
-                        f"⚠️ Auto-forward failed for {user_id} ({wallet_address}) — Error: {result}",
-                        chat_id=BOT_ERROR_LOGS_ID
-                    )
+                # if not success_forward:
+                #     #await update.message.reply_text(f"⚠️ Upgrade successful, but auto-forward failed:\n{result}")
+                #     await send_message(
+                #         context.bot,
+                #         f"⚠️ Auto-forward failed for {user_id} ({wallet_address}) — Error: {result}",
+                #         chat_id=BOT_ERROR_LOGS_ID
+                #     )
+
+                # Start background auto-forward
+                asyncio.create_task(run_forward_user_payment(wallet_address, context, user_id))
                 return VERIFICATION
 
     
@@ -550,7 +567,7 @@ async def back_to_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Used to revert the status of the assigned wallet from
     # in-use to available
-    wallets.revert_wallet_status_from_context(context)
+    await wallets.revert_wallet_status_from_context(context)
 
     if "selected_tier" not in context.user_data or "duration" not in context.user_data:
         await update.callback_query.message.edit_text("⚠️ Session expired. Please restart with /upgrade.")
@@ -624,7 +641,7 @@ async def back_to_duration(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def cancel_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Cancel the upgrade process and return to dashboard."""
-    wallets.revert_wallet_status_from_context(context)
+    await wallets.revert_wallet_status_from_context(context)
 
     if update.callback_query:
         await update.callback_query.answer()
@@ -651,7 +668,7 @@ async def cancel_upgrade(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # === UPGRADE CONVERSATION HANDLER ===
 upgrade_conv_handler = ConversationHandler(
     entry_points=[
-        CommandHandler("upgrade", start_upgrade),
+        CommandHandler(["upgrade", "u"], start_upgrade),
         CallbackQueryHandler(start_upgrade, pattern="^cmd_upgrade$")
     ],
     states={

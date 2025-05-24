@@ -1,12 +1,26 @@
-from util.utils import load_json, save_json
-from config import SYMBOLS_FILE
+import storage.token_collection as token_collection
 from typing import Dict
+import logging
 
 ADDRESS_TO_SYMBOL: Dict[str, str] = {}
 
-def load_symbols_from_file():
-    global ADDRESS_TO_SYMBOL
-    ADDRESS_TO_SYMBOL = load_json(SYMBOLS_FILE, {}, "symbols")
+logger = logging.getLogger(__name__)
 
-def save_symbols_to_file():
-    save_json(SYMBOLS_FILE, ADDRESS_TO_SYMBOL, "symbols")
+def load_symbols():
+    """
+    Load the symbols from TOKEN_COLLECTION and update the cache with address-symbol pairs.
+    """
+    global ADDRESS_TO_SYMBOL
+    
+    # Fetch tracked tokens from token_collection
+    tracked_tokens = token_collection.get_tracked_tokens()
+
+    # Build ADDRESS_TO_SYMBOL from tracked tokens
+    ADDRESS_TO_SYMBOL = {
+        token["address"]: token["symbol"]
+        for chain_tokens in tracked_tokens.values()
+        for token in chain_tokens
+    }
+
+    logger.info("✅ ADDRESS_TO_SYMBOL loaded and updated from token_collection")
+

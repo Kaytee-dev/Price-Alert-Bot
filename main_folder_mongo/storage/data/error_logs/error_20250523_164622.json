@@ -1,0 +1,120 @@
+{
+  "error_id": "error_20250523_164622",
+  "timestamp": "2025-05-23T16:46:22.408711",
+  "error_message": "'CustomMessage' object has no attribute 'delete'",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_application.py\", line 1264, in process_update\n    await coroutine\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\basehandler.py\", line 157, in handle_update\n    return await self.callback(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder_mongo\\commands.py\", line 1005, in handle_dashboard_button\n    await start(custom_update, context)\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder_mongo\\commands.py\", line 101, in start\n    await update.message.delete()\n          ^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'CustomMessage' object has no attribute 'delete'\n",
+  "update": {
+    "callback_query": {
+      "chat_instance": "-3580361889711401776",
+      "data": "cmd_start",
+      "id": "4147012089065804558",
+      "message": {
+        "channel_chat_created": false,
+        "delete_chat_photo": false,
+        "entities": [
+          {
+            "length": 11,
+            "offset": 7,
+            "type": "mention"
+          },
+          {
+            "length": 11,
+            "offset": 7,
+            "type": "bold"
+          },
+          {
+            "length": 13,
+            "offset": 31,
+            "type": "bold"
+          },
+          {
+            "length": 11,
+            "offset": 461,
+            "type": "text_link",
+            "url": "https://t.me/+f3Esd9E_VvQxMDU0"
+          }
+        ],
+        "group_chat_created": false,
+        "link_preview_options": {
+          "is_disabled": true
+        },
+        "reply_markup": {
+          "inline_keyboard": [
+            [
+              {
+                "callback_data": "cmd_start",
+                "text": "✅ Start Tracking"
+              },
+              {
+                "callback_data": "cmd_stop",
+                "text": "🛑 Stop Tracking"
+              }
+            ],
+            [
+              {
+                "callback_data": "cmd_reset",
+                "text": "🔄 Reset List"
+              },
+              {
+                "callback_data": "cmd_list",
+                "text": "📋 List Tokens"
+              }
+            ],
+            [
+              {
+                "callback_data": "cmd_status",
+                "text": "📊 Tracking Status"
+              },
+              {
+                "callback_data": "cmd_help",
+                "text": "❓ Help"
+              }
+            ],
+            [
+              {
+                "callback_data": "cmd_upgrade",
+                "text": "⭐ Upgrade"
+              }
+            ],
+            [
+              {
+                "callback_data": "cmd_refer",
+                "text": "👤 Refferral"
+              },
+              {
+                "callback_data": "cmd_renew",
+                "text": "🔄 Renew Tier"
+              }
+            ]
+          ]
+        },
+        "supergroup_chat_created": false,
+        "text": "👋 Hey @toheeb6538, welcome to PumpCycle Bot!\n\nTracks tokens that cooled off but still have holders. Alerts you when they’re warming up for Round 2. 🔥📈\n\n✅ Monitoring: Active\n🎯 Tier: Super admin (999 token limit)\n\n👤 You are tracking 40 token(s).\n🌐 Total unique tokens tracked: 50\n\n💥 Active spikes (≥5%): 0\n🕓 Last update: 2025-05-23 16:46:14\n\n\n-----------------------------------------------\nFor providing feedbacks and complaints, join our telegram group\n👉 --here--\n-----------------------------------------------",
+        "chat": {
+          "first_name": "Adebayo",
+          "id": 965551493,
+          "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+          "type": "private",
+          "username": "toheeb6538"
+        },
+        "date": 1748015175,
+        "message_id": 3660,
+        "from": {
+          "first_name": "Price Alert Bot (Testing)",
+          "id": 8120859286,
+          "is_bot": true,
+          "username": "TestSolMoonBot"
+        }
+      },
+      "from": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "is_bot": false,
+        "language_code": "en",
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "username": "toheeb6538"
+      }
+    },
+    "update_id": 223397882
+  }
+}

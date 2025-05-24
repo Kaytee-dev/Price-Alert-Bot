@@ -1,179 +1,188 @@
 {
   "GkS5nZ4eDopFVLQpMJxfMxEM4U19Ji3E48bkXQ29pump": [
     {
-      "timestamp": "2025-05-15 14:50:49",
-      "address": "GkS5nZ4eDopFVLQpMJxfMxEM4U19Ji3E48bkXQ29pump",
-      "symbol": "Art",
-      "chain_id": "solana",
-      "priceChange_m5": -2.31,
-      "volume_m5": 1.81,
-      "marketCap": 15617
-    },
-    {
-      "timestamp": "2025-05-15 14:23:21",
+      "timestamp": "2025-05-19 23:53:06",
       "address": "GkS5nZ4eDopFVLQpMJxfMxEM4U19Ji3E48bkXQ29pump",
       "symbol": "Art",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 15987
+      "marketCap": 11999
     },
     {
-      "timestamp": "2025-05-14 17:23:05",
+      "timestamp": "2025-05-19 12:42:36",
       "address": "GkS5nZ4eDopFVLQpMJxfMxEM4U19Ji3E48bkXQ29pump",
       "symbol": "Art",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 16565
+      "marketCap": 11673
+    },
+    {
+      "timestamp": "2025-05-19 08:08:46",
+      "address": "GkS5nZ4eDopFVLQpMJxfMxEM4U19Ji3E48bkXQ29pump",
+      "symbol": "Art",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 11984
     }
   ],
   "8ncucXv6U6epZKHPbgaEBcEK399TpHGKCquSt4RnmX4f": [
     {
-      "timestamp": "2025-05-15 14:52:53",
+      "timestamp": "2025-05-20 00:03:55",
       "address": "8ncucXv6U6epZKHPbgaEBcEK399TpHGKCquSt4RnmX4f",
       "symbol": "TRENCHER",
       "chain_id": "solana",
-      "priceChange_m5": 2.75,
-      "volume_m5": 10605.91,
-      "marketCap": 1896301
+      "priceChange_m5": -0.34,
+      "volume_m5": 266.53,
+      "marketCap": 2807922
     },
     {
-      "timestamp": "2025-05-15 14:51:54",
+      "timestamp": "2025-05-20 00:02:52",
       "address": "8ncucXv6U6epZKHPbgaEBcEK399TpHGKCquSt4RnmX4f",
       "symbol": "TRENCHER",
       "chain_id": "solana",
-      "priceChange_m5": 3.16,
-      "volume_m5": 9837.27,
-      "marketCap": 1903828
+      "priceChange_m5": 0.29,
+      "volume_m5": 67.44,
+      "marketCap": 2825729
     },
     {
-      "timestamp": "2025-05-15 14:50:49",
+      "timestamp": "2025-05-20 00:01:53",
       "address": "8ncucXv6U6epZKHPbgaEBcEK399TpHGKCquSt4RnmX4f",
       "symbol": "TRENCHER",
       "chain_id": "solana",
-      "priceChange_m5": 4.18,
-      "volume_m5": 6718.37,
-      "marketCap": 1932793
+      "priceChange_m5": -0.27,
+      "volume_m5": 876.22,
+      "marketCap": 2823091
     }
   ],
   "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 23:53:08",
       "address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
       "symbol": "Fartcoin2",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 65108
+      "marketCap": 74527
     },
     {
-      "timestamp": "2025-05-14 17:23:03",
+      "timestamp": "2025-05-19 23:13:50",
       "address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
       "symbol": "Fartcoin2",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 68740
+      "marketCap": 75424
     },
     {
-      "timestamp": "2025-05-14 15:46:05",
+      "timestamp": "2025-05-19 23:12:48",
       "address": "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
       "symbol": "Fartcoin2",
       "chain_id": "solana",
-      "priceChange_m5": 1.31,
-      "volume_m5": 159.9,
-      "marketCap": 75844
+      "priceChange_m5": -0.05,
+      "volume_m5": 10.6,
+      "marketCap": 75424
     }
   ],
   "34HDZNbUkTyTrgYKy2ox43yp2f8PJ5hoM7xsrfNApump": [
     {
-      "timestamp": "2025-05-15 14:50:47",
+      "timestamp": "2025-05-20 00:01:55",
       "address": "34HDZNbUkTyTrgYKy2ox43yp2f8PJ5hoM7xsrfNApump",
       "symbol": "Routine",
       "chain_id": "solana",
-      "priceChange_m5": 0.01,
-      "volume_m5": 39.65,
-      "marketCap": 138869
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 156576
     },
     {
-      "timestamp": "2025-05-15 14:48:31",
+      "timestamp": "2025-05-19 23:53:08",
       "address": "34HDZNbUkTyTrgYKy2ox43yp2f8PJ5hoM7xsrfNApump",
       "symbol": "Routine",
       "chain_id": "solana",
-      "priceChange_m5": -0.28,
-      "volume_m5": 186.36,
-      "marketCap": 138869
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 156777
     },
     {
-      "timestamp": "2025-05-15 14:46:25",
+      "timestamp": "2025-05-19 23:12:48",
       "address": "34HDZNbUkTyTrgYKy2ox43yp2f8PJ5hoM7xsrfNApump",
       "symbol": "Routine",
       "chain_id": "solana",
-      "priceChange_m5": -0.29,
-      "volume_m5": 146.71,
-      "marketCap": 138857
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 158247
     }
   ],
   "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump": [
     {
-      "timestamp": "2025-05-15 14:52:50",
+      "timestamp": "2025-05-20 00:03:55",
       "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
       "symbol": "ReFi",
       "chain_id": "solana",
-      "priceChange_m5": 2.33,
-      "volume_m5": 294.69,
-      "marketCap": 40089
+      "priceChange_m5": -0.23,
+      "volume_m5": 419.03,
+      "marketCap": 120235
     },
     {
-      "timestamp": "2025-05-15 14:51:50",
+      "timestamp": "2025-05-20 00:02:52",
       "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
       "symbol": "ReFi",
       "chain_id": "solana",
-      "priceChange_m5": -0.72,
-      "volume_m5": 24.54,
-      "marketCap": 38894
+      "priceChange_m5": -0.34,
+      "volume_m5": 403.74,
+      "marketCap": 119858
     },
     {
-      "timestamp": "2025-05-15 14:50:47",
+      "timestamp": "2025-05-20 00:01:53",
       "address": "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
       "symbol": "ReFi",
       "chain_id": "solana",
-      "priceChange_m5": -0.89,
-      "volume_m5": 2.96,
-      "marketCap": 38827
+      "priceChange_m5": 0.26,
+      "volume_m5": 90.66,
+      "marketCap": 119985
     }
   ],
   "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 23:53:06",
       "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
       "symbol": "Loopy",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 20616
+      "marketCap": 31673
     },
     {
-      "timestamp": "2025-05-14 17:23:03",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
       "symbol": "Loopy",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 21166
+      "marketCap": 33624
     },
     {
-      "timestamp": "2025-05-14 15:48:02",
+      "timestamp": "2025-05-19 12:42:34",
       "address": "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
       "symbol": "Loopy",
       "chain_id": "solana",
-      "priceChange_m5": -2.71,
-      "volume_m5": 7.01,
-      "marketCap": 21166
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 36462
     }
   ],
   "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump": [
+    {
+      "timestamp": "2025-05-17 21:34:27",
+      "address": "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
+      "symbol": "Grimace",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 7758
+    },
     {
       "timestamp": "2025-05-15 14:23:18",
       "address": "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
@@ -191,192 +200,192 @@
       "priceChange_m5": null,
       "volume_m5": 0,
       "marketCap": 8424
-    },
-    {
-      "timestamp": "2025-05-14 15:46:05",
-      "address": "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
-      "symbol": "Grimace",
-      "chain_id": "solana",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 8707
     }
   ],
   "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
       "symbol": "LeBarbie",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 14910
+      "marketCap": 13630
     },
     {
-      "timestamp": "2025-05-14 17:23:03",
+      "timestamp": "2025-05-19 08:08:46",
       "address": "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
       "symbol": "LeBarbie",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 17628
+      "marketCap": 13739
     },
     {
-      "timestamp": "2025-05-14 15:46:05",
+      "timestamp": "2025-05-18 23:24:21",
       "address": "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
       "symbol": "LeBarbie",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 16131
+      "marketCap": 13641
     }
   ],
   "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 23:12:45",
       "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
       "symbol": "XIJINGPOOH",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 9230
+      "marketCap": 8527
     },
     {
-      "timestamp": "2025-05-14 08:03:46",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
       "symbol": "XIJINGPOOH",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 9837
+      "marketCap": 8505
     },
     {
-      "timestamp": "2025-05-13 22:13:48",
+      "timestamp": "2025-05-19 12:42:34",
       "address": "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
       "symbol": "XIJINGPOOH",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 9637
+      "marketCap": 8296
     }
   ],
   "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump": [
     {
-      "timestamp": "2025-05-15 14:38:23",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
       "symbol": "Wo",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 19869
+      "marketCap": 18566
     },
     {
-      "timestamp": "2025-05-15 14:26:20",
+      "timestamp": "2025-05-19 12:42:34",
       "address": "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
       "symbol": "Wo",
       "chain_id": "solana",
-      "priceChange_m5": -0.08,
-      "volume_m5": 38.51,
-      "marketCap": 19869
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 18163
     },
     {
-      "timestamp": "2025-05-15 14:25:18",
+      "timestamp": "2025-05-19 08:08:44",
       "address": "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
       "symbol": "Wo",
       "chain_id": "solana",
-      "priceChange_m5": 0.42,
-      "volume_m5": 62.99,
-      "marketCap": 19869
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 17965
     }
   ],
   "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
       "symbol": "$69M",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 9576
+      "marketCap": 9035
     },
     {
-      "timestamp": "2025-05-13 23:08:38",
+      "timestamp": "2025-05-18 21:23:26",
       "address": "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
       "symbol": "$69M",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 10445
+      "marketCap": 9415
     },
     {
-      "timestamp": "2025-05-13 22:13:48",
+      "timestamp": "2025-05-17 21:34:27",
       "address": "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
       "symbol": "$69M",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 10058
+      "marketCap": 9143
     }
   ],
   "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump": [
     {
-      "timestamp": "2025-05-15 14:49:26",
+      "timestamp": "2025-05-19 23:53:06",
       "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
       "symbol": "Figure",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 167384
+      "marketCap": 146593
     },
     {
-      "timestamp": "2025-05-15 14:47:27",
+      "timestamp": "2025-05-19 22:55:50",
       "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
       "symbol": "Figure",
       "chain_id": "solana",
-      "priceChange_m5": 1.08,
-      "volume_m5": 142.14,
-      "marketCap": 167384
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 146746
     },
     {
-      "timestamp": "2025-05-15 14:45:24",
+      "timestamp": "2025-05-19 22:54:48",
       "address": "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
       "symbol": "Figure",
       "chain_id": "solana",
-      "priceChange_m5": 1.87,
-      "volume_m5": 482.18,
-      "marketCap": 167384
+      "priceChange_m5": 0.36,
+      "volume_m5": 96.29,
+      "marketCap": 146746
     }
   ],
   "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 08:08:44",
       "address": "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
       "symbol": "FSM",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 10218
+      "marketCap": 10098
     },
     {
-      "timestamp": "2025-05-13 23:08:38",
+      "timestamp": "2025-05-18 21:23:26",
       "address": "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
       "symbol": "FSM",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 11289
+      "marketCap": 10168
     },
     {
-      "timestamp": "2025-05-13 22:13:48",
+      "timestamp": "2025-05-17 21:34:27",
       "address": "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
       "symbol": "FSM",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 11773
+      "marketCap": 10057
     }
   ],
   "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump": [
+    {
+      "timestamp": "2025-05-17 21:34:27",
+      "address": "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
+      "symbol": "CP",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 8843
+    },
     {
       "timestamp": "2025-05-15 14:23:18",
       "address": "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
@@ -394,67 +403,58 @@
       "priceChange_m5": null,
       "volume_m5": 0,
       "marketCap": 8799
-    },
-    {
-      "timestamp": "2025-05-13 08:10:14",
-      "address": "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
-      "symbol": "CP",
-      "chain_id": "solana",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 8799
     }
   ],
   "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su": [
     {
-      "timestamp": "2025-05-15 14:42:24",
+      "timestamp": "2025-05-19 23:53:06",
       "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
       "symbol": "UncleSam",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 153900
+      "marketCap": 182124
     },
     {
-      "timestamp": "2025-05-15 14:38:23",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
       "symbol": "UncleSam",
       "chain_id": "solana",
-      "priceChange_m5": -0.65,
-      "volume_m5": 118.95,
-      "marketCap": 153900
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 181477
     },
     {
-      "timestamp": "2025-05-15 14:27:18",
+      "timestamp": "2025-05-19 13:11:32",
       "address": "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
       "symbol": "UncleSam",
       "chain_id": "solana",
-      "priceChange_m5": -1.35,
-      "volume_m5": 385.44,
-      "marketCap": 156364
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 134421
     }
   ],
   "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump": [
     {
+      "timestamp": "2025-05-19 08:08:44",
+      "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
+      "symbol": "SCIENCE",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 3337
+    },
+    {
+      "timestamp": "2025-05-17 21:34:27",
+      "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
+      "symbol": "SCIENCE",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 3409
+    },
+    {
       "timestamp": "2025-05-13 08:10:14",
-      "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
-      "symbol": "SCIENCE",
-      "chain_id": "solana",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 3530
-    },
-    {
-      "timestamp": "2025-05-13 07:59:19",
-      "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
-      "symbol": "SCIENCE",
-      "chain_id": "solana",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 3530
-    },
-    {
-      "timestamp": "2025-05-12 23:08:30",
       "address": "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
       "symbol": "SCIENCE",
       "chain_id": "solana",
@@ -465,147 +465,147 @@
   ],
   "CHkaAeNUV24NkHLQS7fr6TMia6FPmZz1fw353sfypump": [
     {
-      "timestamp": "2025-05-15 14:52:50",
-      "address": "CHkaAeNUV24NkHLQS7fr6TMia6FPmZz1fw353sfypump",
-      "symbol": "UTE",
-      "chain_id": "solana",
-      "priceChange_m5": -1.25,
-      "volume_m5": 0.32,
-      "marketCap": 10994
-    },
-    {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "CHkaAeNUV24NkHLQS7fr6TMia6FPmZz1fw353sfypump",
       "symbol": "UTE",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 11133
+      "marketCap": 11175
     },
     {
-      "timestamp": "2025-05-14 17:23:03",
+      "timestamp": "2025-05-19 12:42:36",
       "address": "CHkaAeNUV24NkHLQS7fr6TMia6FPmZz1fw353sfypump",
       "symbol": "UTE",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 13247
+      "marketCap": 10757
+    },
+    {
+      "timestamp": "2025-05-19 08:08:46",
+      "address": "CHkaAeNUV24NkHLQS7fr6TMia6FPmZz1fw353sfypump",
+      "symbol": "UTE",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 10813
     }
   ],
   "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
       "symbol": "point",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 16373
+      "marketCap": 12892
     },
     {
-      "timestamp": "2025-05-14 15:46:05",
+      "timestamp": "2025-05-19 12:42:34",
       "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
       "symbol": "point",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 20593
+      "marketCap": 12484
     },
     {
-      "timestamp": "2025-05-14 08:03:46",
+      "timestamp": "2025-05-19 08:08:44",
       "address": "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
       "symbol": "point",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 22374
+      "marketCap": 13008
     }
   ],
   "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
       "symbol": "WW3",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 20098
+      "marketCap": 16540
     },
     {
-      "timestamp": "2025-05-14 17:24:04",
-      "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
-      "symbol": "WW3",
-      "chain_id": "solana",
-      "priceChange_m5": 3.89,
-      "volume_m5": 528.73,
-      "marketCap": 25257
-    },
-    {
-      "timestamp": "2025-05-14 17:23:03",
+      "timestamp": "2025-05-19 13:11:34",
       "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
       "symbol": "WW3",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 24313
+      "marketCap": 16567
+    },
+    {
+      "timestamp": "2025-05-19 13:07:39",
+      "address": "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
+      "symbol": "WW3",
+      "chain_id": "solana",
+      "priceChange_m5": -4.11,
+      "volume_m5": 349.53,
+      "marketCap": 16567
     }
   ],
   "DPTP4fUfWuwVTgCmttWBu6Sy5B9TeCTBjc2YKgpDpump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 23:53:08",
       "address": "DPTP4fUfWuwVTgCmttWBu6Sy5B9TeCTBjc2YKgpDpump",
       "symbol": "Defiant",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 74951
+      "marketCap": 81847
     },
     {
-      "timestamp": "2025-05-14 17:23:03",
+      "timestamp": "2025-05-19 23:13:50",
       "address": "DPTP4fUfWuwVTgCmttWBu6Sy5B9TeCTBjc2YKgpDpump",
       "symbol": "Defiant",
       "chain_id": "solana",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 76532
+      "priceChange_m5": -0.04,
+      "volume_m5": 7.17,
+      "marketCap": 82587
     },
     {
-      "timestamp": "2025-05-14 15:46:05",
+      "timestamp": "2025-05-19 22:54:52",
       "address": "DPTP4fUfWuwVTgCmttWBu6Sy5B9TeCTBjc2YKgpDpump",
       "symbol": "Defiant",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 76725
+      "marketCap": 82617
     }
   ],
   "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump": [
     {
-      "timestamp": "2025-05-15 14:52:50",
+      "timestamp": "2025-05-20 00:03:55",
       "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
       "symbol": "House",
       "chain_id": "solana",
-      "priceChange_m5": -0.45,
-      "volume_m5": 22488.37,
-      "marketCap": 42569137
+      "priceChange_m5": 0.54,
+      "volume_m5": 7777.06,
+      "marketCap": 34343540
     },
     {
-      "timestamp": "2025-05-15 14:51:50",
+      "timestamp": "2025-05-20 00:02:52",
       "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
       "symbol": "House",
       "chain_id": "solana",
-      "priceChange_m5": -1.06,
-      "volume_m5": 21580.08,
-      "marketCap": 42501830
+      "priceChange_m5": 0.12,
+      "volume_m5": 9286.67,
+      "marketCap": 34408159
     },
     {
-      "timestamp": "2025-05-15 14:50:47",
+      "timestamp": "2025-05-20 00:01:53",
       "address": "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
       "symbol": "House",
       "chain_id": "solana",
-      "priceChange_m5": -0.5,
-      "volume_m5": 5349.45,
-      "marketCap": 42979172
+      "priceChange_m5": 0.39,
+      "volume_m5": 9158.41,
+      "marketCap": 34324251
     }
   ],
   "DtiSDGeEqSFrUWLpUiUZyeZuYVSkemBqVARdZskxPump": [
@@ -636,121 +636,130 @@
   ],
   "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
       "symbol": "LLC",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 6554
+      "marketCap": 6190
     },
     {
-      "timestamp": "2025-05-14 15:46:05",
+      "timestamp": "2025-05-18 21:23:26",
       "address": "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
       "symbol": "LLC",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 6786
+      "marketCap": 6313
     },
     {
-      "timestamp": "2025-05-14 08:03:46",
+      "timestamp": "2025-05-17 21:34:27",
       "address": "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
       "symbol": "LLC",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 6918
+      "marketCap": 6234
     }
   ],
   "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 08:08:44",
       "address": "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
       "symbol": "LHC",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 10126
+      "marketCap": 11101
     },
     {
-      "timestamp": "2025-05-14 17:23:03",
+      "timestamp": "2025-05-18 23:59:13",
       "address": "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
       "symbol": "LHC",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 10320
+      "marketCap": 9862
     },
     {
-      "timestamp": "2025-05-14 08:03:46",
+      "timestamp": "2025-05-18 21:23:26",
       "address": "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
       "symbol": "LHC",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 10602
+      "marketCap": 10112
     }
   ],
   "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump": [
     {
-      "timestamp": "2025-05-15 14:23:18",
+      "timestamp": "2025-05-19 22:29:30",
       "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
       "symbol": "buzhidao",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 20172
+      "marketCap": 15740
     },
     {
-      "timestamp": "2025-05-14 17:23:03",
+      "timestamp": "2025-05-19 12:42:34",
       "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
       "symbol": "buzhidao",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 21776
+      "marketCap": 16526
     },
     {
-      "timestamp": "2025-05-14 15:46:05",
+      "timestamp": "2025-05-19 08:08:44",
       "address": "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
       "symbol": "buzhidao",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 22576
+      "marketCap": 16667
     }
   ],
   "JCV8BB8Zde8ukroWKTjLSENSWEj42kBkENjjws2Rh6vP": [
     {
-      "timestamp": "2025-05-15 14:49:26",
+      "timestamp": "2025-05-19 23:53:08",
       "address": "JCV8BB8Zde8ukroWKTjLSENSWEj42kBkENjjws2Rh6vP",
       "symbol": "POSEIDON",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 55248
+      "marketCap": 84153
     },
     {
-      "timestamp": "2025-05-15 14:44:21",
+      "timestamp": "2025-05-19 23:12:48",
       "address": "JCV8BB8Zde8ukroWKTjLSENSWEj42kBkENjjws2Rh6vP",
       "symbol": "POSEIDON",
       "chain_id": "solana",
-      "priceChange_m5": -0.59,
-      "volume_m5": 12.31,
-      "marketCap": 55248
+      "priceChange_m5": -0.68,
+      "volume_m5": 11.83,
+      "marketCap": 84153
     },
     {
-      "timestamp": "2025-05-15 14:24:18",
+      "timestamp": "2025-05-19 22:54:52",
       "address": "JCV8BB8Zde8ukroWKTjLSENSWEj42kBkENjjws2Rh6vP",
       "symbol": "POSEIDON",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 55574
+      "marketCap": 84728
     }
   ],
   "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump": [
+    {
+      "timestamp": "2025-05-18 21:23:26",
+      "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
+      "symbol": "BFC",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 5595
+    },
     {
       "timestamp": "2025-05-13 22:13:48",
       "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
@@ -762,15 +771,6 @@
     },
     {
       "timestamp": "2025-05-13 08:10:14",
-      "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
-      "symbol": "BFC",
-      "chain_id": "solana",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 5685
-    },
-    {
-      "timestamp": "2025-05-13 07:59:19",
       "address": "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
       "symbol": "BFC",
       "chain_id": "solana",
@@ -836,6 +836,15 @@
   ],
   "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump": [
     {
+      "timestamp": "2025-05-18 21:23:26",
+      "address": "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
+      "symbol": "TUPID",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 6275
+    },
+    {
       "timestamp": "2025-05-14 15:46:05",
       "address": "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
       "symbol": "TUPID",
@@ -852,128 +861,93 @@
       "priceChange_m5": null,
       "volume_m5": 0,
       "marketCap": 6826
-    },
-    {
-      "timestamp": "2025-05-13 08:10:14",
-      "address": "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
-      "symbol": "TUPID",
-      "chain_id": "solana",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 6642
     }
   ],
   "4hqSrQy7rY9RFWakUsn1bZDzxENKy6ZuUFd5o6UJpump": [
     {
-      "timestamp": "2025-05-15 14:23:21",
+      "timestamp": "2025-05-19 22:29:32",
       "address": "4hqSrQy7rY9RFWakUsn1bZDzxENKy6ZuUFd5o6UJpump",
       "symbol": "MURK",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 5760
+      "marketCap": 4890
     },
     {
-      "timestamp": "2025-05-14 17:23:05",
+      "timestamp": "2025-05-19 12:42:36",
       "address": "4hqSrQy7rY9RFWakUsn1bZDzxENKy6ZuUFd5o6UJpump",
       "symbol": "MURK",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 5915
+      "marketCap": 4810
     },
     {
-      "timestamp": "2025-05-14 15:46:12",
+      "timestamp": "2025-05-18 21:23:29",
       "address": "4hqSrQy7rY9RFWakUsn1bZDzxENKy6ZuUFd5o6UJpump",
       "symbol": "MURK",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 5986
+      "marketCap": 5247
     }
   ],
   "HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK": [
     {
-      "timestamp": "2025-05-15 14:52:53",
+      "timestamp": "2025-05-20 00:02:55",
       "address": "HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK",
       "symbol": "MYKU",
       "chain_id": "solana",
-      "priceChange_m5": -6.44,
-      "volume_m5": 1639.65,
-      "marketCap": 799616
+      "priceChange_m5": -0.08,
+      "volume_m5": 40.25,
+      "marketCap": 404265
     },
     {
-      "timestamp": "2025-05-15 14:51:54",
+      "timestamp": "2025-05-20 00:01:55",
       "address": "HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK",
       "symbol": "MYKU",
       "chain_id": "solana",
-      "priceChange_m5": -4.9,
-      "volume_m5": 633.45,
-      "marketCap": 816932
+      "priceChange_m5": -0.14,
+      "volume_m5": 20.12,
+      "marketCap": 404043
     },
     {
-      "timestamp": "2025-05-15 14:50:49",
+      "timestamp": "2025-05-19 23:53:08",
       "address": "HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK",
       "symbol": "MYKU",
       "chain_id": "solana",
-      "priceChange_m5": -4.1,
-      "volume_m5": 201.22,
-      "marketCap": 825825
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 404603
     }
   ],
   "38PgzpJYu2HkiYvV8qePFakB8tuobPdGm2FFEn7Dpump": [
     {
-      "timestamp": "2025-05-15 14:52:53",
+      "timestamp": "2025-05-20 00:03:57",
       "address": "38PgzpJYu2HkiYvV8qePFakB8tuobPdGm2FFEn7Dpump",
       "symbol": "gork",
       "chain_id": "solana",
-      "priceChange_m5": 0.9,
-      "volume_m5": 8768.6,
-      "marketCap": 22921415
+      "priceChange_m5": -0.71,
+      "volume_m5": 9430.97,
+      "marketCap": 20870100
     },
     {
-      "timestamp": "2025-05-15 14:51:54",
+      "timestamp": "2025-05-20 00:02:55",
       "address": "38PgzpJYu2HkiYvV8qePFakB8tuobPdGm2FFEn7Dpump",
       "symbol": "gork",
       "chain_id": "solana",
-      "priceChange_m5": 0.89,
-      "volume_m5": 10919.43,
-      "marketCap": 22728194
+      "priceChange_m5": -0.76,
+      "volume_m5": 9603.1,
+      "marketCap": 20870100
     },
     {
-      "timestamp": "2025-05-15 14:50:49",
+      "timestamp": "2025-05-20 00:01:55",
       "address": "38PgzpJYu2HkiYvV8qePFakB8tuobPdGm2FFEn7Dpump",
       "symbol": "gork",
       "chain_id": "solana",
-      "priceChange_m5": -1.47,
-      "volume_m5": 16144.18,
-      "marketCap": 22671196
-    }
-  ],
-  "E6mHNjbkNiFsNXJqeU2T46aFSUJPbDoNufZWsmAgpump": [
-    {
-      "timestamp": "2025-05-07 18:52:41",
-      "address": "E6mHNjbkNiFsNXJqeU2T46aFSUJPbDoNufZWsmAgpump",
-      "symbol": "lolcat",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 50210
-    },
-    {
-      "timestamp": "2025-05-07 18:50:18",
-      "address": "E6mHNjbkNiFsNXJqeU2T46aFSUJPbDoNufZWsmAgpump",
-      "symbol": "lolcat",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 50210
-    },
-    {
-      "timestamp": "2025-05-07 18:44:19",
-      "address": "E6mHNjbkNiFsNXJqeU2T46aFSUJPbDoNufZWsmAgpump",
-      "symbol": "lolcat",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 50210
+      "priceChange_m5": -0.76,
+      "volume_m5": 6829.08,
+      "marketCap": 20877943
     }
   ],
   "F5VrsFPsB6xFYmzip4AH3s41ySzL8AV7qhWmbCNpump": [
@@ -1004,6 +978,24 @@
   ],
   "tdVDVTL6n6DP7w16ch7dS8Z4wVRcrK9FNJC47vSpump": [
     {
+      "timestamp": "2025-05-19 22:30:29",
+      "address": "tdVDVTL6n6DP7w16ch7dS8Z4wVRcrK9FNJC47vSpump",
+      "symbol": "CUM",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 4032
+    },
+    {
+      "timestamp": "2025-05-19 08:08:44",
+      "address": "tdVDVTL6n6DP7w16ch7dS8Z4wVRcrK9FNJC47vSpump",
+      "symbol": "CUM",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 3959
+    },
+    {
       "timestamp": "2025-05-15 14:23:21",
       "address": "tdVDVTL6n6DP7w16ch7dS8Z4wVRcrK9FNJC47vSpump",
       "symbol": "CUM",
@@ -1011,198 +1003,180 @@
       "priceChange_m5": null,
       "volume_m5": 0,
       "marketCap": 4199
-    },
-    {
-      "timestamp": "2025-05-14 17:23:05",
-      "address": "tdVDVTL6n6DP7w16ch7dS8Z4wVRcrK9FNJC47vSpump",
-      "symbol": "CUM",
-      "chain_id": "solana",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 4360
-    },
-    {
-      "timestamp": "2025-05-13 22:14:01",
-      "address": "tdVDVTL6n6DP7w16ch7dS8Z4wVRcrK9FNJC47vSpump",
-      "symbol": "CUM",
-      "chain_id": "solana",
-      "priceChange_m5": null,
-      "volume_m5": 0,
-      "marketCap": 4492
     }
   ],
   "0x12B4356C65340Fb02cdff01293F95FEBb1512F3b": [
     {
-      "timestamp": "2025-05-15 14:52:50",
+      "timestamp": "2025-05-19 23:53:06",
       "address": "0x12B4356C65340Fb02cdff01293F95FEBb1512F3b",
       "symbol": "Broccoli",
       "chain_id": "bsc",
-      "priceChange_m5": 0.95,
-      "volume_m5": 16242.62,
-      "marketCap": 19540808
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 13223398
     },
     {
-      "timestamp": "2025-05-15 14:51:50",
+      "timestamp": "2025-05-19 23:13:46",
       "address": "0x12B4356C65340Fb02cdff01293F95FEBb1512F3b",
       "symbol": "Broccoli",
       "chain_id": "bsc",
-      "priceChange_m5": 0.5,
-      "volume_m5": 18063.9,
-      "marketCap": 19517950
+      "priceChange_m5": 0.02,
+      "volume_m5": 198.98,
+      "marketCap": 13192088
     },
     {
-      "timestamp": "2025-05-15 14:50:47",
+      "timestamp": "2025-05-19 23:12:45",
       "address": "0x12B4356C65340Fb02cdff01293F95FEBb1512F3b",
       "symbol": "Broccoli",
       "chain_id": "bsc",
-      "priceChange_m5": 0.51,
-      "volume_m5": 14751.89,
-      "marketCap": 19512870
+      "priceChange_m5": 0.01,
+      "volume_m5": 22.73,
+      "marketCap": 13189418
     }
   ],
   "0xa89b8A1fd3F72F3e85b9791F3E7ff42bD2D4E669": [
     {
-      "timestamp": "2025-05-15 14:52:50",
+      "timestamp": "2025-05-20 00:01:53",
       "address": "0xa89b8A1fd3F72F3e85b9791F3E7ff42bD2D4E669",
       "symbol": "RUSTY",
       "chain_id": "ethereum",
-      "priceChange_m5": -0.17,
-      "volume_m5": 2081.92,
-      "marketCap": 349777
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 202975
     },
     {
-      "timestamp": "2025-05-15 14:51:50",
+      "timestamp": "2025-05-19 23:54:04",
       "address": "0xa89b8A1fd3F72F3e85b9791F3E7ff42bD2D4E669",
       "symbol": "RUSTY",
       "chain_id": "ethereum",
-      "priceChange_m5": -4.24,
-      "volume_m5": 2633.3,
-      "marketCap": 349777
+      "priceChange_m5": 1.27,
+      "volume_m5": 1276,
+      "marketCap": 202975
     },
     {
-      "timestamp": "2025-05-15 14:50:47",
+      "timestamp": "2025-05-19 23:53:06",
       "address": "0xa89b8A1fd3F72F3e85b9791F3E7ff42bD2D4E669",
       "symbol": "RUSTY",
       "chain_id": "ethereum",
-      "priceChange_m5": -4.38,
-      "volume_m5": 2583.1,
-      "marketCap": 349261
+      "priceChange_m5": -3,
+      "volume_m5": 565.89,
+      "marketCap": 194403
     }
   ],
   "0x274b2d24daa95e8b90f7779902688627909e4444": [
     {
-      "timestamp": "2025-05-15 14:42:24",
+      "timestamp": "2025-05-19 23:54:04",
       "address": "0x274b2d24daa95e8b90f7779902688627909e4444",
       "symbol": "Doubao",
       "chain_id": "bsc",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 47961
+      "marketCap": 51895
     },
     {
-      "timestamp": "2025-05-15 14:40:23",
+      "timestamp": "2025-05-19 23:53:06",
       "address": "0x274b2d24daa95e8b90f7779902688627909e4444",
       "symbol": "Doubao",
       "chain_id": "bsc",
-      "priceChange_m5": 1.2,
-      "volume_m5": 96.94,
-      "marketCap": 47961
+      "priceChange_m5": 2.14,
+      "volume_m5": 167.28,
+      "marketCap": 51895
     },
     {
-      "timestamp": "2025-05-15 14:38:23",
+      "timestamp": "2025-05-19 23:12:45",
       "address": "0x274b2d24daa95e8b90f7779902688627909e4444",
       "symbol": "Doubao",
       "chain_id": "bsc",
-      "priceChange_m5": 5.53,
-      "volume_m5": 420.25,
-      "marketCap": 47961
+      "priceChange_m5": -2.97,
+      "volume_m5": 244.24,
+      "marketCap": 52138
     }
   ],
   "0xf816507E690f5Aa4E29d164885EB5fa7a5627860": [
     {
-      "timestamp": "2025-05-15 14:52:50",
+      "timestamp": "2025-05-20 00:03:55",
       "address": "0xf816507E690f5Aa4E29d164885EB5fa7a5627860",
       "symbol": "RATO",
       "chain_id": "ethereum",
-      "priceChange_m5": -3.88,
-      "volume_m5": 11188.3,
-      "marketCap": 23899913
+      "priceChange_m5": 0.81,
+      "volume_m5": 1714.2,
+      "marketCap": 10943026
     },
     {
-      "timestamp": "2025-05-15 14:51:50",
+      "timestamp": "2025-05-20 00:02:52",
       "address": "0xf816507E690f5Aa4E29d164885EB5fa7a5627860",
       "symbol": "RATO",
       "chain_id": "ethereum",
-      "priceChange_m5": -1.84,
-      "volume_m5": 13695.21,
-      "marketCap": 23927493
+      "priceChange_m5": 0.7,
+      "volume_m5": 2854.6,
+      "marketCap": 10922351
     },
     {
-      "timestamp": "2025-05-15 14:50:47",
+      "timestamp": "2025-05-20 00:01:53",
       "address": "0xf816507E690f5Aa4E29d164885EB5fa7a5627860",
       "symbol": "RATO",
       "chain_id": "ethereum",
-      "priceChange_m5": -0.26,
-      "volume_m5": 14097.99,
-      "marketCap": 24231023
+      "priceChange_m5": 0.71,
+      "volume_m5": 3570.96,
+      "marketCap": 10925052
     }
   ],
   "Ds1K683crskEEqyvpnwpYU1nF3qxjn1QmanRn52Zpump": [
     {
-      "timestamp": "2025-05-15 14:51:54",
+      "timestamp": "2025-05-20 00:01:55",
       "address": "Ds1K683crskEEqyvpnwpYU1nF3qxjn1QmanRn52Zpump",
       "symbol": "THOT",
       "chain_id": "solana",
-      "priceChange_m5": -0.74,
-      "volume_m5": 9.89,
-      "marketCap": 25577
+      "priceChange_m5": 0.19,
+      "volume_m5": 0.54,
+      "marketCap": 17666
     },
     {
-      "timestamp": "2025-05-15 14:42:27",
+      "timestamp": "2025-05-19 22:29:32",
       "address": "Ds1K683crskEEqyvpnwpYU1nF3qxjn1QmanRn52Zpump",
       "symbol": "THOT",
       "chain_id": "solana",
       "priceChange_m5": null,
       "volume_m5": 0,
-      "marketCap": 25767
+      "marketCap": 17633
     },
     {
-      "timestamp": "2025-05-15 14:38:25",
+      "timestamp": "2025-05-19 13:07:39",
       "address": "Ds1K683crskEEqyvpnwpYU1nF3qxjn1QmanRn52Zpump",
       "symbol": "THOT",
       "chain_id": "solana",
-      "priceChange_m5": -0.79,
-      "volume_m5": 0.01,
-      "marketCap": 25767
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 20232
     }
   ],
   "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL": [
     {
-      "timestamp": "2025-05-15 14:52:53",
+      "timestamp": "2025-05-20 00:03:57",
       "address": "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL",
       "symbol": "HAEDAL",
       "chain_id": "sui",
-      "priceChange_m5": -0.01,
-      "volume_m5": 4474.74,
-      "marketCap": 26074848
+      "priceChange_m5": 0.24,
+      "volume_m5": 33634.28,
+      "marketCap": 25184419
     },
     {
-      "timestamp": "2025-05-15 14:51:54",
+      "timestamp": "2025-05-20 00:02:55",
       "address": "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL",
       "symbol": "HAEDAL",
       "chain_id": "sui",
-      "priceChange_m5": 0.27,
-      "volume_m5": 5211.31,
-      "marketCap": 26200387
+      "priceChange_m5": 0.28,
+      "volume_m5": 32281.47,
+      "marketCap": 25183948
     },
     {
-      "timestamp": "2025-05-15 14:50:49",
+      "timestamp": "2025-05-20 00:01:55",
       "address": "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL",
       "symbol": "HAEDAL",
       "chain_id": "sui",
-      "priceChange_m5": -0.35,
-      "volume_m5": 4802.92,
-      "marketCap": 26066577
+      "priceChange_m5": 0.12,
+      "volume_m5": 9401.16,
+      "marketCap": 25142526
     }
   ],
   "A3uDhArqmugwCHMKAqdbiFB2Xx5a86upKWRpkGkNPump": [
@@ -1223,6 +1197,133 @@
       "priceChange_m5": 164,
       "volume_m5": 174277.5,
       "marketCap": 9385046
+    }
+  ],
+  "DWGxNqh3oQYfZostoCXXdMRaB67WCDYckUjYvsMopump": [
+    {
+      "timestamp": "2025-05-20 00:03:57",
+      "address": "DWGxNqh3oQYfZostoCXXdMRaB67WCDYckUjYvsMopump",
+      "symbol": "GRID",
+      "chain_id": "solana",
+      "priceChange_m5": -1.5,
+      "volume_m5": 499.53,
+      "marketCap": 316306
+    },
+    {
+      "timestamp": "2025-05-20 00:02:55",
+      "address": "DWGxNqh3oQYfZostoCXXdMRaB67WCDYckUjYvsMopump",
+      "symbol": "GRID",
+      "chain_id": "solana",
+      "priceChange_m5": -9.13,
+      "volume_m5": 2885.43,
+      "marketCap": 316306
+    },
+    {
+      "timestamp": "2025-05-20 00:01:55",
+      "address": "DWGxNqh3oQYfZostoCXXdMRaB67WCDYckUjYvsMopump",
+      "symbol": "GRID",
+      "chain_id": "solana",
+      "priceChange_m5": -9.04,
+      "volume_m5": 2657.21,
+      "marketCap": 316634
+    }
+  ],
+  "Tq9DKzhmspcTya6PCiSTMuUVNzvLs1tYUhyxHPfpump": [
+    {
+      "timestamp": "2025-05-20 00:01:55",
+      "address": "Tq9DKzhmspcTya6PCiSTMuUVNzvLs1tYUhyxHPfpump",
+      "symbol": "NOLUCE",
+      "chain_id": "solana",
+      "priceChange_m5": -0.51,
+      "volume_m5": 1.99,
+      "marketCap": 3541
+    },
+    {
+      "timestamp": "2025-05-19 22:29:32",
+      "address": "Tq9DKzhmspcTya6PCiSTMuUVNzvLs1tYUhyxHPfpump",
+      "symbol": "NOLUCE",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 3560
+    },
+    {
+      "timestamp": "2025-05-19 12:42:36",
+      "address": "Tq9DKzhmspcTya6PCiSTMuUVNzvLs1tYUhyxHPfpump",
+      "symbol": "NOLUCE",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 3494
+    }
+  ],
+  "DhBR4UmQXuqcQ4LZPiUwwLjQQYSs94ivugCVMCwWpump": [
+    {
+      "timestamp": "2025-05-18 21:23:29",
+      "address": "DhBR4UmQXuqcQ4LZPiUwwLjQQYSs94ivugCVMCwWpump",
+      "symbol": "money",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 3346
+    }
+  ],
+  "GpXnJ3dSKRhDsgZtnGBdV7MBSPyhahErmGLvbxRQPUMP": [
+    {
+      "timestamp": "2025-05-19 00:05:13",
+      "address": "GpXnJ3dSKRhDsgZtnGBdV7MBSPyhahErmGLvbxRQPUMP",
+      "symbol": "Biden",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 36421
+    },
+    {
+      "timestamp": "2025-05-19 00:04:13",
+      "address": "GpXnJ3dSKRhDsgZtnGBdV7MBSPyhahErmGLvbxRQPUMP",
+      "symbol": "Biden",
+      "chain_id": "solana",
+      "priceChange_m5": -97.73,
+      "volume_m5": 28609.43,
+      "marketCap": 36421
+    },
+    {
+      "timestamp": "2025-05-19 00:02:13",
+      "address": "GpXnJ3dSKRhDsgZtnGBdV7MBSPyhahErmGLvbxRQPUMP",
+      "symbol": "Biden",
+      "chain_id": "solana",
+      "priceChange_m5": -98.12,
+      "volume_m5": 64379.6,
+      "marketCap": 36421
+    }
+  ],
+  "7234i8HtuRRSkaebLm2QWrfAnVgaZGJ4hZX319Hzpump": [
+    {
+      "timestamp": "2025-05-19 00:05:13",
+      "address": "7234i8HtuRRSkaebLm2QWrfAnVgaZGJ4hZX319Hzpump",
+      "symbol": "JUMPLON",
+      "chain_id": "solana",
+      "priceChange_m5": null,
+      "volume_m5": 0,
+      "marketCap": 4087
+    },
+    {
+      "timestamp": "2025-05-19 00:04:13",
+      "address": "7234i8HtuRRSkaebLm2QWrfAnVgaZGJ4hZX319Hzpump",
+      "symbol": "JUMPLON",
+      "chain_id": "solana",
+      "priceChange_m5": -99.88,
+      "volume_m5": 58687.04,
+      "marketCap": 4087
+    },
+    {
+      "timestamp": "2025-05-19 00:02:13",
+      "address": "7234i8HtuRRSkaebLm2QWrfAnVgaZGJ4hZX319Hzpump",
+      "symbol": "JUMPLON",
+      "chain_id": "solana",
+      "priceChange_m5": -99.88,
+      "volume_m5": 94146.23,
+      "marketCap": 4087
     }
   ]
 }

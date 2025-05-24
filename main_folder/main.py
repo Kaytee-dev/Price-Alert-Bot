@@ -59,6 +59,7 @@ from referral import register_referral_handlers
 from renewal import renewal_conv_handler
 from referral_payout import register_payout_handlers
 from util.error_logs import error_handler
+from storage.rpcs import load_rpc_list
 
 
 
@@ -293,6 +294,7 @@ def main():
     load_encrypted_keys()
     sync_wallets_from_secrets()
     purge_orphan_wallets()
+    load_rpc_list()
 
     # 🔒 Enforce token limits based on user tiers
     for user_id_str in list(storage.users.USER_TRACKING.keys()):

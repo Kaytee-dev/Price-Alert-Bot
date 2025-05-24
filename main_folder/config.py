@@ -79,6 +79,9 @@ PAYMENT_LOGS_FILE = f"{DATA_DIR}payment_logs.json"
 # Main bot wallet list to make withdrawals to
 PAYOUT_WALLETS_FILE = f"{DATA_DIR}payout.json"
 
+# Main bot wallet list to make withdrawals to
+RPC_LIST_FILE = f"{DATA_DIR}rpc.json"
+
 HASH_FILE = f"{DATA_DIR}last_saved_hashes.json"
 
 
