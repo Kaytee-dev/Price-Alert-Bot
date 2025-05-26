@@ -9,10 +9,11 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 
 import storage.payment_collection as payment_collection
-from pwd_loader.env_loader import get_wallet_password
+from pwd_loader.gcp_loader import get_wallet_password, get_secret
 
 # === CONFIG ===
-SALT = b"solana-secure-wallet-salt" # Static salt (should be secret in prod)
+#SALT = b"solana-secure-wallet-salt" # Static salt (should be secret in prod)
+SALT = get_secret("salt")
 ITERATIONS = 390000
 
 # === In-memory cache of decrypted wallets ===

@@ -1,12 +1,16 @@
 from pymongo import AsyncMongoClient
 from pymongo.server_api import ServerApi
+from pwd_loader.gcp_loader import get_secret
 import os
 import logging
 from dotenv import load_dotenv
 
 load_dotenv() 
 
-MONGO_URI = os.getenv("MONGO_URI")
+#MONGO_URI = os.getenv("MONGO_URI")
+
+MONGO_URI = get_secret("mongo-uri")
+
 if not MONGO_URI:
     raise RuntimeError("❌ MONGO_URI environment variable is not set.")
 

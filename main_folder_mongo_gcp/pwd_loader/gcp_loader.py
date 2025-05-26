@@ -6,7 +6,7 @@ from typing import Optional
 def get_wallet_password() -> str:
     client = secretmanager.SecretManagerServiceClient()
     project_id = google.auth.default()[1]
-    secret_name = f"projects/{project_id}/secrets/wallet-master-password/versions/latest"
+    secret_name = f"projects/{project_id}/secrets/encryption-password/versions/latest"
 
     response = client.access_secret_version(request={"name": secret_name})
     return response.payload.data.decode("utf-8")
