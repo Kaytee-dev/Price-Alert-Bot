@@ -1,5 +1,5 @@
 # password_loader/gcp_loader.py
-import google.auth # type: ignore
+import google.auth
 from google.cloud import secretmanager
 
 def get_wallet_password() -> str:

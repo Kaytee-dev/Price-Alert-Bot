@@ -1,0 +1,58 @@
+{
+  "solana": [
+    "25MXdVVhQ2fnXmBdiL2pSWZojnV5odMZPtKbCXzRpump",
+    "34HDZNbUkTyTrgYKy2ox43yp2f8PJ5hoM7xsrfNApump",
+    "38PgzpJYu2HkiYvV8qePFakB8tuobPdGm2FFEn7Dpump",
+    "3Ksxijyb1vgCE6hvxqGejdRrQnSTKMXKDSMKki8Apump",
+    "4hqSrQy7rY9RFWakUsn1bZDzxENKy6ZuUFd5o6UJpump",
+    "4vYwjHvipdqkmGDB6pDVk1b2eoaXG4uxZxFPX5Nipump",
+    "5qnUfJL8yKEr4CJHKj97cwo29qst3GpD8gEpqf16pump",
+    "5xjVQYk7BAWt8cQjNDsxc4cpnQpzTTJNx7XbTd5Kpump",
+    "6PPswxTsFHuEZPTuarS2xDeCGqefG3wTs2pK8upnpump",
+    "6bQr6rJ3WccpTYaaTPtUZUPGwPFyeHa7mavwo2hdpump",
+    "7234i8HtuRRSkaebLm2QWrfAnVgaZGJ4hZX319Hzpump",
+    "76RZeKinKT3jRx7aQZsV8TuDfB31f9HAQLwqp4Vcpump",
+    "7DggStXEx9urXZgnSxcMrsuwinjxJbuCFfPdVkKbz7qR",
+    "7LSsEoJGhLeZzGvDofTdNg7M3JttxQqGWNLo6vWMpump",
+    "8ncucXv6U6epZKHPbgaEBcEK399TpHGKCquSt4RnmX4f",
+    "8oGEEe5mnJ7MYMYM7NGA3R4jo4sB7ZbTdoCckhovpump",
+    "9dipUPALacHLmYwN9ZnCfXcK45FWqExjAe1u6v21pump",
+    "A3uDhArqmugwCHMKAqdbiFB2Xx5a86upKWRpkGkNPump",
+    "Arsg2eAULndN77ykNCr82Q6kV9MmvzdR5PZBHqUmN7r7",
+    "BFQW8aDzqzSJb22ccwk9fNwBiyX33tDtqqC1u8Hqpump",
+    "BV8BaYoXwWjHXBRXpCKjvemNUYULPuv77kxJRzrWp3Su",
+    "Bicthfrn6DxtLwCumQFBPFX3STcjNNaT467ysWN8pump",
+    "CHkaAeNUV24NkHLQS7fr6TMia6FPmZz1fw353sfypump",
+    "CyhqokDJfgxDzYz9CfGn7bMCjAND44ep8LTNKyLppump",
+    "D351aeeC5XKniB99eEEd8aTLjXBcURWRoNyD9ikzpump",
+    "DPTP4fUfWuwVTgCmttWBu6Sy5B9TeCTBjc2YKgpDpump",
+    "DWGxNqh3oQYfZostoCXXdMRaB67WCDYckUjYvsMopump",
+    "DhBR4UmQXuqcQ4LZPiUwwLjQQYSs94ivugCVMCwWpump",
+    "DitHyRMQiSDhn5cnKMJV2CDDt6sVct96YrECiM49pump",
+    "Ds1K683crskEEqyvpnwpYU1nF3qxjn1QmanRn52Zpump",
+    "DtiSDGeEqSFrUWLpUiUZyeZuYVSkemBqVARdZskxPump",
+    "EDsM6Jf48HwXBHcZLdCAQieudJ1gxqq3xhSNh31Hpump",
+    "F5VrsFPsB6xFYmzip4AH3s41ySzL8AV7qhWmbCNpump",
+    "FVeJhMJA9t8bviydEBryGE4ZNqiJSMH89GLXQBp18DpM",
+    "G4TVtFU7SN8DjqVkFEbRXEyoPvbR2X6NmbokhC9ppump",
+    "G8r2Yf7dVrcpyfCgmowgoNY3v7KuxcrGR5EENRkepump",
+    "GkS5nZ4eDopFVLQpMJxfMxEM4U19Ji3E48bkXQ29pump",
+    "GpXnJ3dSKRhDsgZtnGBdV7MBSPyhahErmGLvbxRQPUMP",
+    "HR1rUisbChPB7TGp4hcCEP9dRU3BLNfVRjTzoyS9pump",
+    "HohL7oPEpzekWsWiDSa1ewohT92QZyumWnUqiUQKq6SK",
+    "JCV8BB8Zde8ukroWKTjLSENSWEj42kBkENjjws2Rh6vP",
+    "Tq9DKzhmspcTya6PCiSTMuUVNzvLs1tYUhyxHPfpump",
+    "tdVDVTL6n6DP7w16ch7dS8Z4wVRcrK9FNJC47vSpump"
+  ],
+  "bsc": [
+    "0x12B4356C65340Fb02cdff01293F95FEBb1512F3b",
+    "0x274b2d24daa95e8b90f7779902688627909e4444"
+  ],
+  "ethereum": [
+    "0xa89b8A1fd3F72F3e85b9791F3E7ff42bD2D4E669",
+    "0xf816507E690f5Aa4E29d164885EB5fa7a5627860"
+  ],
+  "sui": [
+    "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL"
+  ]
+}

@@ -1,11 +1,9 @@
 aiohttp==3.9.3
 base58==2.1.1
-cryptography==45.0.2
-httpx==0.28.1
-protobuf==6.31.0
-pymongo==4.13.0
+cryptography==44.0.3
+protobuf==6.30.2
 python-dotenv==1.1.0
-python-telegram-bot==22.1
+python-telegram-bot==22.0
 qrcode==8.2
 Requests==2.32.3
 solana==0.36.6

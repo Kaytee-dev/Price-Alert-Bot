@@ -1,0 +1,121 @@
+{
+  "error_id": "error_20250523_155504",
+  "timestamp": "2025-05-23T15:55:04.799989",
+  "error_message": "Message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_application.py\", line 1264, in process_update\n    await coroutine\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_handlers\\basehandler.py\", line 157, in handle_update\n    return await self.callback(update, context)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder_mongo\\admin.py\", line 721, in handle_wallet_list_navigation\n    await show_wallet_dashboard(update, context)\n  File \"C:\\Users\\adeba\\OneDrive\\Desktop\\TRADING\\TRADING BOOKS\\Price Alert Bot\\main_folder_mongo\\admin.py\", line 675, in show_wallet_dashboard\n    await update.callback_query.edit_message_text(\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_callbackquery.py\", line 264, in edit_message_text\n    return await self._get_message().edit_text(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_message.py\", line 3436, in edit_text\n    return await self.get_bot().edit_message_text(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_extbot.py\", line 1618, in edit_message_text\n    return await super().edit_message_text(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 542, in decorator\n    result = await func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 3868, in edit_message_text\n    return await self._send_message(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_extbot.py\", line 581, in _send_message\n    result = await super()._send_message(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 736, in _send_message\n    result = await self._post(\n             ^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 630, in _post\n    return await self._do_post(\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\ext\\_extbot.py\", line 347, in _do_post\n    return await super()._do_post(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\_bot.py\", line 658, in _do_post\n    return await request.post(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\request\\_baserequest.py\", line 200, in post\n    result = await self._request_wrapper(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\adeba\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\telegram\\request\\_baserequest.py\", line 379, in _request_wrapper\n    raise BadRequest(message)\ntelegram.error.BadRequest: Message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message\n",
+  "update": {
+    "callback_query": {
+      "chat_instance": "-3580361889711401776",
+      "data": "to_dashboard",
+      "id": "4147012087654344747",
+      "message": {
+        "channel_chat_created": false,
+        "delete_chat_photo": false,
+        "entities": [
+          {
+            "length": 11,
+            "offset": 3,
+            "type": "bold"
+          },
+          {
+            "length": 17,
+            "offset": 30,
+            "type": "bold"
+          },
+          {
+            "length": 44,
+            "offset": 49,
+            "type": "code"
+          },
+          {
+            "length": 17,
+            "offset": 98,
+            "type": "bold"
+          },
+          {
+            "length": 44,
+            "offset": 117,
+            "type": "code"
+          },
+          {
+            "length": 17,
+            "offset": 166,
+            "type": "bold"
+          },
+          {
+            "length": 44,
+            "offset": 185,
+            "type": "code"
+          },
+          {
+            "length": 17,
+            "offset": 234,
+            "type": "bold"
+          },
+          {
+            "length": 44,
+            "offset": 253,
+            "type": "code"
+          },
+          {
+            "length": 17,
+            "offset": 302,
+            "type": "bold"
+          },
+          {
+            "length": 44,
+            "offset": 321,
+            "type": "code"
+          }
+        ],
+        "group_chat_created": false,
+        "reply_markup": {
+          "inline_keyboard": [
+            [
+              {
+                "callback_data": "noop",
+                "text": "Page 1/4"
+              },
+              {
+                "callback_data": "list_wallet_page_next",
+                "text": "Next ⏭"
+              }
+            ],
+            [
+              {
+                "callback_data": "to_dashboard",
+                "text": "🏠 Back to Dashboard"
+              }
+            ]
+          ]
+        },
+        "supergroup_chat_created": false,
+        "text": "💼 Wallet List (Page 1/4)\n\n💰 Withdrawal Wallet: 4SrnvcZ4SxpEo2JgEZ8jxxBefnRMCYr33BN7fLXpUC74\n\n💰 Withdrawal Wallet: BggN2aJagL95Lo7hSK6k8hgAuicaGV1LL1TTKfgPg9QT\n\n💰 Withdrawal Wallet: EjKgWi3yHTPKCXgwGp4sXB1um28mhz86JfGQe6gRtG8A\n\n💰 Withdrawal Wallet: 54nsAoGJ6711Ynut38M6JKAsRUbmXr5eJ6Seyei1wz3t\n\n💰 Withdrawal Wallet: EEy1A55p5bUs9yCRhmXstVki5SetLzhC9XFTGHzDePyD",
+        "chat": {
+          "first_name": "Adebayo",
+          "id": 965551493,
+          "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+          "type": "private",
+          "username": "toheeb6538"
+        },
+        "date": 1748012103,
+        "message_id": 3630,
+        "from": {
+          "first_name": "Price Alert Bot (Testing)",
+          "id": 8120859286,
+          "is_bot": true,
+          "username": "TestSolMoonBot"
+        }
+      },
+      "from": {
+        "first_name": "Adebayo",
+        "id": 965551493,
+        "is_bot": false,
+        "language_code": "en",
+        "last_name": "Toheeb | WEB DEV | WEB DESIGNER🐾",
+        "username": "toheeb6538"
+      }
+    },
+    "update_id": 223397851
+  }
+}
