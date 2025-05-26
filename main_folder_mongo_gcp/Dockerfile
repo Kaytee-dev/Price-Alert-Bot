@@ -1,20 +1,23 @@
-# Dockerfile for main_folder_mongo (Telegram Bot)
+# Use slim Python 3.12 image
 FROM python:3.12.10-slim
 
-# Set environment
+# Environment configs
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PORT=8080
 
+# Working directory inside container
 WORKDIR /app
 
 # Install dependencies
-COPY main_folder_mongo_gcp/requirements.txt ./
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main_folder_mongo_gcp/ .
+# Copy all project files into container
+COPY . .
 
+# Expose the port for Cloud Run
 EXPOSE 8080
 
-# Register webhook and start the bot
+# Register webhook, then run the bot
 CMD ["sh", "-c", "python set_webhook.py && python main.py"]
