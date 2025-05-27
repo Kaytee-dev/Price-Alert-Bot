@@ -32,7 +32,7 @@ def derive_key(password: str) -> bytes:
         iterations=ITERATIONS,
         backend=default_backend()
     )
-    return base64.urlsafe_b64encode(kdf.derive(password.encode()))
+    return base64.urlsafe_b64encode(kdf.derive(password.encode("utf-8")))
 
 
 def is_encrypted_value(value: str) -> bool:

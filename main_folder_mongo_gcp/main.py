@@ -299,6 +299,7 @@ def main():
     BOT_TOKEN = get_secret("bot-token")
     WEBHOOK_PATH = get_secret("webhook-path") or "/webhook"
     PORT = int(os.getenv("PORT", 8080))
+    CLOUD_RUN_DOMAIN = get_secret("cloudrun-url")
 
     print(f"📦 Starting bot on PORT={PORT}")
     print(f"🌐 Webhook path: {WEBHOOK_PATH}")
@@ -387,6 +388,7 @@ def main():
     listen="0.0.0.0",
     port=PORT,
     url_path=WEBHOOK_PATH,  # better match to PTB docs
+    webhook_url=f"https://{CLOUD_RUN_DOMAIN}/{WEBHOOK_PATH.lstrip('/')}",
     drop_pending_updates=True,
     #secret_token=get_secret("webhook-secret")  # optional but safer
     )
