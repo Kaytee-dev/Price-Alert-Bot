@@ -299,7 +299,7 @@ def main():
 
     BOT_TOKEN = get_secret("bot-token")
     WEBHOOK_PATH = get_secret("webhook-path") or "/webhook"
-    PORT = 8080
+    PORT = int(os.getenv("PORT", 8080))
 
     # 🚀 Core Launch Commands
     app = (
