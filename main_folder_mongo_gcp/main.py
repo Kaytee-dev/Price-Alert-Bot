@@ -303,7 +303,7 @@ def main():
 
     print(f"📦 Starting bot on PORT={PORT}")
     print(f"🌐 Webhook path: {WEBHOOK_PATH}")
-    print(f"🌐 Webhook path: {WEBHOOK_PATH}")
+    
 
 
     # 🚀 Core Launch Commands
