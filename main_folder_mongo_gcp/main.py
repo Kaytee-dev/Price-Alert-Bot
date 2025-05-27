@@ -8,7 +8,7 @@ import sys
 from telegram import Update, BotCommand, BotCommandScopeDefault
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
-    ContextTypes, TypeHandler
+    ContextTypes, TypeHandler, MessageHandler,filters
 )
 
 from config import SUPER_ADMIN_ID
@@ -294,6 +294,10 @@ async def extract_username(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 #     web_app.router.add_get("/healthz", healthz)
 #     return web_app
 
+async def debug_all(update, context):
+    print(f"[DEBUG] Incoming update: {update}")
+
+
 def main():
 
     BOT_TOKEN = get_secret("bot-token")
@@ -315,6 +319,8 @@ def main():
     )
 
     app.bot_data["launch_dashboard"] = launch
+    app.add_handler(MessageHandler(filters.ALL, debug_all))
+
     app.add_error_handler(error_handler)
 
     app.add_handler(TypeHandler(Update, extract_username), group=-999)
