@@ -377,11 +377,20 @@ def main():
     register_payout_handlers(app)
     #app.run_polling()
 
+    # app.run_webhook(
+    #     listen="0.0.0.0",
+    #     port=PORT,
+    #     webhook_path=WEBHOOK_PATH,
+    #     web_app=get_web_app()
+    # )
+
     app.run_webhook(
-        listen="0.0.0.0",
-        port=PORT,
-        webhook_path=WEBHOOK_PATH,
-        web_app=get_web_app()
+    listen="0.0.0.0",
+    port=PORT,
+    url_path=WEBHOOK_PATH,  # better match to PTB docs
+    web_app=get_web_app(),
+    drop_pending_updates=True,
+    #secret_token=get_secret("webhook-secret")  # optional but safer
     )
 
 if __name__ == "__main__":

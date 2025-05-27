@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose the port for Cloud Run
-EXPOSE 8080
+EXPOSE 8443
 
 # Register webhook, then run the bot
 CMD ["sh", "-c", "python set_webhook.py && python main.py"]
