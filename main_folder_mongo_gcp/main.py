@@ -67,7 +67,6 @@ import util.utils as utils
 from storage.notify import (flush_notify_cache_to_db, ensure_notify_records_for_active_users,
                             
                             )
-from aiohttp import web
 from pwd_loader.gcp_loader import get_secret
 
 
@@ -286,14 +285,14 @@ async def extract_username(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             context.bot_data["usernames"] = {}
         context.bot_data["usernames"][chat_id] = username
 
-def get_web_app():
-    web_app = web.Application()
+# def get_web_app():
+#     web_app = web.Application()
 
-    async def healthz(request):
-        return web.Response(text="OK")
+#     async def healthz(request):
+#         return web.Response(text="OK")
 
-    web_app.router.add_get("/healthz", healthz)
-    return web_app
+#     web_app.router.add_get("/healthz", healthz)
+#     return web_app
 
 def main():
 
@@ -388,7 +387,6 @@ def main():
     listen="0.0.0.0",
     port=PORT,
     url_path=WEBHOOK_PATH,  # better match to PTB docs
-    web_app=get_web_app(),
     drop_pending_updates=True,
     #secret_token=get_secret("webhook-secret")  # optional but safer
     )
