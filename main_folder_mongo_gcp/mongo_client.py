@@ -28,8 +28,9 @@ async def connect():
     global client, db
 
     MONGO_URI = get_secret("mongo-uri")
+    URI = f"{MONGO_URI}"
     try:
-        client = AsyncMongoClient(MONGO_URI, server_api=ServerApi("1"))
+        client = AsyncMongoClient(URI, server_api=ServerApi("1"))
         db = client[MONGO_DB_NAME]
         logging.info("✅ Connected to MongoDB")
     except Exception as e:
