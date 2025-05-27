@@ -9,12 +9,12 @@ load_dotenv()
 
 #MONGO_URI = os.getenv("MONGO_URI")
 
-MONGO_URI = get_secret("mongo-uri")
+# MONGO_URI = get_secret("mongo-uri")
 
-assert MONGO_URI, "Missing required secrets."
+# assert MONGO_URI, "Missing required secrets."
 
-if not MONGO_URI:
-    raise RuntimeError("❌ MONGO_URI environment variable is not set.")
+# if not MONGO_URI:
+#     raise RuntimeError("❌ MONGO_URI environment variable is not set.")
 
 MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "price_alert_bot")
 
@@ -26,6 +26,8 @@ _collection_cache = {}
 
 async def connect():
     global client, db
+
+    MONGO_URI = get_secret("mongo-uri")
     try:
         client = AsyncMongoClient(MONGO_URI, server_api=ServerApi("1"))
         db = client[MONGO_DB_NAME]
