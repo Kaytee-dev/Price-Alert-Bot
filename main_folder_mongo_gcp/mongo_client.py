@@ -11,6 +11,8 @@ load_dotenv()
 
 MONGO_URI = get_secret("mongo-uri")
 
+assert MONGO_URI, "Missing required secrets."
+
 if not MONGO_URI:
     raise RuntimeError("❌ MONGO_URI environment variable is not set.")
 
