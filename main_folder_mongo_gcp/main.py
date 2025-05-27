@@ -388,7 +388,7 @@ def main():
     listen="0.0.0.0",
     port=PORT,
     url_path=WEBHOOK_PATH,  # better match to PTB docs
-    webhook_url=f"https://{CLOUD_RUN_DOMAIN}/{WEBHOOK_PATH.lstrip('/')}",
+    webhook_url=f"{CLOUD_RUN_DOMAIN}/{WEBHOOK_PATH.lstrip('/')}",
     drop_pending_updates=True,
     #secret_token=get_secret("webhook-secret")  # optional but safer
     )
