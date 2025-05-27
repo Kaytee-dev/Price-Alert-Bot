@@ -301,6 +301,10 @@ def main():
     WEBHOOK_PATH = get_secret("webhook-path") or "/webhook"
     PORT = int(os.getenv("PORT", 8080))
 
+    print(f"📦 Starting bot on PORT={PORT}")
+    print(f"🌐 Webhook path: {WEBHOOK_PATH}")
+
+
     # 🚀 Core Launch Commands
     app = (
         ApplicationBuilder()
