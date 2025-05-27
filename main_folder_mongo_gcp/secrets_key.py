@@ -13,7 +13,7 @@ from pwd_loader.gcp_loader import get_wallet_password, get_secret
 
 # === CONFIG ===
 #SALT = b"solana-secure-wallet-salt" # Static salt (should be secret in prod)
-SALT = get_secret("salt")
+
 ITERATIONS = 390000
 
 # === In-memory cache of decrypted wallets ===
@@ -23,6 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 def derive_key(password: str) -> bytes:
+    SALT = get_secret("salt").encode("utf-8")
+    
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
