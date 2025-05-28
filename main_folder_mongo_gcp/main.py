@@ -346,8 +346,8 @@ async def init_telegram_app(app_context):
         .build()
     )
     
-    # ✅ Initialize the application
-    await telegram_app.initialize()
+    # # ✅ Initialize the application
+    # await telegram_app.initialize()
     
     # Add all handlers
     telegram_app.bot_data["launch_dashboard"] = launch
@@ -415,6 +415,9 @@ async def init_telegram_app(app_context):
     
     # Store the initialized telegram app in aiohttp app context
     app_context['telegram_app'] = telegram_app
+
+    # ✅ Initialize the application
+    await telegram_app.initialize()
     print("✅ Telegram application initialized successfully")
 
 def get_update_webhook_handler():
