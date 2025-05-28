@@ -216,107 +216,114 @@ async def health_check(request):
 
 # --- Bot Runner ---
 async def on_startup(app):
+    print("🚀 on_startup() function started")
 
-    # # Use port 443 for health checks (Telegram-supported)
-    # health_port = 443
+    try: 
+        print("📊 Attempting MongoDB connection...")
+
+        await mongo_client.connect()
+        print("✅ MongoDB connected successfully")
+        await user_collection.load_user_collection_from_mongo()
+        await user_collection.ensure_user_indexes()
+
+        await token_collection.load_token_collection_from_mongo()
+        await token_collection.create_token_list_index()
+        await load_token_data()
+
+        await payment_collection.load_payment_collection_from_mongo()
+
+        await load_admins()
+        load_user_tracking()
+        # load_user_status()
+
+        load_symbols
+        load_tracked_tokens()
+        #load_token_history()
+
+        # load_user_tiers()
+        await load_payment_logs()
+        load_payout_wallets()
+
+        await load_wallets()
+        await load_encrypted_keys()
+        await sync_wallets_from_secrets()
+        await purge_orphan_wallets()
+        await load_rpc_list()
+        await ensure_notify_records_for_active_users()
+
+
+        # 🔒 Enforce token limits based on user tiers
+        await tiers.enforce_token_limits_bulk()
+
+        
+        # ♻️ Restore active restart users
+        await restart_recovery.restore_active_users()
+
+        # 🧮 Token Tracking — Rebuild from loaded structured USER_TRACKING
+        storage.tokens.rebuild_tracked_token()
+        
+        # Adding threshold on startup
+        await thresholds.load_user_thresholds()
+        updated = False
+        for chat_id in storage.users.USER_TRACKING:
+            if chat_id not in thresholds.USER_THRESHOLDS:
+                thresholds.USER_THRESHOLDS[chat_id] = 5.0
+                updated = True
+        if updated:
+            await thresholds.save_user_thresholds()
+
+        print("🔄 Starting background tasks...")
+
+        if any(storage.users.USER_STATUS.values()):
+            monitor_task = app.create_task(background_price_monitor(app))
+            app._monitor_task = monitor_task
+            app._monitor_started = True
+            logger.info("🔄 Monitor loop auto-started after restart recovery.")
+
+        # 📣 Also start the inactive user reminder loop
+        reminder_task = app.create_task(remind_inactive_users(app))
+        app._reminder_task = reminder_task
+        logger.info("🔔 Inactive user reminder loop started.")
+
+        # 🕒 Start the tier expiry check scheduler
+        expiry_task = app.create_task(check_and_process_tier_expiry_scheduler(app))
+        app._expiry_task = expiry_task
+        logger.info("🔄 Tier expiry check scheduler started (2-day interval)")
+
+        print("✅ Background tasks started")
+
+
+        # 🔧 Set fallback default commands
+        default_cmds = [
+            BotCommand("lc", "Launch bot dashboard"),
+            BotCommand("start", "Start tracking tokens"),
+            BotCommand("stop", "Stop tracking tokens"),
+            BotCommand("add", "Add a token to track -- /a"),
+            BotCommand("remove", "Remove token from tracking -- /rm"),
+            BotCommand("list", "List tracked tokens -- /l"),
+            BotCommand("reset", "Clear all tracked tokens -- /x"),
+            BotCommand("help", "Show help message -- /h"),
+            BotCommand("status", "Show stats of tracked tokens -- /s"),
+            BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
+            BotCommand("upgrade", "Upgrade your tier to track more tokens -- /u"),
+            BotCommand("renew", "Renew your current tier to continue tracking your tokens -- /rn"),
+        ]
+        await app.bot.set_my_commands(default_cmds, scope=BotCommandScopeDefault())
+
+        # 🔧 Re-apply scoped commands for all admins
+        for admin_id in ADMINS:
+            await refresh_user_commands(admin_id, app.bot)
+
+        # 🔧 Also refresh super admin's scoped menu
+        await refresh_user_commands(SUPER_ADMIN_ID, app.bot)
     
-    # # Start health check server on separate port
-    # health_runner = await start_health_server(health_port)
-    
-    # # Store the runner in bot_data for cleanup later if needed
-    # app.bot_data["health_runner"] = health_runner
-
-    await mongo_client.connect()
-    await user_collection.load_user_collection_from_mongo()
-    await user_collection.ensure_user_indexes()
-
-    await token_collection.load_token_collection_from_mongo()
-    await token_collection.create_token_list_index()
-    await load_token_data()
-
-    await payment_collection.load_payment_collection_from_mongo()
-
-    await load_admins()
-    load_user_tracking()
-    # load_user_status()
-
-    load_symbols
-    load_tracked_tokens()
-    #load_token_history()
-
-    # load_user_tiers()
-    await load_payment_logs()
-    load_payout_wallets()
-
-    await load_wallets()
-    await load_encrypted_keys()
-    await sync_wallets_from_secrets()
-    await purge_orphan_wallets()
-    await load_rpc_list()
-    await ensure_notify_records_for_active_users()
+    except Exception as e:
+        print(f"❌ on_startup() failed: {e}")
+        import traceback
+        traceback.print_exc()
+        raise  # This is important - don't swallow the error
 
 
-    # 🔒 Enforce token limits based on user tiers
-    await tiers.enforce_token_limits_bulk()
-
-    
-    # ♻️ Restore active restart users
-    await restart_recovery.restore_active_users()
-
-    # 🧮 Token Tracking — Rebuild from loaded structured USER_TRACKING
-    storage.tokens.rebuild_tracked_token()
-    
-    # Adding threshold on startup
-    await thresholds.load_user_thresholds()
-    updated = False
-    for chat_id in storage.users.USER_TRACKING:
-        if chat_id not in thresholds.USER_THRESHOLDS:
-            thresholds.USER_THRESHOLDS[chat_id] = 5.0
-            updated = True
-    if updated:
-        await thresholds.save_user_thresholds()
-
-
-    if any(storage.users.USER_STATUS.values()):
-        monitor_task = app.create_task(background_price_monitor(app))
-        app._monitor_task = monitor_task
-        app._monitor_started = True
-        logger.info("🔄 Monitor loop auto-started after restart recovery.")
-
-    # 📣 Also start the inactive user reminder loop
-    reminder_task = app.create_task(remind_inactive_users(app))
-    app._reminder_task = reminder_task
-    logger.info("🔔 Inactive user reminder loop started.")
-
-    # 🕒 Start the tier expiry check scheduler
-    expiry_task = app.create_task(check_and_process_tier_expiry_scheduler(app))
-    app._expiry_task = expiry_task
-    logger.info("🔄 Tier expiry check scheduler started (2-day interval)")
-
-
-    # 🔧 Set fallback default commands
-    default_cmds = [
-        BotCommand("lc", "Launch bot dashboard"),
-        BotCommand("start", "Start tracking tokens"),
-        BotCommand("stop", "Stop tracking tokens"),
-        BotCommand("add", "Add a token to track -- /a"),
-        BotCommand("remove", "Remove token from tracking -- /rm"),
-        BotCommand("list", "List tracked tokens -- /l"),
-        BotCommand("reset", "Clear all tracked tokens -- /x"),
-        BotCommand("help", "Show help message -- /h"),
-        BotCommand("status", "Show stats of tracked tokens -- /s"),
-        BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
-        BotCommand("upgrade", "Upgrade your tier to track more tokens -- /u"),
-        BotCommand("renew", "Renew your current tier to continue tracking your tokens -- /rn"),
-    ]
-    await app.bot.set_my_commands(default_cmds, scope=BotCommandScopeDefault())
-
-    # 🔧 Re-apply scoped commands for all admins
-    for admin_id in ADMINS:
-        await refresh_user_commands(admin_id, app.bot)
-
-    # 🔧 Also refresh super admin's scoped menu
-    await refresh_user_commands(SUPER_ADMIN_ID, app.bot)
 
 async def extract_username(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Middleware: Save username globally into context.bot_data."""
