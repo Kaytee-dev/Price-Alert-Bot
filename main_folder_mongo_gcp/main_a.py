@@ -205,14 +205,14 @@ async def health_check(request):
 #     logger.info(f"🏥 Health check server started on port {port}")
 #     return runner
 
-# def get_update_webhook_handler(app):
-#     async def handler(request):
-#         data = await request.json()
-#         update = Update.de_json(data, app.bot)
-#         await app.process_update(update)
-#         return web.Response(text="OK")
+def get_update_webhook_handler(app):
+    async def handler(request):
+        data = await request.json()
+        update = Update.de_json(data, app.bot)
+        await app.process_update(update)
+        return web.Response(text="OK")
 
-#     return handler
+    return handler
 
 # --- Bot Runner ---
 async def on_startup(app):
@@ -334,100 +334,9 @@ async def debug_all(update, context):
     print(f"[DEBUG] Incoming update: {update}")
 
 
-async def init_telegram_app(app_context):
-    """Initialize telegram app when aiohttp starts"""
-    BOT_TOKEN = get_secret("bot-token")
-    
-    # 🚀 Core Launch Commands
-    telegram_app = (
-        ApplicationBuilder()
-        .token(BOT_TOKEN)
-        .post_init(on_startup)
-        .build()
-    )
-    
-    # ✅ Initialize the application
-    await telegram_app.initialize()
-    
-    # Add all handlers
-    telegram_app.bot_data["launch_dashboard"] = launch
-    telegram_app.add_handler(MessageHandler(filters.ALL, debug_all))
-
-    telegram_app.add_error_handler(error_handler)
-
-    telegram_app.add_handler(TypeHandler(Update, extract_username), group=-999)
-    telegram_app.add_handler(CommandHandler("lc", launch))
-
-    telegram_app.add_handler(CommandHandler("start", start))
-    telegram_app.add_handler(CommandHandler("stop", stop))
-
-    telegram_app.add_handler(CommandHandler(["add", "a"], add))
-    telegram_app.add_handler(CommandHandler(["alltokens", "at"], alltokens))
-
-    telegram_app.add_handler(CommandHandler(["remove", "rm"], remove))
-    telegram_app.add_handler(CommandHandler(["list", "l"], list_tokens))
-
-    telegram_app.add_handler(CommandHandler(["reset", "x"], reset))
-    telegram_app.add_handler(CommandHandler(["help", "h"], help_command))
-
-    telegram_app.add_handler(CommandHandler(["restart", "rs"], restart))
-    telegram_app.add_handler(CommandHandler(["status", "s"], status))
-
-    telegram_app.add_handler(CommandHandler(["addadmin", "aa"], addadmin))
-    telegram_app.add_handler(CommandHandler(["removeadmin", "ra"], removeadmin))
-
-    telegram_app.add_handler(CommandHandler(["listadmins", "la"], listadmins))
-    telegram_app.add_handler(CommandHandler("aw", addwallet))
-
-    telegram_app.add_handler(CommandHandler("ap", addpayout))
-    telegram_app.add_handler(CommandHandler(["listrefs", "lr"], list_referrals))
-
-    telegram_app.add_handler(CommandHandler("threshold", threshold))
-    telegram_app.add_handler(CommandHandler("t", threshold))
-
-    telegram_app.add_handler(CommandHandler(["addrpc", "ar"], addrpc))
-    telegram_app.add_handler(CommandHandler(["removerpc", "rr"], removerpc))
-    telegram_app.add_handler(CommandHandler(["listrpc", "lrp"], listrpc))
-
-    # telegram_app.add_handler(CommandHandler("u", start_upgrade))
-    # telegram_app.add_handler(CommandHandler("r", start_renewal))
-
-    telegram_app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
-    telegram_app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
-    telegram_app.add_handler(CallbackQueryHandler(callback_reset_confirmation, pattern="^confirm_reset$|^cancel_reset$"))
-    telegram_app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
-    telegram_app.add_handler(CallbackQueryHandler(handle_removerpc_callback, pattern="^(confirm_removerpc|cancel_removerpc):"))
-
-    telegram_app.add_handler(CallbackQueryHandler(back_to_dashboard, pattern="^go_to_dashboard$"))
-    telegram_app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$|^back_to_dashboard$"))
-
-    telegram_app.add_handler(upgrade_conv_handler)
-    telegram_app.add_handler(renewal_conv_handler)
-
-    telegram_app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))
-    register_referral_handlers(telegram_app)
-
-    telegram_app.add_handler(check_payment_conv)
-    telegram_app.add_handler(manual_upgrade_conv)
-
-    register_wallet_commands(telegram_app)
-    register_payout_handlers(telegram_app)
-    
-    # Store the initialized telegram app in aiohttp app context
-    app_context['telegram_app'] = telegram_app
-    print("✅ Telegram application initialized successfully")
-
-def get_update_webhook_handler():
-    """Updated webhook handler that gets app from request context"""
-    async def handler(request):
-        telegram_app = request.app['telegram_app']  # Get initialized app from context
-        data = await request.json()
-        update = Update.de_json(data, telegram_app.bot)
-        await telegram_app.process_update(update)
-        return web.Response(text="OK")
-    return handler
-
 def main():
+
+    BOT_TOKEN = get_secret("bot-token")
     WEBHOOK_PATH = get_secret("webhook-path")
     PORT = int(os.getenv("PORT", 8443))
     #CLOUD_RUN_DOMAIN = get_secret("cloudrun-url")
@@ -435,18 +344,104 @@ def main():
     print(f"📦 Starting bot on PORT={PORT}")
     print(f"🌐 Webhook path: {WEBHOOK_PATH}")
     
-    # Create aiohttp application
+
+
+    # 🚀 Core Launch Commands
+    app = (
+        ApplicationBuilder()
+        .token(BOT_TOKEN)
+        .post_init(on_startup)
+        .build()
+    )
+
+    
+
+    app.bot_data["launch_dashboard"] = launch
+    app.add_handler(MessageHandler(filters.ALL, debug_all))
+
+    app.add_error_handler(error_handler)
+
+    app.add_handler(TypeHandler(Update, extract_username), group=-999)
+    app.add_handler(CommandHandler("lc", launch))
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("stop", stop))
+
+    app.add_handler(CommandHandler(["add", "a"], add))
+    app.add_handler(CommandHandler(["alltokens", "at"], alltokens))
+
+    app.add_handler(CommandHandler(["remove", "rm"], remove))
+    app.add_handler(CommandHandler(["list", "l"], list_tokens))
+
+    app.add_handler(CommandHandler(["reset", "x"], reset))
+    app.add_handler(CommandHandler(["help", "h"], help_command))
+
+    app.add_handler(CommandHandler(["restart", "rs"], restart))
+    app.add_handler(CommandHandler(["status", "s"], status))
+
+    app.add_handler(CommandHandler(["addadmin", "aa"], addadmin))
+    app.add_handler(CommandHandler(["removeadmin", "ra"], removeadmin))
+
+    app.add_handler(CommandHandler(["listadmins", "la"], listadmins))
+    app.add_handler(CommandHandler("aw", addwallet))
+
+    app.add_handler(CommandHandler("ap", addpayout))
+    app.add_handler(CommandHandler(["listrefs", "lr"], list_referrals))
+
+    app.add_handler(CommandHandler("threshold", threshold))
+    app.add_handler(CommandHandler("t", threshold))
+
+    app.add_handler(CommandHandler(["addrpc", "ar"], addrpc))
+    app.add_handler(CommandHandler(["removerpc", "rr"], removerpc))
+    app.add_handler(CommandHandler(["listrpc", "lrp"], listrpc))
+
+    # app.add_handler(CommandHandler("u", start_upgrade))
+    # app.add_handler(CommandHandler("r", start_renewal))
+
+
+    app.add_handler(CallbackQueryHandler(callback_restart, pattern="^confirm_restart$|^cancel_restart$"))
+    app.add_handler(CallbackQueryHandler(callback_stop, pattern="^confirm_stop$|^cancel_stop$"))
+    app.add_handler(CallbackQueryHandler(callback_reset_confirmation, pattern="^confirm_reset$|^cancel_reset$"))
+    app.add_handler(CallbackQueryHandler(handle_removeadmin_callback, pattern="^confirm_removeadmin:|^cancel_removeadmin$"))
+    app.add_handler(CallbackQueryHandler(handle_removerpc_callback, pattern="^(confirm_removerpc|cancel_removerpc):"))
+
+    app.add_handler(CallbackQueryHandler(back_to_dashboard, pattern="^go_to_dashboard$"))
+    app.add_handler(CallbackQueryHandler(handle_list_navigation, pattern="^list_prev$|^list_next$|^back_to_dashboard$"))
+
+    app.add_handler(upgrade_conv_handler)
+    app.add_handler(renewal_conv_handler)
+
+    app.add_handler(CallbackQueryHandler(handle_dashboard_button, pattern="^cmd_"))
+    register_referral_handlers(app)
+
+    app.add_handler(check_payment_conv)
+    app.add_handler(manual_upgrade_conv)
+
+    register_wallet_commands(app)
+    register_payout_handlers(app)
+    #app.run_polling()
+
+    # app.run_webhook(
+    #     listen="0.0.0.0",
+    #     port=PORT,
+    #     webhook_path=WEBHOOK_PATH,
+    #     web_app=get_web_app()
+    # )
+
+    # app.run_webhook(
+    # listen="0.0.0.0",
+    # port=PORT,
+    # url_path=WEBHOOK_PATH,  # better match to PTB docs
+    # webhook_url=f"{CLOUD_RUN_DOMAIN}/{WEBHOOK_PATH.lstrip('/')}",
+    # #drop_pending_updates=True,
+    # #secret_token=get_secret("webhook-secret")  # optional but safer
+    # )
+
     webhook_app = web.Application()
-    
-    # Initialize telegram app on startup
-    webhook_app.on_startup.append(init_telegram_app)
-    
-    # Add routes
-    webhook_app.router.add_post(WEBHOOK_PATH, get_update_webhook_handler())
+    webhook_app.router.add_post(WEBHOOK_PATH, get_update_webhook_handler(app))
     webhook_app.router.add_get("/", health_check)
     webhook_app.router.add_get("/health", health_check)
 
-    # Run the web application
     web.run_app(webhook_app, port=PORT, host="0.0.0.0")
 
 if __name__ == "__main__":
