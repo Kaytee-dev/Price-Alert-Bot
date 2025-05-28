@@ -188,35 +188,43 @@ async def health_check(request):
         'service': 'telegram-bot'
     })
 
-async def start_health_server(port=443):
-    """Start aiohttp server for health checks on separate Telegram-supported port"""
-    app = web.Application()
+# async def start_health_server(port=443):
+#     """Start aiohttp server for health checks on separate Telegram-supported port"""
+#     app = web.Application()
     
-    # Health check routes
-    app.router.add_get('/', health_check)
-    app.router.add_get('/health', health_check)
+#     # Health check routes
+#     app.router.add_get('/', health_check)
+#     app.router.add_get('/health', health_check)
     
-    runner = web.AppRunner(app)
-    await runner.setup()
+#     runner = web.AppRunner(app)
+#     await runner.setup()
     
-    site = web.TCPSite(runner, '0.0.0.0', port)
-    await site.start()
+#     site = web.TCPSite(runner, '0.0.0.0', port)
+#     await site.start()
     
-    logger.info(f"🏥 Health check server started on port {port}")
-    return runner
+#     logger.info(f"🏥 Health check server started on port {port}")
+#     return runner
 
+def get_update_webhook_handler(app):
+    async def handler(request):
+        data = await request.json()
+        update = Update.de_json(data, app.bot)
+        await app.process_update(update)
+        return web.Response(text="OK")
+
+    return handler
 
 # --- Bot Runner ---
 async def on_startup(app):
 
-    # Use port 443 for health checks (Telegram-supported)
-    health_port = 443
+    # # Use port 443 for health checks (Telegram-supported)
+    # health_port = 443
     
-    # Start health check server on separate port
-    health_runner = await start_health_server(health_port)
+    # # Start health check server on separate port
+    # health_runner = await start_health_server(health_port)
     
-    # Store the runner in bot_data for cleanup later if needed
-    app.bot_data["health_runner"] = health_runner
+    # # Store the runner in bot_data for cleanup later if needed
+    # app.bot_data["health_runner"] = health_runner
 
     await mongo_client.connect()
     await user_collection.load_user_collection_from_mongo()
@@ -331,7 +339,7 @@ def main():
     BOT_TOKEN = get_secret("bot-token")
     WEBHOOK_PATH = get_secret("webhook-path")
     PORT = int(os.getenv("PORT", 8443))
-    CLOUD_RUN_DOMAIN = get_secret("cloudrun-url")
+    #CLOUD_RUN_DOMAIN = get_secret("cloudrun-url")
 
     print(f"📦 Starting bot on PORT={PORT}")
     print(f"🌐 Webhook path: {WEBHOOK_PATH}")
@@ -345,6 +353,8 @@ def main():
         .post_init(on_startup)
         .build()
     )
+
+    
 
     app.bot_data["launch_dashboard"] = launch
     app.add_handler(MessageHandler(filters.ALL, debug_all))
@@ -418,14 +428,21 @@ def main():
     #     web_app=get_web_app()
     # )
 
-    app.run_webhook(
-    listen="0.0.0.0",
-    port=PORT,
-    url_path=WEBHOOK_PATH,  # better match to PTB docs
-    webhook_url=f"{CLOUD_RUN_DOMAIN}/{WEBHOOK_PATH.lstrip('/')}",
-    #drop_pending_updates=True,
-    #secret_token=get_secret("webhook-secret")  # optional but safer
-    )
+    # app.run_webhook(
+    # listen="0.0.0.0",
+    # port=PORT,
+    # url_path=WEBHOOK_PATH,  # better match to PTB docs
+    # webhook_url=f"{CLOUD_RUN_DOMAIN}/{WEBHOOK_PATH.lstrip('/')}",
+    # #drop_pending_updates=True,
+    # #secret_token=get_secret("webhook-secret")  # optional but safer
+    # )
+
+    webhook_app = web.Application()
+    webhook_app.router.add_post(WEBHOOK_PATH, get_update_webhook_handler(app))
+    webhook_app.router.add_get("/", health_check)
+    webhook_app.router.add_get("/health", health_check)
+
+    web.run_app(webhook_app, port=PORT, host="0.0.0.0")
 
 if __name__ == "__main__":
     main()

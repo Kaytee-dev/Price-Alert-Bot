@@ -17,7 +17,6 @@ COPY . .
 
 # Expose both ports
 EXPOSE 8443
-EXPOSE 443
 
 # Register webhook, then run the bot
 CMD ["sh", "-c", "python set_webhook.py && python main.py"]
