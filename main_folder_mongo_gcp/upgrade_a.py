@@ -10,7 +10,7 @@ import storage.tiers as tiers
 from datetime import datetime, timedelta
 import urllib.parse
 
-from utils import CustomUpdate, CustomEffectiveChat, CustomMessage, build_custom_update_from_query, send_message
+from util.utils import CustomUpdate, CustomEffectiveChat, CustomMessage, build_custom_update_from_query, send_message
 from config import SUPER_ADMIN_ID, BOT_LOGS_ID
 
 from referral import on_upgrade_completed

@@ -188,31 +188,6 @@ async def health_check(request):
         'service': 'telegram-bot'
     })
 
-# async def start_health_server(port=443):
-#     """Start aiohttp server for health checks on separate Telegram-supported port"""
-#     app = web.Application()
-    
-#     # Health check routes
-#     app.router.add_get('/', health_check)
-#     app.router.add_get('/health', health_check)
-    
-#     runner = web.AppRunner(app)
-#     await runner.setup()
-    
-#     site = web.TCPSite(runner, '0.0.0.0', port)
-#     await site.start()
-    
-#     logger.info(f"🏥 Health check server started on port {port}")
-#     return runner
-
-# def get_update_webhook_handler(app):
-#     async def handler(request):
-#         data = await request.json()
-#         update = Update.de_json(data, app.bot)
-#         await app.process_update(update)
-#         return web.Response(text="OK")
-
-#     return handler
 
 # --- Bot Runner ---
 async def on_startup(app):
@@ -422,12 +397,15 @@ async def init_telegram_app(app_context):
 
     # Add the catch-all debug handler LAST with a higher group number
     telegram_app.add_handler(MessageHandler(filters.ALL, debug_all), group=999)
+
+    # ✅ Initialize the application
+    await telegram_app.initialize()
     
     # Store the initialized telegram app in aiohttp app context
     app_context['telegram_app'] = telegram_app
 
-    # ✅ Initialize the application
-    await telegram_app.initialize()
+    # # ✅ Initialize the application
+    # await telegram_app.initialize()
     print("✅ Telegram application initialized successfully")
 
 def get_update_webhook_handler():
