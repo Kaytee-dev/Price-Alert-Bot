@@ -68,6 +68,7 @@ from storage.notify import (flush_notify_cache_to_db, ensure_notify_records_for_
                             
                             )
 from pwd_loader.gcp_loader import get_secret
+from aiohttp import web
 
 
 
@@ -180,8 +181,43 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("❌ Shutdown cancelled.")
 
 
+async def health_check(request):
+    """Health check endpoint for Cloud Run startup/liveness probes"""
+    return web.json_response({
+        'status': 'healthy',
+        'service': 'telegram-bot'
+    })
+
+async def start_health_server(port=443):
+    """Start aiohttp server for health checks on separate Telegram-supported port"""
+    app = web.Application()
+    
+    # Health check routes
+    app.router.add_get('/', health_check)
+    app.router.add_get('/health', health_check)
+    
+    runner = web.AppRunner(app)
+    await runner.setup()
+    
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+    
+    logger.info(f"🏥 Health check server started on port {port}")
+    return runner
+
+
 # --- Bot Runner ---
 async def on_startup(app):
+
+    # Use port 443 for health checks (Telegram-supported)
+    health_port = 443
+    
+    # Start health check server on separate port
+    health_runner = await start_health_server(health_port)
+    
+    # Store the runner in bot_data for cleanup later if needed
+    app.bot_data["health_runner"] = health_runner
+
     await mongo_client.connect()
     await user_collection.load_user_collection_from_mongo()
     await user_collection.ensure_user_indexes()
@@ -285,14 +321,6 @@ async def extract_username(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             context.bot_data["usernames"] = {}
         context.bot_data["usernames"][chat_id] = username
 
-# def get_web_app():
-#     web_app = web.Application()
-
-#     async def healthz(request):
-#         return web.Response(text="OK")
-
-#     web_app.router.add_get("/healthz", healthz)
-#     return web_app
 
 async def debug_all(update, context):
     print(f"[DEBUG] Incoming update: {update}")
@@ -301,8 +329,8 @@ async def debug_all(update, context):
 def main():
 
     BOT_TOKEN = get_secret("bot-token")
-    WEBHOOK_PATH = get_secret("webhook-path") or "/webhook"
-    PORT = int(os.getenv("PORT", 8080))
+    WEBHOOK_PATH = get_secret("webhook-path")
+    PORT = int(os.getenv("PORT", 8443))
     CLOUD_RUN_DOMAIN = get_secret("cloudrun-url")
 
     print(f"📦 Starting bot on PORT={PORT}")
@@ -395,7 +423,7 @@ def main():
     port=PORT,
     url_path=WEBHOOK_PATH,  # better match to PTB docs
     webhook_url=f"{CLOUD_RUN_DOMAIN}/{WEBHOOK_PATH.lstrip('/')}",
-    drop_pending_updates=True,
+    #drop_pending_updates=True,
     #secret_token=get_secret("webhook-secret")  # optional but safer
     )
 
