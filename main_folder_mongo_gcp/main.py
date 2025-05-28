@@ -116,7 +116,8 @@ async def callback_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await asyncio.sleep(1)
                 await mongo_client.disconnect()
                 await asyncio.sleep(1)
-                await context.application.stop()
+
+                await context.application.shutdown()
                 await asyncio.sleep(1)
 
                 logger.info("🔁 Restarting...")
@@ -152,7 +153,7 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         except asyncio.CancelledError:
                             pass
                 
-                await context.application.stop()
+                await context.application.shutdown()
 
                 # Cancel all other running tasks
                 tasks = asyncio.all_tasks()
@@ -324,7 +325,7 @@ async def init_telegram_app(app_context):
     telegram_app = (
         ApplicationBuilder()
         .token(BOT_TOKEN)
-        .post_init(on_startup)
+        #.post_init(on_startup)
         .build()
     )
     
@@ -400,12 +401,14 @@ async def init_telegram_app(app_context):
 
     # ✅ Initialize the application
     await telegram_app.initialize()
+
+    # ✅ Manually call the startup function since we're not using run_polling()
+    await on_startup(telegram_app)
     
     # Store the initialized telegram app in aiohttp app context
     app_context['telegram_app'] = telegram_app
 
-    # # ✅ Initialize the application
-    # await telegram_app.initialize()
+    # ✅ Initialize the application
     print("✅ Telegram application initialized successfully")
 
 def get_update_webhook_handler():
