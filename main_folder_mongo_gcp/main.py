@@ -351,7 +351,7 @@ async def init_telegram_app(app_context):
     
     # Add all handlers
     telegram_app.bot_data["launch_dashboard"] = launch
-    telegram_app.add_handler(MessageHandler(filters.ALL, debug_all))
+    #telegram_app.add_handler(MessageHandler(filters.ALL, debug_all))
 
     telegram_app.add_error_handler(error_handler)
 
@@ -412,6 +412,9 @@ async def init_telegram_app(app_context):
 
     register_wallet_commands(telegram_app)
     register_payout_handlers(telegram_app)
+
+    # Add the catch-all debug handler LAST with a higher group number
+    telegram_app.add_handler(MessageHandler(filters.ALL, debug_all), group=999)
     
     # Store the initialized telegram app in aiohttp app context
     app_context['telegram_app'] = telegram_app
