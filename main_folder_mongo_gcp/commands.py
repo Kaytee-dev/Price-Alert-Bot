@@ -120,9 +120,20 @@ async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Regular user shutdown (no confirmation needed)
     users.USER_STATUS[chat_id] = False
-    users.save_user_status(chat_id)
+    await users.save_user_status(chat_id)
     await update.message.reply_text(
         f"🛑 Monitoring paused.\nYou're still tracking {len(users.USER_TRACKING.get(chat_id, []))} token(s). Use /start to resume.")
+    
+    # 🚀 Immediately launch dashboard after message
+    launch_func = context.bot_data.get("launch_dashboard")
+    if launch_func:
+        chat_id = update.effective_chat.id
+
+        # 📝 Show 'typing...' animation
+        await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+
+        await asyncio.sleep(6)
+        await launch_func(update, context)
     
 
 # Updated display format for grouped token additions by chain
