@@ -22,39 +22,39 @@ from commands import (
 )
 
 
-import storage.tokens
-import storage.users
-from storage.tiers import check_and_process_tier_expiry_scheduler
-import storage.tiers as tiers
-import storage.thresholds as thresholds
+# import storage.tokens
+# import storage.users
+# from storage.tiers import check_and_process_tier_expiry_scheduler
+# import storage.tiers as tiers
+# import storage.thresholds as thresholds
 
 
-from storage.tokens import load_tracked_tokens
-from storage.symbols import load_symbols
-from storage.users import load_user_tracking
-from storage.history import load_token_data
-from storage.rpcs import load_rpc_list
+# from storage.tokens import load_tracked_tokens
+# from storage.symbols import load_symbols
+# from storage.users import load_user_tracking
+# from storage.history import load_token_data
+# from storage.rpcs import load_rpc_list
 
 
-from storage.notify import remind_inactive_users
-from storage.payment_logs import load_payment_logs
-from storage.wallets import load_wallets
-from storage.payout import load_payout_wallets
+# from storage.notify import remind_inactive_users
+# from storage.payment_logs import load_payment_logs
+# from storage.wallets import load_wallets
+# from storage.payout import load_payout_wallets
 
-from util.wallet_sync import sync_wallets_from_secrets, purge_orphan_wallets
-from secrets_key import load_encrypted_keys
+# from util.wallet_sync import sync_wallets_from_secrets, purge_orphan_wallets
+# from secrets_key import load_encrypted_keys
 
 
 from admin import (
     addadmin, removeadmin, listadmins,
-    handle_removeadmin_callback, load_admins, addwallet, addpayout,
+    handle_removeadmin_callback, addwallet, addpayout,
     check_payment_conv, manual_upgrade_conv, list_referrals, register_wallet_commands,
-    addrpc, removerpc, listrpc, handle_removerpc_callback
+    addrpc, removerpc, listrpc, handle_removerpc_callback, boot
 )
 from util.utils import (send_message,
                    refresh_user_commands, ADMINS
                    )
-from monitor import background_price_monitor
+#from monitor import background_price_monitor
 
 from upgrade import upgrade_conv_handler, start_upgrade
 from referral import register_referral_handlers
@@ -63,12 +63,14 @@ from referral_payout import register_payout_handlers
 from util.error_logs import error_handler
 import mongo_client
 
-from storage import user_collection, token_collection, payment_collection
+#from storage import user_collection, token_collection, payment_collection
 from util import restart_recovery as restart_recovery
-import util.utils as utils
-from storage.notify import (flush_notify_cache_to_db, ensure_notify_records_for_active_users,
+from util.boot_task import perform_boot_tasks
+from storage.notify import (flush_notify_cache_to_db
                             
                             )
+import storage.admin_collection as admins
+
 
 
 
@@ -181,98 +183,137 @@ async def callback_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # --- Bot Runner ---
+# async def on_startup(app):
+#     await mongo_client.connect()
+#     await user_collection.load_user_collection_from_mongo()
+#     await user_collection.ensure_user_indexes()
+
+#     await token_collection.load_token_collection_from_mongo()
+#     await token_collection.create_token_list_index()
+#     await load_token_data()
+
+#     await payment_collection.load_payment_collection_from_mongo()
+
+#     await load_admins()
+#     load_user_tracking()
+#     # load_user_status()
+
+#     load_symbols
+#     load_tracked_tokens()
+#     #load_token_history()
+
+#     # load_user_tiers()
+#     await load_payment_logs()
+#     load_payout_wallets()
+
+#     await load_wallets()
+#     await load_encrypted_keys()
+#     await sync_wallets_from_secrets()
+#     await purge_orphan_wallets()
+#     await load_rpc_list()
+#     await ensure_notify_records_for_active_users()
+
+
+#     # 🔒 Enforce token limits based on user tiers
+#     await tiers.enforce_token_limits_bulk()
+
+    
+#     # ♻️ Restore active restart users
+#     await restart_recovery.restore_active_users()
+
+#     # 🧮 Token Tracking — Rebuild from loaded structured USER_TRACKING
+#     storage.tokens.rebuild_tracked_token()
+    
+#     # Adding threshold on startup
+#     await thresholds.load_user_thresholds()
+#     updated = False
+#     for chat_id in storage.users.USER_TRACKING:
+#         if chat_id not in thresholds.USER_THRESHOLDS:
+#             thresholds.USER_THRESHOLDS[chat_id] = 5.0
+#             updated = True
+#     if updated:
+#         await thresholds.save_user_thresholds()
+
+
+#     if any(storage.users.USER_STATUS.values()):
+#         monitor_task = app.create_task(background_price_monitor(app))
+#         app._monitor_task = monitor_task
+#         app._monitor_started = True
+#         logger.info("🔄 Monitor loop auto-started after restart recovery.")
+
+#     # 📣 Also start the inactive user reminder loop
+#     reminder_task = app.create_task(remind_inactive_users(app))
+#     app._reminder_task = reminder_task
+#     logger.info("🔔 Inactive user reminder loop started.")
+
+#     # 🕒 Start the tier expiry check scheduler
+#     expiry_task = app.create_task(check_and_process_tier_expiry_scheduler(app))
+#     app._expiry_task = expiry_task
+#     logger.info("🔄 Tier expiry check scheduler started (2-day interval)")
+
+
+#     # 🔧 Set fallback default commands
+#     default_cmds = [
+#         BotCommand("lc", "Launch bot dashboard"),
+#         BotCommand("start", "Start tracking tokens"),
+#         BotCommand("stop", "Stop tracking tokens"),
+#         BotCommand("add", "Add a token to track -- /a"),
+#         BotCommand("remove", "Remove token from tracking -- /rm"),
+#         BotCommand("list", "List tracked tokens -- /l"),
+#         BotCommand("reset", "Clear all tracked tokens -- /x"),
+#         BotCommand("help", "Show help message -- /h"),
+#         BotCommand("status", "Show stats of tracked tokens -- /s"),
+#         BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
+#         BotCommand("upgrade", "Upgrade your tier to track more tokens -- /u"),
+#         BotCommand("renew", "Renew your current tier to continue tracking your tokens -- /rn"),
+#     ]
+#     await app.bot.set_my_commands(default_cmds, scope=BotCommandScopeDefault())
+
+#     # 🔧 Re-apply scoped commands for all admins
+#     for admin_id in ADMINS:
+#         await refresh_user_commands(admin_id, app.bot)
+
+#     # 🔧 Also refresh super admin's scoped menu
+#     await refresh_user_commands(SUPER_ADMIN_ID, app.bot)
+
 async def on_startup(app):
-    await mongo_client.connect()
-    await user_collection.load_user_collection_from_mongo()
-    await user_collection.ensure_user_indexes()
+    logger.info("🚀 on_startup() function started")
+    try:
+        await perform_boot_tasks(app)
+        await admins.load_admins()
 
-    await token_collection.load_token_collection_from_mongo()
-    await token_collection.create_token_list_index()
-    await load_token_data()
+        # 🔧 Set fallback default commands
+        default_cmds = [
+            BotCommand("lc", "Launch bot dashboard"),
+            BotCommand("start", "Start tracking tokens"),
+            BotCommand("stop", "Stop tracking tokens"),
+            BotCommand("add", "Add a token to track -- /a"),
+            BotCommand("remove", "Remove token from tracking -- /rm"),
+            BotCommand("list", "List tracked tokens -- /l"),
+            BotCommand("reset", "Clear all tracked tokens -- /x"),
+            BotCommand("help", "Show help message -- /h"),
+            BotCommand("status", "Show stats of tracked tokens -- /s"),
+            BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
+            BotCommand("upgrade", "Upgrade your tier to track more tokens -- /u"),
+            BotCommand("renew", "Renew your current tier to continue tracking your tokens -- /rn"),
+        ]
+        await app.bot.set_my_commands(default_cmds, scope=BotCommandScopeDefault())
 
-    await payment_collection.load_payment_collection_from_mongo()
+        # 🔧 Re-apply scoped commands for all admins
+        for admin_id in ADMINS:
+            await refresh_user_commands(admin_id, app.bot)
 
-    await load_admins()
-    load_user_tracking()
-    # load_user_status()
+        # 🔧 Also refresh super admin's scoped menu
+        await refresh_user_commands(SUPER_ADMIN_ID, app.bot)
+        # ✅ Set boot flag in bot_data
+        app.bot_data["BOOT_COMPLETED"] = True
 
-    load_symbols
-    load_tracked_tokens()
-    #load_token_history()
+    except Exception as e:
+        print(f"❌ on_startup() failed: {e}")
+        import traceback
+        traceback.print_exc()
+        raise  # This is important - don't swallow the error
 
-    # load_user_tiers()
-    await load_payment_logs()
-    load_payout_wallets()
-
-    await load_wallets()
-    await load_encrypted_keys()
-    await sync_wallets_from_secrets()
-    await purge_orphan_wallets()
-    await load_rpc_list()
-    await ensure_notify_records_for_active_users()
-
-
-    # 🔒 Enforce token limits based on user tiers
-    await tiers.enforce_token_limits_bulk()
-
-    
-    # ♻️ Restore active restart users
-    await restart_recovery.restore_active_users()
-
-    # 🧮 Token Tracking — Rebuild from loaded structured USER_TRACKING
-    storage.tokens.rebuild_tracked_token()
-    
-    # Adding threshold on startup
-    await thresholds.load_user_thresholds()
-    updated = False
-    for chat_id in storage.users.USER_TRACKING:
-        if chat_id not in thresholds.USER_THRESHOLDS:
-            thresholds.USER_THRESHOLDS[chat_id] = 5.0
-            updated = True
-    if updated:
-        await thresholds.save_user_thresholds()
-
-
-    if any(storage.users.USER_STATUS.values()):
-        monitor_task = app.create_task(background_price_monitor(app))
-        app._monitor_task = monitor_task
-        app._monitor_started = True
-        logger.info("🔄 Monitor loop auto-started after restart recovery.")
-
-    # 📣 Also start the inactive user reminder loop
-    reminder_task = app.create_task(remind_inactive_users(app))
-    app._reminder_task = reminder_task
-    logger.info("🔔 Inactive user reminder loop started.")
-
-    # 🕒 Start the tier expiry check scheduler
-    expiry_task = app.create_task(check_and_process_tier_expiry_scheduler(app))
-    app._expiry_task = expiry_task
-    logger.info("🔄 Tier expiry check scheduler started (2-day interval)")
-
-
-    # 🔧 Set fallback default commands
-    default_cmds = [
-        BotCommand("lc", "Launch bot dashboard"),
-        BotCommand("start", "Start tracking tokens"),
-        BotCommand("stop", "Stop tracking tokens"),
-        BotCommand("add", "Add a token to track -- /a"),
-        BotCommand("remove", "Remove token from tracking -- /rm"),
-        BotCommand("list", "List tracked tokens -- /l"),
-        BotCommand("reset", "Clear all tracked tokens -- /x"),
-        BotCommand("help", "Show help message -- /h"),
-        BotCommand("status", "Show stats of tracked tokens -- /s"),
-        BotCommand("threshold", "Set your spike alert threshold (%) -- /t"),
-        BotCommand("upgrade", "Upgrade your tier to track more tokens -- /u"),
-        BotCommand("renew", "Renew your current tier to continue tracking your tokens -- /rn"),
-    ]
-    await app.bot.set_my_commands(default_cmds, scope=BotCommandScopeDefault())
-
-    # 🔧 Re-apply scoped commands for all admins
-    for admin_id in ADMINS:
-        await refresh_user_commands(admin_id, app.bot)
-
-    # 🔧 Also refresh super admin's scoped menu
-    await refresh_user_commands(SUPER_ADMIN_ID, app.bot)
 
 async def extract_username(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Middleware: Save username globally into context.bot_data."""
@@ -303,6 +344,8 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("stop", stop))
+
+    app.add_handler(CommandHandler(["boot", "bt"], boot))
 
     app.add_handler(CommandHandler(["add", "a"], add))
     app.add_handler(CommandHandler(["alltokens", "at"], alltokens))

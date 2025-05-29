@@ -29,8 +29,9 @@ import storage.payment_logs as payment_logs
 import logging
 
 from telegram.error import BadRequest
-from mongo_client import get_collection
 from util.boot_task import perform_boot_tasks
+import storage.admin_collection as admins
+
 
 
 # Manual upgrade conversation states
@@ -38,7 +39,7 @@ MANUAL_USER_ID, MANUAL_TX_SIG, MANUAL_PAYMENT_ID = range(3)
 
 # User payment log query conversation states 
 ASK_USER_ID, ASK_PAYMENT_ID = range(2)
-ADMINS = set()
+# ADMINS = set()
 
 SOLANA_CLIENT = Client(SOLANA_RPC)
 
@@ -47,43 +48,43 @@ logger = logging.getLogger(__name__)
 # --- Super Admin ID ---
 #SUPER_ADMIN_ID = -4710110042  # Replace this with your actual ID
 
-# --- Load/Save Admins ---
-async def load_admins():
-    """
-    Async: Load the list of admin user_ids from MongoDB and ensure all are integers.
-    """
-    global ADMINS
-    collection = get_collection("admins")
-    doc = await collection.find_one({"_id": "admin_list"})
+# # --- Load/Save Admins ---
+# async def load_admins():
+#     """
+#     Async: Load the list of admin user_ids from MongoDB and ensure all are integers.
+#     """
+#     global ADMINS
+#     collection = get_collection("admins")
+#     doc = await collection.find_one({"_id": "admin_list"})
     
-    if doc and "user_ids" in doc:
-        # Cast all user IDs to int safely
-        ADMINS = set(int(uid) for uid in doc["user_ids"])
-    else:
-        ADMINS = set()
+#     if doc and "user_ids" in doc:
+#         # Cast all user IDs to int safely
+#         ADMINS = set(int(uid) for uid in doc["user_ids"])
+#     else:
+#         ADMINS = set()
 
-    ADMINS.add(int(SUPER_ADMIN_ID))
-    logger.info("✅ ADMINS loaded from admins collection")
+#     ADMINS.add(int(SUPER_ADMIN_ID))
+#     logger.info("✅ ADMINS loaded from admins collection")
 
-async def save_admins():
-    """
-    Async: Save ADMINS to MongoDB and refresh cache.
-    """
-    global ADMINS
-    collection = get_collection("admins")
-    await collection.update_one(
-        {"_id": "admin_list"},
-        {"$set": {"user_ids": list(ADMINS)}},
-        upsert=True
-    )
-    # Refresh cache from what was saved
-    ADMINS = set(ADMINS)
-    ADMINS.add(SUPER_ADMIN_ID)
+# async def save_admins():
+#     """
+#     Async: Save ADMINS to MongoDB and refresh cache.
+#     """
+#     global ADMINS
+#     collection = get_collection("admins")
+#     await collection.update_one(
+#         {"_id": "admin_list"},
+#         {"$set": {"user_ids": list(ADMINS)}},
+#         upsert=True
+#     )
+#     # Refresh cache from what was saved
+#     ADMINS = set(ADMINS)
+#     ADMINS.add(SUPER_ADMIN_ID)
 
 # --- Admin Decorators ---
 def restricted_to_admin(func: Callable):
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        if update.effective_chat.id not in ADMINS:
+        if update.effective_chat.id not in admins.ADMINS:
             await update.message.reply_text("❌ You are not authorized to use this command.")
             return
         return await func(update, context)
@@ -103,8 +104,8 @@ async def boot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔧 Running /boot to reinitialize the system...")
     try:
         await perform_boot_tasks(context.application)
-        load_admins()
-        
+        await admins.load_admins()
+
         # ✅ Set boot flag in bot_data
         context.bot_data["BOOT_COMPLETED"] = True
         await update.message.reply_text("✅ Boot complete. MongoDB reconnected. Background tasks restarted.")
@@ -134,13 +135,13 @@ async def addadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Invalid Telegram user ID or username.")
         return
 
-    if user_id in ADMINS:
+    if user_id in admins.ADMINS:
         await tiers.promote_to_premium(user_id, bot=context.bot)
         await refresh_user_commands(user_id, bot=context.bot)
         await update.message.reply_text(f"ℹ️ User {user_id} is already an admin.")
     else:
-        ADMINS.add(user_id)
-        await save_admins()
+        admins.ADMINS.add(user_id)
+        await admins.save_admins()
 
         await tiers.promote_to_premium(user_id, bot=context.bot)
         await refresh_user_commands(user_id, bot=context.bot)
@@ -158,7 +159,7 @@ async def removeadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Invalid user ID. Must be a number.")
         return
 
-    if user_id not in ADMINS:
+    if user_id not in admins.ADMINS:
         await update.message.reply_text(f"ℹ️ User {user_id} is not an admin.")
     else:
         keyboard = InlineKeyboardMarkup([
@@ -175,12 +176,12 @@ async def removeadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 @restricted_to_admin
 async def listadmins(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not ADMINS:
+    if not admins.ADMINS:
         await update.message.reply_text("📭 No admins currently set.")
         return
 
     msg = "👮‍♂️ *Current Admins:*\n"
-    for admin_id in sorted(ADMINS):
+    for admin_id in sorted(admins.ADMINS):
         badge = "🌟 Super Admin" if admin_id == SUPER_ADMIN_ID else "👤 Admin"
         msg += f"- `{admin_id}` {badge}\n"
 
@@ -194,9 +195,9 @@ async def handle_removeadmin_callback(update: Update, context: ContextTypes.DEFA
 
     if query.data.startswith("confirm_removeadmin:"):
         user_id = int(query.data.split(":")[1])
-        if user_id in ADMINS:
-            ADMINS.remove(user_id)
-            await save_admins()
+        if user_id in admins.ADMINS:
+            admins.ADMINS.remove(user_id)
+            await admins.save_admins()
             await tiers.set_user_tier(user_id, "apprentice", bot=context.bot)
             await refresh_user_commands(user_id, bot=context.bot)
             await query.edit_message_text(f"🗑️ Removed user {user_id} from admins.")

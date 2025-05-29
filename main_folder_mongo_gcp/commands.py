@@ -33,7 +33,7 @@ from util.get_all_tracked_tokens_util import get_all_tracked_tokens
 from collections import defaultdict
 
 import util.utils as utils
-import admin as admin
+import storage.admin_collection as admin
 
 
 logger = logging.getLogger(__name__)
@@ -722,7 +722,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/removewallet or /rw — Remove deposit wallets\n",
             "/addpayout or /ap — Add wothdrawal wallets",
             "/removepayout or /rp — Remove withdrawal wallets",
-            "/boot or /bt — Boot the bot and reconnect to MongoDB"
+            "/boot or /bt — Boot the bot and reconnect to MongoDB",
         ]
 
 

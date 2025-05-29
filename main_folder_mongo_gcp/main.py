@@ -45,7 +45,7 @@ from commands import (
 
 from admin import (
     addadmin, removeadmin, listadmins,
-    handle_removeadmin_callback, load_admins, addwallet, addpayout,
+    handle_removeadmin_callback, addwallet, addpayout,
     check_payment_conv, manual_upgrade_conv, list_referrals, register_wallet_commands,
     addrpc, removerpc, listrpc, handle_removerpc_callback, boot
 )
@@ -70,6 +70,7 @@ from storage.notify import (flush_notify_cache_to_db, ensure_notify_records_for_
 from pwd_loader.gcp_loader import get_secret
 from aiohttp import web
 from util.boot_task import perform_boot_tasks
+from storage.admin_collection import load_admins
 
 
 
@@ -309,7 +310,7 @@ async def on_startup(app):
     logger.info("🚀 on_startup() function started")
     try:
         await perform_boot_tasks(app)
-        load_admins()
+        await load_admins()
 
         # 🔧 Set fallback default commands
         default_cmds = [

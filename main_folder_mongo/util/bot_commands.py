@@ -38,4 +38,5 @@ super_admin_cmds = [
     BotCommand("listwallet", "List wallets (deposit & withdrawal) -- /lw"),
     BotCommand("removewallet", "Remove deposit wallets -- /rm"),
     BotCommand("removepayout", "Remove withdrawal wallets -- /rp"),
+    BotCommand("boot", "Boot the bot and reconnect to MongoDB -- /bt"),
 ]

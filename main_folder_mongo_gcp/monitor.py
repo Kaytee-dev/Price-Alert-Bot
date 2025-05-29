@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import Dict, List, Set, Tuple, Any
 
 from config import POLL_INTERVAL, SUPER_ADMIN_ID, BOT_SPIKE_LOGS_ID
-from admin import ADMINS
 
 import storage.users as users
 import storage.tokens as tokens
@@ -19,6 +18,7 @@ from api import fetch_prices_for_tokens
 from util.utils import chunked, send_message
 
 from storage.notify import build_normal_spike_message, build_first_spike_message, save_user_notify_entry
+import storage.admin_collection as admins
 
 logger = logging.getLogger(__name__)
 
@@ -319,7 +319,7 @@ class TokenPriceMonitor:
                         msg,
                         chat_id=chat_id,
                         parse_mode="Markdown",
-                        admins=ADMINS,
+                        admins=admins.ADMINS,
                         super_admin=SUPER_ADMIN_ID,
                         disable_web_page_preview=True
                     )
@@ -355,7 +355,7 @@ class TokenPriceMonitor:
                         admin_msg,
                         chat_id=BOT_SPIKE_LOGS_ID,
                         parse_mode="Markdown",
-                        admins=ADMINS,
+                        admins=admins.ADMINS,
                         super_admin=SUPER_ADMIN_ID,
                         disable_web_page_preview=True
                     )

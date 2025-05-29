@@ -88,7 +88,7 @@ async def show_referral_page(update: Update, context: ContextTypes.DEFAULT_TYPE)
     unpaid_commission = user_data["total_commission"] - user_data["total_paid"]
     
     # Calculate total referred users (historical) - this is successful_referrals + current pending referrals
-    total_historical_referrals = user_data["total_referred"]
+    total_historical_referrals = user_data.get("total_referred", 0)
     referral_page_para_1 = (
         "💰 Invite your friends and get a 5% referral commision when they upgrade their " 
         "tier to any package with a minimum of 6 months duration. There is no maximum "
