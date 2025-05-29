@@ -23,9 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def derive_key(password: str) -> bytes:
-    print(f"🌐 Password: {password}")
     SALT = get_secret("salt").encode("utf-8")
-    print(f"🌐 SALT: {SALT}")
     
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),

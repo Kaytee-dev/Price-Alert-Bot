@@ -3,7 +3,7 @@ from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (ContextTypes, ConversationHandler, CommandHandler, MessageHandler,
                           filters, CallbackQueryHandler
                           )
-from util.utils import refresh_user_commands, confirm_action, build_custom_update_from_query
+from util.utils import refresh_user_commands, confirm_action
 from config import (SUPER_ADMIN_ID, SOLANA_RPC,
                     TOKEN_PROGRAM_ID, SYSTEM_PROGRAM_ID, LIST_WALLET_PAGE, WALLET_PAGE_SIZE
                     )
@@ -29,8 +29,9 @@ import storage.payment_logs as payment_logs
 import logging
 
 from telegram.error import BadRequest
-
 from mongo_client import get_collection
+from util.boot_task import perform_boot_tasks
+
 
 # Manual upgrade conversation states
 MANUAL_USER_ID, MANUAL_TX_SIG, MANUAL_PAYMENT_ID = range(3)
@@ -95,6 +96,20 @@ def restricted_to_super_admin(func: Callable):
             return
         return await func(update, context)
     return wrapper
+
+
+@restricted_to_super_admin
+async def boot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🔧 Running /boot to reinitialize the system...")
+    try:
+        await perform_boot_tasks(context.application)
+        load_admins()
+        
+        # ✅ Set boot flag in bot_data
+        context.bot_data["BOOT_COMPLETED"] = True
+        await update.message.reply_text("✅ Boot complete. MongoDB reconnected. Background tasks restarted.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Boot failed: {e}")
 
 # --- Admin Commands ---
 @restricted_to_super_admin

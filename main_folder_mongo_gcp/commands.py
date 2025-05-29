@@ -40,6 +40,10 @@ logger = logging.getLogger(__name__)
 
 # --- Telegram Bot Commands ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # 🚫 Check if boot sequence has completed
+    if not context.bot_data.get("BOOT_COMPLETED", False):
+        await update.message.reply_text("⚙️ Bot is under maintenance. Please try again shortly.")
+        return
     
     await start_with_referral(update, context)
 
@@ -718,6 +722,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "/removewallet or /rw — Remove deposit wallets\n",
             "/addpayout or /ap — Add wothdrawal wallets",
             "/removepayout or /rp — Remove withdrawal wallets",
+            "/boot or /bt — Boot the bot and reconnect to MongoDB"
         ]
 
 

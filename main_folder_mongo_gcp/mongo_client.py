@@ -1,11 +1,8 @@
 from pymongo import AsyncMongoClient
 from pymongo.server_api import ServerApi
 from pwd_loader.gcp_loader import get_secret
-import os
 import logging
-from dotenv import load_dotenv
 
-load_dotenv() 
 
 #MONGO_URI = os.getenv("MONGO_URI")
 
@@ -16,7 +13,7 @@ load_dotenv()
 # if not MONGO_URI:
 #     raise RuntimeError("❌ MONGO_URI environment variable is not set.")
 
-MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "price_alert_bot")
+MONGO_DB_NAME = "price_alert_bot"
 
 client: AsyncMongoClient = None
 
